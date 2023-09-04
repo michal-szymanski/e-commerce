@@ -23,6 +23,9 @@ dependencies:
   drizzle-orm:
     specifier: ^0.28.5
     version: 0.28.5(postgres@3.3.5)
+  drizzle-zod:
+    specifier: ^0.5.1
+    version: 0.5.1(drizzle-orm@0.28.5)(zod@3.22.2)
   eslint:
     specifier: 8.48.0
     version: 8.48.0
@@ -1139,6 +1142,16 @@ packages:
         optional: true
     dependencies:
       postgres: 3.3.5
+    dev: false
+
+  /drizzle-zod@0.5.1(drizzle-orm@0.28.5)(zod@3.22.2):
+    resolution: {integrity: sha512-C/8bvzUH/zSnVfwdSibOgFjLhtDtbKYmkbPbUCq46QZyZCH6kODIMSOgZ8R7rVjoI+tCj3k06MRJMDqsIeoS4A==}
+    peerDependencies:
+      drizzle-orm: '>=0.23.13'
+      zod: '*'
+    dependencies:
+      drizzle-orm: 0.28.5(postgres@3.3.5)
+      zod: 3.22.2
     dev: false
 
   /electron-to-chromium@1.4.508:

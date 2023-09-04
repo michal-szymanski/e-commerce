@@ -1,22 +1,24 @@
-import { integer, numeric, pgTable, serial, varchar, pgEnum } from 'drizzle-orm/pg-core';
+import { integer, numeric, pgTable, serial, varchar, pgEnum, date, primaryKey } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const categories = pgTable('categories', {
     id: serial('id').primaryKey(),
-    name: varchar('name', { length: 255 })
+    name: varchar('name', { length: 255 }).notNull()
 });
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
     products: many(products)
 }));
 
-export const mimeTypeEnum = pgEnum('mimeType', ['image', 'video']);
+export const mimeTypeEnum = pgEnum('mime_type', ['image', 'video']);
 
 export const media = pgTable('media', {
     id: serial('id').primaryKey(),
-    src: varchar('src', { length: 255 }),
-    mimeType: mimeTypeEnum('mimeType'),
-    productId: integer('productId').references(() => products.id)
+    src: varchar('src', { length: 255 }).notNull(),
+    mimeType: mimeTypeEnum('mime_type').notNull(),
+    productId: integer('product_id')
+        .references(() => products.id)
+        .notNull()
 });
 
 export const mediaRelations = relations(media, ({ one }) => ({
@@ -28,10 +30,12 @@ export const mediaRelations = relations(media, ({ one }) => ({
 
 export const products = pgTable('products', {
     id: serial('id').primaryKey(),
-    name: varchar('name', { length: 255 }),
-    description: varchar('name', { length: 255 }),
-    categoryId: integer('categoryId').references(() => categories.id),
-    price: numeric('price', { precision: 10, scale: 2 })
+    name: varchar('name', { length: 255 }).notNull(),
+    description: varchar('name', { length: 255 }).notNull(),
+    categoryId: integer('category_id')
+        .references(() => categories.id)
+        .notNull(),
+    price: numeric('price', { precision: 10, scale: 2 }).notNull()
 });
 
 export const productsRelations = relations(products, ({ one, many }) => ({
@@ -39,5 +43,46 @@ export const productsRelations = relations(products, ({ one, many }) => ({
         fields: [products.categoryId],
         references: [categories.id]
     }),
-    media: many(media)
+    media: many(media),
+    orders: many(orders)
+}));
+
+export const orderStatusEnum = pgEnum('order_status', ['New', 'In Progress', 'Completed', 'Cancelled']);
+
+export const orders = pgTable('orders', {
+    id: serial('id').primaryKey(),
+    date: date('date', { mode: 'date' }).notNull(),
+    status: orderStatusEnum('order_status').notNull(),
+    userId: varchar('user_id', { length: 255 }).notNull()
+});
+
+export const ordersRelations = relations(orders, ({ many }) => ({
+    products: many(products)
+}));
+
+export const orderLines = pgTable(
+    'order_lines',
+    {
+        orderId: integer('order_id')
+            .notNull()
+            .references(() => orders.id),
+        productId: integer('product_id')
+            .notNull()
+            .references(() => products.id),
+        quantity: numeric('quantity', { precision: 11, scale: 3 }).notNull()
+    },
+    (t) => ({
+        pk: primaryKey(t.orderId, t.productId)
+    })
+);
+
+export const orderLinesRelations = relations(orderLines, ({ one }) => ({
+    order: one(orders, {
+        fields: [orderLines.orderId],
+        references: [orders.id]
+    }),
+    product: one(products, {
+        fields: [orderLines.productId],
+        references: [products.id]
+    })
 }));
