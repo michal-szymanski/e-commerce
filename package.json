@@ -9,6 +9,7 @@
     "lint": "next lint",
     "format": "prettier . --write",
     "db:generate": "drizzle-kit generate:pg",
+    "db:seed": "ts-node seed.ts",
     "db:push": "drizzle-kit push:pg"
   },
   "dependencies": {
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@next/env": "^13.4.19",
     "drizzle-kit": "^0.19.13",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "ts-node": "^10.9.1"
   }
 }

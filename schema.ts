@@ -1,9 +1,9 @@
-import { integer, numeric, pgTable, serial, varchar, pgEnum, date, primaryKey } from 'drizzle-orm/pg-core';
+import { integer, numeric, pgTable, serial, pgEnum, date, primaryKey, text } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const categories = pgTable('categories', {
     id: serial('id').primaryKey(),
-    name: varchar('name', { length: 255 }).notNull()
+    name: text('name').notNull()
 });
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -14,7 +14,7 @@ export const mimeTypeEnum = pgEnum('mime_type', ['image', 'video']);
 
 export const media = pgTable('media', {
     id: serial('id').primaryKey(),
-    src: varchar('src', { length: 255 }).notNull(),
+    src: text('src').notNull(),
     mimeType: mimeTypeEnum('mime_type').notNull(),
     productId: integer('product_id')
         .references(() => products.id)
@@ -30,8 +30,8 @@ export const mediaRelations = relations(media, ({ one }) => ({
 
 export const products = pgTable('products', {
     id: serial('id').primaryKey(),
-    name: varchar('name', { length: 255 }).notNull(),
-    description: varchar('name', { length: 255 }).notNull(),
+    name: text('name').notNull(),
+    description: text('description').notNull(),
     categoryId: integer('category_id')
         .references(() => categories.id)
         .notNull(),
@@ -53,7 +53,7 @@ export const orders = pgTable('orders', {
     id: serial('id').primaryKey(),
     date: date('date', { mode: 'date' }).notNull(),
     status: orderStatusEnum('order_status').notNull(),
-    userId: varchar('user_id', { length: 255 }).notNull()
+    userId: text('user_id').notNull()
 });
 
 export const ordersRelations = relations(orders, ({ many }) => ({
