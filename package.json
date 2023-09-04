@@ -9,8 +9,8 @@
     "lint": "next lint",
     "format": "prettier . --write",
     "db:generate": "drizzle-kit generate:pg",
-    "db:seed": "ts-node seed.ts",
-    "db:push": "drizzle-kit push:pg"
+    "db:push": "drizzle-kit push:pg",
+    "db:seed": "ts-node seed.ts"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.6.1",
