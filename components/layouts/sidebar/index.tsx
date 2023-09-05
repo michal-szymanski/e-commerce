@@ -34,7 +34,7 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="h-full border-r-2 px-6">
+        <aside className="h-full px-6">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="h-full px-4">
                     <h2 className="mb-5 text-lg font-semibold tracking-tight">Price</h2>

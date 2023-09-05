@@ -73,7 +73,7 @@
         @apply border-border;
     }
     body {
-        @apply h-full bg-background text-foreground;
+        @apply h-full bg-background text-foreground overflow-y-scroll;
     }
     #__next {
         @apply h-full;
