@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useProducts } from '@/hooks/queries';
 import Image from 'next/image';
-import { Input } from '@/components/ui/input';
 import Sidebar from '@/components/layouts/sidebar';
 
 export default () => {
-    const [limit, setLimit] = useState(10);
+    const [limit, setLimit] = useState(50);
     const [offset, setOffset] = useState(0);
 
     const { data, isLoading } = useProducts(limit, offset);
@@ -30,10 +29,10 @@ export default () => {
 
     return (
         <>
-            <div className="grid grid-cols-sidebar">
+            <div className="grid grid-cols-sidebar grid-rows-1">
                 <Sidebar />
-                <main className="border-amber-950 border-2">
-                    <div className="grid gap-3 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2">
+                <main>
+                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                         {data.map((product) => (
                             <div key={product.id} className="flex flex-col items-center">
                                 <div>{product.name}</div>

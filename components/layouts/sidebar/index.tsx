@@ -34,17 +34,16 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="px-6">
+        <aside className="h-full border-r-2 px-6">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="h-full">
-                    <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Price</h2>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="h-full px-4">
+                    <h2 className="mb-5 text-lg font-semibold tracking-tight">Price</h2>
                     <div className="flex gap-2">
                         <FormField
                             control={form.control}
                             name="minPrice"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Min</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Min" {...field} onChange={(e) => field.onChange(transformInputToNumber(e))} />
                                     </FormControl>
@@ -57,7 +56,6 @@ const Sidebar = () => {
                             name="maxPrice"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Max</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Max" {...field} onChange={(e) => field.onChange(transformInputToNumber(e))} />
                                     </FormControl>
@@ -66,10 +64,14 @@ const Sidebar = () => {
                             )}
                         />
                     </div>
-
-                    <Button type="submit" variant="default">
-                        Filter
-                    </Button>
+                    <div className="mt-10 flex justify-end gap-5">
+                        <Button type="button" variant="secondary" onClick={() => form.reset()}>
+                            Reset
+                        </Button>
+                        <Button type="submit" variant="default">
+                            Filter
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </aside>
