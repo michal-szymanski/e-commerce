@@ -46,7 +46,7 @@ const seedDatabase = async () => {
 
         await db.insert(media).values(testMedia).onConflictDoNothing();
 
-        console.log('\r\nDone seeding.\r\n');
+        console.log('\r\n✅ Done seeding.\r\n');
         process.exit();
     } catch (e) {
         console.error(e);

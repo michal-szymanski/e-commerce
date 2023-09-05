@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@hookform/resolvers':
+    specifier: ^3.3.1
+    version: 3.3.1(react-hook-form@7.46.1)
   '@radix-ui/react-aspect-ratio':
     specifier: ^1.0.3
     version: 1.0.3(@types/react-dom@18.2.7)(@types/react@18.2.21)(react-dom@18.2.0)(react@18.2.0)
@@ -22,7 +25,7 @@ dependencies:
     version: 1.0.2(@types/react@18.2.21)(react@18.2.0)
   '@t3-oss/env-nextjs':
     specifier: ^0.6.1
-    version: 0.6.1(typescript@5.2.2)(zod@3.22.2)
+    version: 0.6.1(typescript@5.2.2)(zod@3.21.4)
   '@tanstack/react-query':
     specifier: ^4.33.0
     version: 4.33.0(react-dom@18.2.0)(react@18.2.0)
@@ -49,7 +52,7 @@ dependencies:
     version: 0.28.5(postgres@3.3.5)
   drizzle-zod:
     specifier: ^0.5.1
-    version: 0.5.1(drizzle-orm@0.28.5)(zod@3.22.2)
+    version: 0.5.1(drizzle-orm@0.28.5)(zod@3.21.4)
   eslint:
     specifier: 8.48.0
     version: 8.48.0
@@ -74,6 +77,9 @@ dependencies:
   react-dom:
     specifier: 18.2.0
     version: 18.2.0(react@18.2.0)
+  react-hook-form:
+    specifier: ^7.46.1
+    version: 7.46.1(react@18.2.0)
   tailwind-merge:
     specifier: ^1.14.0
     version: 1.14.0
@@ -87,8 +93,8 @@ dependencies:
     specifier: 5.2.2
     version: 5.2.2
   zod:
-    specifier: ^3.22.2
-    version: 3.22.2
+    specifier: 3.21.4
+    version: 3.21.4
 
 devDependencies:
   '@next/env':
@@ -383,6 +389,14 @@ packages:
   /@eslint/js@8.48.0:
     resolution: {integrity: sha512-ZSjtmelB7IJfWD2Fvb7+Z+ChTIKWq6kjda95fLcQKNS5aheVHn4IkfgRQE3sIIzTcSLwLcLZUD9UBt+V7+h+Pw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    dev: false
+
+  /@hookform/resolvers@3.3.1(react-hook-form@7.46.1):
+    resolution: {integrity: sha512-K7KCKRKjymxIB90nHDQ7b9nli474ru99ZbqxiqDAWYsYhOsU3/4qLxW91y+1n04ic13ajjZ66L3aXbNef8PELQ==}
+    peerDependencies:
+      react-hook-form: ^7.0.0
+    dependencies:
+      react-hook-form: 7.46.1(react@18.2.0)
     dev: false
 
   /@humanwhocodes/config-array@0.11.11:
@@ -942,25 +956,25 @@ packages:
       tslib: 2.6.2
     dev: false
 
-  /@t3-oss/env-core@0.6.1(typescript@5.2.2)(zod@3.22.2):
+  /@t3-oss/env-core@0.6.1(typescript@5.2.2)(zod@3.21.4):
     resolution: {integrity: sha512-KQD7qEDJtkWIWWmTVjNvk0wnHpkvAQ6CRbUxbWMFNG/fiosBQDQvtRpBNu6USxBscJCoC4z6y7P9MN52/mLOzw==}
     peerDependencies:
       typescript: '>=4.7.2'
       zod: ^3.0.0
     dependencies:
       typescript: 5.2.2
-      zod: 3.22.2
+      zod: 3.21.4
     dev: false
 
-  /@t3-oss/env-nextjs@0.6.1(typescript@5.2.2)(zod@3.22.2):
+  /@t3-oss/env-nextjs@0.6.1(typescript@5.2.2)(zod@3.21.4):
     resolution: {integrity: sha512-z1dIC++Vxj9kmzX5nSPfcrCSkszy3dTEPC4Ssx7Ap5AqR3c2Qa7S0xf8axn6coy7D/vCXDAAnHYnCMDhtcY3SQ==}
     peerDependencies:
       typescript: '>=4.7.2'
       zod: ^3.0.0
     dependencies:
-      '@t3-oss/env-core': 0.6.1(typescript@5.2.2)(zod@3.22.2)
+      '@t3-oss/env-core': 0.6.1(typescript@5.2.2)(zod@3.21.4)
       typescript: 5.2.2
-      zod: 3.22.2
+      zod: 3.21.4
     dev: false
 
   /@tanstack/query-core@4.33.0:
@@ -1632,14 +1646,14 @@ packages:
       postgres: 3.3.5
     dev: false
 
-  /drizzle-zod@0.5.1(drizzle-orm@0.28.5)(zod@3.22.2):
+  /drizzle-zod@0.5.1(drizzle-orm@0.28.5)(zod@3.21.4):
     resolution: {integrity: sha512-C/8bvzUH/zSnVfwdSibOgFjLhtDtbKYmkbPbUCq46QZyZCH6kODIMSOgZ8R7rVjoI+tCj3k06MRJMDqsIeoS4A==}
     peerDependencies:
       drizzle-orm: '>=0.23.13'
       zod: '*'
     dependencies:
       drizzle-orm: 0.28.5(postgres@3.3.5)
-      zod: 3.22.2
+      zod: 3.21.4
     dev: false
 
   /electron-to-chromium@1.4.508:
@@ -3209,6 +3223,15 @@ packages:
       scheduler: 0.23.0
     dev: false
 
+  /react-hook-form@7.46.1(react@18.2.0):
+    resolution: {integrity: sha512-0GfI31LRTBd5tqbXMGXT1Rdsv3rnvy0FjEk8Gn9/4tp6+s77T7DPZuGEpBRXOauL+NhyGT5iaXzdIM2R6F/E+w==}
+    engines: {node: '>=12.22.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: false
@@ -3822,3 +3845,4 @@ packages:
 
   /zod@3.22.2:
     resolution: {integrity: sha512-wvWkphh5WQsJbVk1tbx1l1Ly4yg+XecD+Mq280uBGt9wa5BKSWf4Mhp6GmrkPixhMxmabYY7RbzlwVP32pbGCg==}
+    dev: true
