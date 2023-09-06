@@ -25,6 +25,7 @@ const Pagination = ({ limit, offset, setOffset }: Props) => {
                 variant="outline"
                 onClick={handlePrev}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-transparent p-0 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                disabled={offset === 0}
             >
                 <ChevronLeftIcon className="h-4 w-4" />
             </Button>
