@@ -24,3 +24,11 @@ export type Product = z.infer<typeof productSchema>;
 
 export type OrderStatus = z.infer<typeof orderSchema.shape.status>;
 export type MimeType = z.infer<typeof mediaSchema.shape.mimeType>;
+
+export const productWithMediaSchema = z.object({ ...productSchema.shape, src: mediaSchema.shape.src, mimeType: mediaSchema.shape.mimeType });
+export type ProductWithMedia = z.infer<typeof productWithMediaSchema>;
+
+export type CartItem = {
+    product: ProductWithMedia;
+    quantity: number;
+};

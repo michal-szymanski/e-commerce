@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
+import { productWithMediaSchema } from '@/types';
 import { z } from 'zod';
-import { productSchema, mediaSchema } from '@/types';
 
 export const useProducts = (limit: number, offset: number) =>
     useQuery({
@@ -14,9 +14,8 @@ export const useProducts = (limit: number, offset: number) =>
                     }
                 })
             ).json();
-            const schema = z.array(z.object({ ...productSchema.shape, src: mediaSchema.shape.src, mimeType: mediaSchema.shape.mimeType }));
-            //return response;
-            return schema.parse(response);
+
+            return z.array(productWithMediaSchema).parse(response);
         },
         keepPreviousData: true
     });
