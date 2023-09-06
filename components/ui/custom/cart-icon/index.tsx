@@ -12,7 +12,7 @@ const CartCounter = () => {
             <ShoppingCartIcon className="h-7 w-7" />
             <div
                 className={cn(
-                    'absolute right-[-5px] top-[-5px] flex h-4 w-4 items-center justify-center rounded-full bg-red-400 text-xs font-semibold text-white opacity-0',
+                    'absolute right-[-5px] top-[-5px] flex h-5 w-5 items-center justify-center rounded-full bg-red-400 text-xs font-semibold text-white opacity-0',
                     {
                         'opacity-100': numberOfProducts
                     }
