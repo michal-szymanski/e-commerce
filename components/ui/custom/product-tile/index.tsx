@@ -1,4 +1,4 @@
-import { Product, Media } from '@/types';
+import { ProductWithMedia } from '@/types';
 import Image from 'next/image';
 import Rating from '@/components/ui/custom/rating';
 import { getRandomValue } from '@/lib/utils';
@@ -6,7 +6,7 @@ import { addToCart } from '@/store/slices/order';
 import { useDispatch } from 'react-redux';
 
 type Props = {
-    product: Product & Pick<Media, 'src' | 'mimeType'>;
+    product: ProductWithMedia;
 };
 
 const ProductTile = ({ product }: Props) => {
