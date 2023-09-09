@@ -1,5 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { ProductWithMedia } from '@/types';
+import { z } from 'zod';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -14,3 +16,5 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
         timeout = setTimeout(() => func(...args), waitFor);
     };
 }
+
+export const getTotalPrice = (product: ProductWithMedia, quantity: number) => (z.coerce.number().parse(product.price) * quantity).toFixed(2);

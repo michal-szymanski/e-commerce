@@ -10,27 +10,33 @@ import { useDispatch } from 'react-redux';
 import { updateQuantity } from '@/store/slices/order';
 import { Button } from '@/components/ui/button';
 import { MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/20/solid';
+import { useEffect } from 'react';
+import { getTotalPrice } from '@/lib/utils';
 
 type Props = {
     product: ProductWithMedia;
-    quantity: number;
+    initialQuantity: number;
 };
 
 const formSchema = z.object({
     quantity: z.string()
 });
 
-const CartItem = ({ product, quantity }: Props) => {
+const CartItem = ({ product, initialQuantity }: Props) => {
     const dispatch = useDispatch();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            quantity: z.coerce.string().parse(quantity)
+            quantity: z.coerce.string().parse(initialQuantity)
         }
     });
 
     const currentQuantity = z.coerce.number().parse(form.watch().quantity);
+
+    useEffect(() => {
+        form.setValue('quantity', z.coerce.string().parse(initialQuantity));
+    }, [initialQuantity]);
 
     const transformInputToNumber = (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
@@ -47,12 +53,10 @@ const CartItem = ({ product, quantity }: Props) => {
         if (currentQuantity === 1) return;
 
         dispatch(updateQuantity({ productId: product.id, quantity: currentQuantity - 1 }));
-        form.setValue('quantity', z.coerce.string().parse(currentQuantity - 1));
     };
 
     const handlePlus = () => {
         dispatch(updateQuantity({ productId: product.id, quantity: currentQuantity + 1 }));
-        form.setValue('quantity', z.coerce.string().parse(currentQuantity + 1));
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement, Element>) => {
@@ -60,7 +64,7 @@ const CartItem = ({ product, quantity }: Props) => {
     };
 
     return (
-        <Card key={product.id} className="w-[500px]">
+        <Card className="w-[500px]">
             <CardHeader>
                 <CardTitle>{product.name}</CardTitle>
             </CardHeader>
@@ -100,6 +104,7 @@ const CartItem = ({ product, quantity }: Props) => {
                             <PlusIcon className="h-4 w-4" />
                         </Button>
                     </div>
+                    <span className="font-bold">{getTotalPrice(product, currentQuantity)} zł</span>
                 </div>
             </CardContent>
         </Card>
