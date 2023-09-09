@@ -35,10 +35,17 @@ export const orderSlice = createSlice({
             } else {
                 state.cart = state.cart.filter((c) => c.product.id !== existingCartItem.product.id);
             }
+        },
+        updateQuantity: (state, action: PayloadAction<{ productId: number; quantity: number }>) => {
+            const existingCartItem = state.cart.find((c) => c.product.id === action.payload.productId);
+
+            if (!existingCartItem) return;
+
+            existingCartItem.quantity = action.payload.quantity;
         }
     }
 });
 
-export const { addToCart } = orderSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity } = orderSlice.actions;
 
 export default orderSlice.reducer;
