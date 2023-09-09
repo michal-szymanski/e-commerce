@@ -26,7 +26,7 @@ const Navbar = () => {
                     </Link>
                 </NavigationMenuItem>
                 <SignedIn>
-                    <UserButton afterSignOutUrl="/" />
+                    <UserButton afterSignOutUrl="/" userProfileMode="navigation" userProfileUrl="/user-profile" />
                 </SignedIn>
                 <SignedOut>
                     <NavigationMenuItem>
