@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useDispatch } from 'react-redux';
-import { updateQuantity } from '@/store/slices/order';
+import { removeFromCart, updateQuantity } from '@/store/slices/order';
 import { Button } from '@/components/ui/button';
 import { MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { useEffect } from 'react';
@@ -63,8 +63,12 @@ const CartItem = ({ product, initialQuantity }: Props) => {
         dispatch(updateQuantity({ productId: product.id, quantity: z.coerce.number().parse(e.target.value) }));
     };
 
+    const handleRemove = () => {
+        dispatch(removeFromCart({ productId: product.id }));
+    };
+
     return (
-        <Card className="w-[500px]">
+        <Card className="w-[700px]">
             <CardHeader>
                 <CardTitle>{product.name}</CardTitle>
             </CardHeader>
@@ -105,6 +109,9 @@ const CartItem = ({ product, initialQuantity }: Props) => {
                         </Button>
                     </div>
                     <span className="font-bold">{getTotalPrice(product, currentQuantity)} zł</span>
+                    <Button variant="ghost" className="text-red-500 hover:bg-red-500 hover:text-white" onClick={handleRemove}>
+                        Remove
+                    </Button>
                 </div>
             </CardContent>
         </Card>

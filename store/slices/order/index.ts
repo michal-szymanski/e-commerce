@@ -25,16 +25,12 @@ export const orderSlice = createSlice({
                 });
             }
         },
-        removeFromCart: (state, action: PayloadAction<ProductWithMedia>) => {
-            const existingCartItem = state.cart.find((c) => c.product.id === action.payload.id);
+        removeFromCart: (state, action: PayloadAction<{ productId: number }>) => {
+            const existingCartItem = state.cart.find((c) => c.product.id === action.payload.productId);
 
             if (!existingCartItem) return;
 
-            if (existingCartItem.quantity > 1) {
-                existingCartItem.quantity -= 1;
-            } else {
-                state.cart = state.cart.filter((c) => c.product.id !== existingCartItem.product.id);
-            }
+            state.cart = state.cart.filter((c) => c.product.id !== existingCartItem.product.id);
         },
         updateQuantity: (state, action: PayloadAction<{ productId: number; quantity: number }>) => {
             const existingCartItem = state.cart.find((c) => c.product.id === action.payload.productId);
