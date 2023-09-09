@@ -1,6 +1,8 @@
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import Link from 'next/link';
 import CartCounter from '@/components/ui/custom/cart-icon';
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import { cn } from '@/lib/utils';
 
 const Navbar = () => {
     return (
@@ -23,16 +25,21 @@ const Navbar = () => {
                         </NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <Link href="/login" legacyBehavior passHref>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>Log in</NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <Link href="/register" legacyBehavior passHref>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>Register</NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
+                <SignedIn>
+                    <UserButton afterSignOutUrl="/" />
+                </SignedIn>
+                <SignedOut>
+                    <NavigationMenuItem>
+                        <SignUpButton redirectUrl="/">
+                            <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Sign Up</NavigationMenuLink>
+                        </SignUpButton>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                        <SignInButton redirectUrl="/">
+                            <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Sign In</NavigationMenuLink>
+                        </SignInButton>
+                    </NavigationMenuItem>
+                </SignedOut>
             </NavigationMenuList>
         </NavigationMenu>
     );

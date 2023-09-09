@@ -9,7 +9,7 @@ type Props = {
 const Rating = ({ value, count }: Props) => {
     return (
         <div className="flex gap-1">
-            <div className="flex font-medium text-amber-200">
+            <div className="flex text-amber-200">
                 {Array.from({ length: 5 }).map((_, v) =>
                     v < value ? <SolidStarIcon key={v} className="h-4 w-4 " /> : <OutlineStarIcon key={v} className="h-4 w-4" />
                 )}
