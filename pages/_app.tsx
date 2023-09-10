@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
 import { ClerkProvider } from '@clerk/nextjs';
+import CartFooter from '@/components/layouts/cart-footer';
 
 export default function App({ Component, pageProps }: AppProps) {
     const [queryClient] = useState(() => new QueryClient());
@@ -17,6 +18,7 @@ export default function App({ Component, pageProps }: AppProps) {
                     <Hydrate state={pageProps.dehydratedState}>
                         <Navbar />
                         <Component {...pageProps} />
+                        <CartFooter />
                     </Hydrate>
                 </QueryClientProvider>
             </Provider>
