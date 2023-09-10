@@ -10,8 +10,10 @@ import { orderLinesTable, ordersTable, productsTable } from '@/schema';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
+import { useRouter } from 'next/navigation';
 
 const orderWithTotalPriceSchema = z.object({
+    id: z.number(),
     date: z.string(),
     status: orderSchema.shape.status,
     totalPrice: z.string()
@@ -19,6 +21,10 @@ const orderWithTotalPriceSchema = z.object({
 
 export default function Page({ orders }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const columns: ColumnDef<z.infer<typeof orderWithTotalPriceSchema>>[] = [
+        {
+            accessorKey: 'id',
+            header: 'Id'
+        },
         {
             accessorKey: 'date',
             header: 'Date'
@@ -34,11 +40,19 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         }
     ];
 
+    const router = useRouter();
+
     const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
 
     return (
         <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={data} />
+            <DataTable
+                columns={columns}
+                data={data}
+                onRowClick={(row) => {
+                    router.push(`/orders/${row.getValue('id')}`);
+                }}
+            />
         </div>
     );
 }
@@ -62,6 +76,7 @@ export const getServerSideProps: GetServerSideProps<{
 
     const orders = await db
         .select({
+            id: ordersTable.id,
             date: ordersTable.date,
             status: ordersTable.status,
             totalPrice: sql`SUM(${productsTable.price})`
