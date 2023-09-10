@@ -101,7 +101,7 @@ export const getServerSideProps: GetServerSideProps<{
 
     await client.end();
 
-    const formattedOrders = z.array(orderWithTotalPriceSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date).toISOString() })));
+    const parsedOrders = z.array(orderWithTotalPriceSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date).toISOString() })));
 
-    return { props: { orders: formattedOrders } };
+    return { props: { orders: parsedOrders } };
 };
