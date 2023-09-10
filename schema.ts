@@ -51,7 +51,7 @@ export const orderStatusEnum = pgEnum('order_status', ['New', 'In Progress', 'Co
 
 export const orders = pgTable('orders', {
     id: serial('id').primaryKey(),
-    date: date('date', { mode: 'date' }).notNull(),
+    date: date('date', { mode: 'string' }).notNull(),
     status: orderStatusEnum('order_status').notNull(),
     userId: text('user_id').notNull()
 });

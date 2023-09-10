@@ -26,6 +26,11 @@ const Navbar = () => {
                     </Link>
                 </NavigationMenuItem>
                 <SignedIn>
+                    <NavigationMenuItem>
+                        <Link href="/orders" legacyBehavior passHref>
+                            <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Orders</NavigationMenuLink>
+                        </Link>
+                    </NavigationMenuItem>
                     <UserButton afterSignOutUrl="/" userProfileMode="navigation" userProfileUrl="/user-profile" />
                 </SignedIn>
                 <SignedOut>

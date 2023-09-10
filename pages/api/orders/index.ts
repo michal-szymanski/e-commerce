@@ -23,7 +23,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
         .insert(orders)
         .values({
             userId,
-            date: new Date(),
+            date: new Date().toISOString(),
             status: 'New'
         })
         .returning();
