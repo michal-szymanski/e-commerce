@@ -11,6 +11,7 @@ import { desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
@@ -20,6 +21,8 @@ const orderWithTotalPriceSchema = z.object({
 });
 
 export default function Page({ orders }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+    const router = useRouter();
+
     const columns: ColumnDef<z.infer<typeof orderWithTotalPriceSchema>>[] = [
         {
             accessorKey: 'id',
@@ -37,22 +40,30 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
             accessorKey: 'totalPrice',
             header: () => <div className="text-right">Total Price</div>,
             cell: ({ row }) => <div className="text-right font-medium">{row.getValue('totalPrice')}</div>
+        },
+        {
+            accessorKey: 'actions',
+            header: () => <div className="text-center">Actions</div>,
+            cell: ({ row }) => (
+                <div className="text-center">
+                    <Button
+                        variant="link"
+                        onClick={() => {
+                            router.push(`/orders/${row.getValue('id')}`);
+                        }}
+                    >
+                        Details
+                    </Button>
+                </div>
+            )
         }
     ];
-
-    const router = useRouter();
 
     const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
 
     return (
         <div className="container mx-auto py-10">
-            <DataTable
-                columns={columns}
-                data={data}
-                onRowClick={(row) => {
-                    router.push(`/orders/${row.getValue('id')}`);
-                }}
-            />
+            <DataTable columns={columns} data={data} />
         </div>
     );
 }
