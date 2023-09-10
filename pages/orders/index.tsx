@@ -7,7 +7,7 @@ import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
 import { orderLinesTable, ordersTable, productsTable } from '@/schema';
-import { eq, sql } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
@@ -86,7 +86,7 @@ export const getServerSideProps: GetServerSideProps<{
         .leftJoin(orderLinesTable, eq(ordersTable.id, orderLinesTable.orderId))
         .leftJoin(productsTable, eq(orderLinesTable.productId, productsTable.id))
         .groupBy(ordersTable.id)
-        .orderBy(ordersTable.id);
+        .orderBy(desc(ordersTable.id));
 
     await client.end();
 
