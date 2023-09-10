@@ -38,10 +38,13 @@ export const orderSlice = createSlice({
             if (!existingCartItem) return;
 
             existingCartItem.quantity = action.payload.quantity;
+        },
+        clearCart: (state) => {
+            state.cart = [];
         }
     }
 });
 
-export const { addToCart, removeFromCart, updateQuantity } = orderSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity, clearCart } = orderSlice.actions;
 
 export default orderSlice.reducer;

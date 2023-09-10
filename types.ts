@@ -28,7 +28,9 @@ export type MimeType = z.infer<typeof mediaSchema.shape.mimeType>;
 export const productWithMediaSchema = z.object({ ...productSchema.shape, src: mediaSchema.shape.src, mimeType: mediaSchema.shape.mimeType });
 export type ProductWithMedia = z.infer<typeof productWithMediaSchema>;
 
-export type CartItem = {
-    product: ProductWithMedia;
-    quantity: number;
-};
+export const cartItemSchema = z.object({
+    product: productWithMediaSchema,
+    quantity: z.number().min(1)
+});
+
+export type CartItem = z.infer<typeof cartItemSchema>;

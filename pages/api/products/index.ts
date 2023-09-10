@@ -10,7 +10,7 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
     const limit = z.coerce.number().parse(req.query.limit);
     const offset = z.coerce.number().parse(req.query.offset);
 
-    const client = postgres(env.CONNECTION_STRING, {});
+    const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
     const data = await db
