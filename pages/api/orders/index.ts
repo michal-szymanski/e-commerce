@@ -19,20 +19,22 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
-    const orderResults = await db
-        .insert(ordersTable)
-        .values({
-            userId,
-            date: new Date().toISOString(),
-            status: 'New'
-        })
-        .returning();
+    const order = (
+        await db
+            .insert(ordersTable)
+            .values({
+                userId,
+                date: new Date().toISOString(),
+                status: 'New'
+            })
+            .returning()
+    )[0];
 
-    const orderLinesResults = await db
+    const orderLines = await db
         .insert(orderLinesTable)
         .values(
             cart.map((c) => ({
-                orderId: orderResults[0].id,
+                orderId: order.id,
                 productId: c.product.id,
                 quantity: z.coerce.string().parse(c.quantity)
             }))
@@ -41,7 +43,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
 
     await client.end();
 
-    res.status(200).json({ order: orderResults[0], orderLines: orderLinesResults });
+    res.status(200).json({ order, orderLines });
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
