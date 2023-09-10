@@ -79,7 +79,7 @@ export const getServerSideProps: GetServerSideProps<{
             id: ordersTable.id,
             date: ordersTable.date,
             status: ordersTable.status,
-            totalPrice: sql`SUM(${productsTable.price})`
+            totalPrice: sql`SUM(ROUND(${productsTable.price} * ${orderLinesTable.quantity}, 2))`
         })
         .from(ordersTable)
         .where(eq(ordersTable.userId, userId))
