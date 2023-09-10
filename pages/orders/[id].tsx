@@ -12,7 +12,8 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 
 const orderLineWithProduct = z.object({
     productId: z.number(),
@@ -77,8 +78,10 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
                 </CardHeader>
                 <CardContent>
                     <CardDescription>{formattedOrder.date}</CardDescription>
-                    <div>{formattedOrder.status}</div>
                 </CardContent>
+                <CardFooter>
+                    <OrderStatusBadge status={formattedOrder.status} />
+                </CardFooter>
             </Card>
             <DataTable columns={columns} data={orderLines} />
         </div>

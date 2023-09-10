@@ -12,6 +12,7 @@ import { z } from 'zod';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
@@ -34,7 +35,8 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         },
         {
             accessorKey: 'status',
-            header: 'Status'
+            header: 'Status',
+            cell: ({ row }) => <OrderStatusBadge status={row.getValue('status')} />
         },
         {
             accessorKey: 'totalPrice',
