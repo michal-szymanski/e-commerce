@@ -29,7 +29,8 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         },
         {
             accessorKey: 'totalPrice',
-            header: 'Total Price'
+            header: () => <div className="text-right">Total Price</div>,
+            cell: ({ row }) => <div className="text-right font-medium">{row.getValue('totalPrice')}</div>
         }
     ];
 
