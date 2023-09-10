@@ -1,25 +1,35 @@
 import { DataTable } from '@/components/ui/data-table';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { Order, orderSchema } from '@/types';
+import { orderSchema } from '@/types';
 import { ColumnDef } from '@tanstack/react-table';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
-import { ordersTable } from '@/schema';
-import { eq } from 'drizzle-orm';
+import { orderLinesTable, ordersTable, productsTable } from '@/schema';
+import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
 
+const orderWithTotalPriceSchema = z.object({
+    date: z.string(),
+    status: orderSchema.shape.status,
+    totalPrice: z.string()
+});
+
 export default function Page({ orders }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    const columns: ColumnDef<Order>[] = [
+    const columns: ColumnDef<z.infer<typeof orderWithTotalPriceSchema>>[] = [
+        {
+            accessorKey: 'date',
+            header: 'Date'
+        },
         {
             accessorKey: 'status',
             header: 'Status'
         },
         {
-            accessorKey: 'date',
-            header: 'Date'
+            accessorKey: 'totalPrice',
+            header: 'Total Price'
         }
     ];
 
@@ -33,7 +43,7 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
 }
 
 export const getServerSideProps: GetServerSideProps<{
-    orders: Order[];
+    orders: z.infer<typeof orderWithTotalPriceSchema>[];
 }> = async (context) => {
     const { userId } = getAuth(context.req);
 
@@ -49,10 +59,22 @@ export const getServerSideProps: GetServerSideProps<{
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
-    const orders = await db.select().from(ordersTable).where(eq(ordersTable.userId, userId));
+    const orders = await db
+        .select({
+            date: ordersTable.date,
+            status: ordersTable.status,
+            totalPrice: sql`SUM(${productsTable.price})`
+        })
+        .from(ordersTable)
+        .where(eq(ordersTable.userId, userId))
+        .leftJoin(orderLinesTable, eq(ordersTable.id, orderLinesTable.orderId))
+        .leftJoin(productsTable, eq(orderLinesTable.productId, productsTable.id))
+        .groupBy(ordersTable.id)
+        .orderBy(ordersTable.id);
+
     await client.end();
 
-    const formattedOrders = z.array(orderSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date).toISOString() })));
+    const formattedOrders = z.array(orderWithTotalPriceSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date).toISOString() })));
 
     return { props: { orders: formattedOrders } };
 };
