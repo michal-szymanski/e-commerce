@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { orderLines, orders } from '@/schema';
+import { orderLinesTable, ordersTable } from '@/schema';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -20,7 +20,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
     const db = drizzle(client);
 
     const orderResults = await db
-        .insert(orders)
+        .insert(ordersTable)
         .values({
             userId,
             date: new Date().toISOString(),
@@ -29,7 +29,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
         .returning();
 
     const orderLinesResults = await db
-        .insert(orderLines)
+        .insert(orderLinesTable)
         .values(
             cart.map((c) => ({
                 orderId: orderResults[0].id,

@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { loadEnvConfig } from '@next/env';
-import { categories, media, products } from './schema';
+import { categoriesTable, mediaTable, productsTable } from './schema';
 import { MimeType } from '@/types';
 
 loadEnvConfig(process.cwd());
@@ -20,7 +20,7 @@ const seedDatabase = async () => {
         console.log('\r\nSeeding.\r\n');
 
         await db
-            .insert(categories)
+            .insert(categoriesTable)
             .values([
                 { id: 1, name: 'Food' },
                 { id: 2, name: 'Electronics' }
@@ -35,7 +35,7 @@ const seedDatabase = async () => {
             price: '0.99'
         }));
 
-        await db.insert(products).values(testProducts).onConflictDoNothing();
+        await db.insert(productsTable).values(testProducts).onConflictDoNothing();
 
         const testMedia = Array.from({ length: 100 }, (_, k) => ({
             id: k + 1,
@@ -44,7 +44,7 @@ const seedDatabase = async () => {
             productId: k + 1
         }));
 
-        await db.insert(media).values(testMedia).onConflictDoNothing();
+        await db.insert(mediaTable).values(testMedia).onConflictDoNothing();
 
         console.log('\r\n✅ Done seeding.\r\n');
         process.exit();

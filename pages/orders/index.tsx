@@ -6,10 +6,11 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
-import { orders } from '@/schema';
+import { ordersTable } from '@/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
+
 export default function Page({ orders }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const columns: ColumnDef<Order>[] = [
         {
@@ -22,7 +23,7 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         }
     ];
 
-    const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD.MM.YYYY') }));
+    const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
 
     return (
         <div className="container mx-auto py-10">
@@ -48,9 +49,10 @@ export const getServerSideProps: GetServerSideProps<{
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
-    const result = await db.select().from(orders).where(eq(orders.userId, userId));
+    const orders = await db.select().from(ordersTable).where(eq(ordersTable.userId, userId));
     await client.end();
 
-    const data = z.array(orderSchema).parse(result.map((row) => ({ ...row, date: new Date(row.date).toISOString() })));
-    return { props: { orders: data } };
+    const formattedOrders = z.array(orderSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date).toISOString() })));
+
+    return { props: { orders: formattedOrders } };
 };

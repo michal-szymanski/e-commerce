@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { env } from '@/env.mjs';
-import { media, products } from '@/schema';
+import { mediaTable, productsTable } from '@/schema';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 
@@ -13,25 +13,25 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
-    const data = await db
+    const products = await db
         .select({
-            id: products.id,
-            name: products.name,
-            description: products.description,
-            categoryId: products.categoryId,
-            price: products.price,
-            src: media.src,
-            mimeType: media.mimeType
+            id: productsTable.id,
+            name: productsTable.name,
+            description: productsTable.description,
+            categoryId: productsTable.categoryId,
+            price: productsTable.price,
+            src: mediaTable.src,
+            mimeType: mediaTable.mimeType
         })
-        .from(products)
-        .orderBy(products.id)
+        .from(productsTable)
+        .orderBy(productsTable.id)
         .limit(limit)
         .offset(offset)
-        .leftJoin(media, eq(products.id, media.productId));
+        .leftJoin(mediaTable, eq(productsTable.id, mediaTable.productId));
 
     await client.end();
 
-    res.status(200).json(data);
+    res.status(200).json(products);
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

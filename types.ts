@@ -1,25 +1,25 @@
-import { categories, orders, orderLines, media, products } from '@/schema';
+import { categoriesTable, ordersTable, orderLinesTable, mediaTable, productsTable } from '@/schema';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
-export const categorySchema = createSelectSchema(categories);
-export const newCategorySchema = createInsertSchema(categories);
+export const categorySchema = createSelectSchema(categoriesTable);
+export const newCategorySchema = createInsertSchema(categoriesTable);
 export type Category = z.infer<typeof categorySchema>;
 
-export const orderSchema = createSelectSchema(orders);
-export const newOrderSchema = createInsertSchema(orders);
+export const orderSchema = createSelectSchema(ordersTable);
+export const newOrderSchema = createInsertSchema(ordersTable);
 export type Order = z.infer<typeof orderSchema>;
 
-export const orderLineSchema = createSelectSchema(orderLines);
-export const newOrderLineSchema = createInsertSchema(orderLines);
+export const orderLineSchema = createSelectSchema(orderLinesTable);
+export const newOrderLineSchema = createInsertSchema(orderLinesTable);
 export type OrderLine = z.infer<typeof orderLineSchema>;
 
-export const mediaSchema = createSelectSchema(media);
-export const newMediaSchema = createInsertSchema(media);
+export const mediaSchema = createSelectSchema(mediaTable);
+export const newMediaSchema = createInsertSchema(mediaTable);
 export type Media = z.infer<typeof mediaSchema>;
 
-export const productSchema = createSelectSchema(products);
-export const newProductSchema = createInsertSchema(products);
+export const productSchema = createSelectSchema(productsTable);
+export const newProductSchema = createInsertSchema(productsTable);
 export type Product = z.infer<typeof productSchema>;
 
 export type OrderStatus = z.infer<typeof orderSchema.shape.status>;
