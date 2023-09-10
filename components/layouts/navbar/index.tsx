@@ -1,7 +1,7 @@
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import Link from 'next/link';
 import CartCounter from '@/components/ui/custom/cart-icon';
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs';
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
@@ -30,14 +30,14 @@ const Navbar = () => {
                 </SignedIn>
                 <SignedOut>
                     <NavigationMenuItem>
-                        <SignUpButton redirectUrl="/">
+                        <Link href={'/sign-up'} legacyBehavior passHref>
                             <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Sign Up</NavigationMenuLink>
-                        </SignUpButton>
+                        </Link>
                     </NavigationMenuItem>
                     <NavigationMenuItem>
-                        <SignInButton redirectUrl="/">
+                        <Link href={'/sign-in'} legacyBehavior passHref>
                             <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Sign In</NavigationMenuLink>
-                        </SignInButton>
+                        </Link>
                     </NavigationMenuItem>
                 </SignedOut>
             </NavigationMenuList>
