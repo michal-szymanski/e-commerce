@@ -3,10 +3,12 @@ import Link from 'next/link';
 import CartCounter from '@/components/ui/custom/cart-icon';
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
+import SearchBar from '@/components/ui/custom/search-bar';
 
 const Navbar = () => {
     return (
-        <NavigationMenu className="max-w-[100%] justify-between p-3">
+        <NavigationMenu className="relative max-w-[100%] justify-between p-3">
+            <SearchBar className="absolute left-1/2 top-5 h-auto w-[600px] -translate-x-1/2 rounded-lg border shadow-md" />
             <NavigationMenuList>
                 <NavigationMenuItem>
                     <Link href="/" legacyBehavior passHref>
