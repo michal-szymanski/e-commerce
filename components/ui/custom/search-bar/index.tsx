@@ -1,5 +1,5 @@
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
-import { ElementRef, HTMLAttributes, useCallback, useEffect, useState, FocusEvent } from 'react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { ElementRef, HTMLAttributes, useCallback, useEffect, useState, KeyboardEvent } from 'react';
 import { useSearchProducts } from '@/hooks/queries';
 import { debounce } from '@/lib/utils';
 import { useRouter } from 'next/router';
@@ -33,11 +33,11 @@ const SearchBar = ({ initialSearch, className }: Props) => {
         handleSearch(value);
     }, [value, handleSearch, initialSearch]);
 
-    const handleSelect = async (item: { id: number; name: string }) => {
-        const url = `/products?search=${encodeURIComponent(item.name)}`;
+    const handleSelect = async (search: string) => {
+        const url = `/products${search ? '?search=' + encodeURIComponent(search) : ''}`;
 
         if (url === router.asPath) {
-            setValue(item.name);
+            setValue(search);
             setIsVisible(false);
             return;
         }
@@ -45,18 +45,24 @@ const SearchBar = ({ initialSearch, className }: Props) => {
         await router.push(url);
     };
 
+    const handleKeyDown = async (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            await handleSelect(value);
+        }
+    };
+
     const isSearchResult = !!data?.length;
 
     return (
         <Command className={className} shouldFilter={false}>
-            <CommandInput placeholder="What are you looking for?" value={value} onValueChange={setValue} />
+            <CommandInput placeholder="What are you looking for?" value={value} onValueChange={setValue} onKeyDown={handleKeyDown} />
             {isVisible && (
                 <CommandList>
                     {!isSearchResult && <CommandEmpty>No results found.</CommandEmpty>}
                     {isSearchResult && (
                         <CommandGroup>
                             {data.map((item) => (
-                                <CommandItem key={item.id} onSelect={() => handleSelect(item)} onClick={() => handleSelect(item)} role="button">
+                                <CommandItem key={item.id} onSelect={() => handleSelect(item.name)} onClick={() => handleSelect(item.name)}>
                                     {item.name}
                                 </CommandItem>
                             ))}
