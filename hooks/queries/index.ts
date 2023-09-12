@@ -2,12 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { productWithMediaSchema } from '@/types';
 import { z } from 'zod';
 
-export const useProducts = (limit: number, offset: number) =>
+export const useProducts = (search: string, limit: number, offset: number) =>
     useQuery({
-        queryKey: ['products', limit, offset],
+        queryKey: ['products', search, limit, offset],
         queryFn: async () => {
             const response = await (
-                await fetch(`/api/products?limit=${limit}&offset=${offset}`, {
+                await fetch(`/api/products?search=${search}&limit=${limit}&offset=${offset}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'

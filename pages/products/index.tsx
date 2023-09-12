@@ -1,18 +1,27 @@
 import Sidebar from '@/components/layouts/sidebar';
 import Pagination from '@/components/ui/custom/pagination';
 import ProductTile from '@/components/ui/custom/product-tile';
-import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { ProductWithMedia, productWithMediaSchema } from '@/types';
+import { GetServerSideProps } from 'next';
+import { productWithMediaSchema } from '@/types';
 import { z } from 'zod';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { mediaTable, productsTable } from '@/schema';
 import { eq, ilike } from 'drizzle-orm';
+import { dehydrate, DehydratedState, QueryClient, useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
+import { useProducts } from '@/hooks/queries';
 
-export default ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+export default () => {
+    const searchParams = useSearchParams();
+    const search = searchParams.get('search') ?? '';
+    const limit = Number(searchParams.get('limit') ?? 10);
+    const offset = Number(searchParams.get('offset') ?? 0);
+    const { data: products } = useProducts(search, limit, offset);
+
     const renderProducts = () => {
-        if (!products.length) {
+        if (!products?.length) {
             return <div>No items</div>;
         }
 
@@ -34,7 +43,7 @@ export default ({ products }: InferGetServerSidePropsType<typeof getServerSidePr
     );
 };
 
-export const getServerSideProps: GetServerSideProps<{ products: ProductWithMedia[] }> = async (context) => {
+export const getServerSideProps: GetServerSideProps<{ dehydratedState: DehydratedState }> = async (context) => {
     const parsedSearch = z.string().safeParse(context.query.search);
     const parsedLimit = z.coerce.number().min(0).max(100).safeParse(context.query.limit);
     const parsedOffset = z.coerce.number().min(0).safeParse(context.query.offset);
@@ -43,33 +52,37 @@ export const getServerSideProps: GetServerSideProps<{ products: ProductWithMedia
     const limit = parsedLimit.success ? parsedLimit.data : 10;
     const offset = parsedOffset.success ? parsedOffset.data : 0;
 
-    const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client);
+    const queryClient = new QueryClient();
 
-    const products = await db
-        .select({
-            id: productsTable.id,
-            name: productsTable.name,
-            description: productsTable.description,
-            categoryId: productsTable.categoryId,
-            price: productsTable.price,
-            src: mediaTable.src,
-            mimeType: mediaTable.mimeType
-        })
-        .from(productsTable)
-        .where(ilike(productsTable.name, `%${search}%`))
-        .orderBy(productsTable.name)
-        .limit(limit)
-        .offset(offset)
-        .leftJoin(mediaTable, eq(productsTable.id, mediaTable.productId));
+    await queryClient.prefetchQuery(['products', search, limit, offset], async () => {
+        const client = postgres(env.CONNECTION_STRING);
+        const db = drizzle(client);
 
-    await client.end();
+        const products = await db
+            .select({
+                id: productsTable.id,
+                name: productsTable.name,
+                description: productsTable.description,
+                categoryId: productsTable.categoryId,
+                price: productsTable.price,
+                src: mediaTable.src,
+                mimeType: mediaTable.mimeType
+            })
+            .from(productsTable)
+            .where(ilike(productsTable.name, `%${search}%`))
+            .orderBy(productsTable.name)
+            .limit(limit)
+            .offset(offset)
+            .leftJoin(mediaTable, eq(productsTable.id, mediaTable.productId));
 
-    const parsedProducts = z.array(productWithMediaSchema).parse(products);
+        await client.end();
+
+        return z.array(productWithMediaSchema).parse(products);
+    });
 
     return {
         props: {
-            products: parsedProducts
+            dehydratedState: dehydrate(queryClient)
         }
     };
 };
