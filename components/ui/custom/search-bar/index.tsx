@@ -12,7 +12,7 @@ const SearchBar = ({ initialSearch, className }: Props) => {
     const router = useRouter();
     const [value, setValue] = useState('');
     const [debouncedValue, setDebouncedValue] = useState('');
-    const { data, isFetched } = useSearchProducts(debouncedValue);
+    const { data } = useSearchProducts(debouncedValue);
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -45,13 +45,15 @@ const SearchBar = ({ initialSearch, className }: Props) => {
         await router.push(url);
     };
 
+    const isDataToDisplay = !!data && data.length > 0;
+
     return (
         <Command className={className} shouldFilter={false}>
             <CommandInput placeholder="What are you looking for?" value={value} onValueChange={setValue} />
-            {isVisible && isFetched && (
+            {isVisible && (
                 <CommandList>
-                    {!data?.length && <CommandEmpty>No results found.</CommandEmpty>}
-                    {data?.length && (
+                    {!isDataToDisplay && <CommandEmpty>No results found.</CommandEmpty>}
+                    {isDataToDisplay && (
                         <CommandGroup>
                             {data.map((item) => (
                                 <CommandItem key={item.id} onSelect={() => handleSelect(item)} onClick={() => handleSelect(item)} role="button">
