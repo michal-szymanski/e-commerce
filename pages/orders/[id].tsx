@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 
@@ -57,8 +57,8 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
                 <div className="text-center">
                     <Button
                         variant="link"
-                        onClick={() => {
-                            router.push(`/products/${row.getValue('productId')}`);
+                        onClick={async () => {
+                            await router.push(`/products/${row.getValue('productId')}`);
                         }}
                     >
                         Product Page
@@ -69,20 +69,25 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
     ];
 
     const formattedOrder = { ...order, date: dayjs(order.date).format('DD/MM/YYYY HH:mm') };
-
+    const totalPrice = orderLines.reduce((acc, curr) => acc + +curr.totalPrice, 0);
     return (
         <div className="container mx-auto py-10">
-            <Card className="mb-10 w-[300px]">
-                <CardHeader>
-                    <CardTitle>Order {formattedOrder.id}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <CardDescription>{formattedOrder.date}</CardDescription>
-                </CardContent>
-                <CardFooter>
-                    <OrderStatusBadge status={formattedOrder.status} />
-                </CardFooter>
-            </Card>
+            <header className="mb-10 grid grid-cols-[300px_300px] gap-10">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Order {formattedOrder.id}</CardTitle>
+                        <CardDescription>{formattedOrder.date}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-lg">
+                            Total Price: <span className="font-semibold">{totalPrice}</span>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <OrderStatusBadge status={formattedOrder.status} />
+                    </CardFooter>
+                </Card>
+            </header>
             <DataTable columns={columns} data={orderLines} />
         </div>
     );

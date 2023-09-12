@@ -1,34 +1,67 @@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
-import { ElementRef, HTMLAttributes, useEffect, useState } from 'react';
+import { ElementRef, HTMLAttributes, useCallback, useEffect, useState, FocusEvent } from 'react';
+import { useSearchProducts } from '@/hooks/queries';
+import { debounce } from '@/lib/utils';
+import { useRouter } from 'next/router';
 
-const SearchBar = (props: HTMLAttributes<ElementRef<'div'>>) => {
+type Props = {
+    initialSearch: string;
+} & HTMLAttributes<ElementRef<'div'>>;
+
+const SearchBar = ({ initialSearch, className }: Props) => {
+    const router = useRouter();
     const [value, setValue] = useState('');
+    const [debouncedValue, setDebouncedValue] = useState('');
+    const { data, isFetched } = useSearchProducts(debouncedValue);
+    const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        console.log(value);
-    }, [value]);
+        setValue(initialSearch);
+    }, [initialSearch]);
+
+    const handleSearch = useCallback(
+        debounce(async (value: string) => {
+            setDebouncedValue(value);
+            setIsVisible(true);
+        }, 500),
+        []
+    );
+
+    useEffect(() => {
+        if (!value || initialSearch === value) return;
+
+        handleSearch(value);
+    }, [value, handleSearch, initialSearch]);
+
+    const handleSelect = async (item: { id: number; name: string }) => {
+        const url = `/products?search=${encodeURIComponent(item.name)}`;
+
+        if (url === router.asPath) {
+            setValue(item.name);
+            setIsVisible(false);
+            return;
+        }
+
+        await router.push(url);
+    };
 
     return (
-        <Command {...props} shouldFilter={false}>
+        <Command className={className} shouldFilter={false}>
             <CommandInput placeholder="What are you looking for?" value={value} onValueChange={setValue} />
-            <CommandList>
-                {/*<CommandEmpty>No results found.</CommandEmpty>*/}
-                {value && (
-                    <>
-                        <CommandGroup heading="Suggestions">
-                            <CommandItem>Calendar</CommandItem>
-                            <CommandItem>Search Emoji</CommandItem>
-                            <CommandItem>Calculator</CommandItem>
+            {isVisible && isFetched && (
+                <CommandList>
+                    {!data?.length && <CommandEmpty>No results found.</CommandEmpty>}
+                    {data?.length && (
+                        <CommandGroup>
+                            {data.map((item) => (
+                                <CommandItem key={item.id} onSelect={() => handleSelect(item)} onClick={() => handleSelect(item)} role="button">
+                                    {item.name}
+                                </CommandItem>
+                            ))}
                         </CommandGroup>
-                        <CommandSeparator />
-                        <CommandGroup heading="Settings">
-                            <CommandItem>Profile</CommandItem>
-                            <CommandItem>Billing</CommandItem>
-                            <CommandItem>Settings</CommandItem>
-                        </CommandGroup>
-                    </>
-                )}
-            </CommandList>
+                    )}
+                </CommandList>
+            )}
         </Command>
     );
 };

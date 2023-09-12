@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { cn, getTotalPrice } from '@/lib/utils';
 import { useCreateOrder } from '@/hooks/mutations';
 import { useDispatch, useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { RootState } from '@/store';
 
 const CartFooter = () => {
@@ -29,7 +29,7 @@ const CartFooter = () => {
                             dispatch(clearCart());
 
                             const { order } = await response.json();
-                            router.push(`/orders/${order.id}`);
+                            await router.push(`/orders/${order.id}`);
                         }
                     })
                 }

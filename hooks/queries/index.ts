@@ -19,3 +19,27 @@ export const useProducts = (limit: number, offset: number) =>
         },
         keepPreviousData: true
     });
+
+export const useSearchProducts = (value: string) =>
+    useQuery({
+        queryKey: ['search-products', value],
+        queryFn: async () => {
+            const response = await (
+                await fetch(`/api/products?search=${value}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ).json();
+
+            const searchSchema = z.object({
+                id: z.number(),
+                name: z.string()
+            });
+
+            return z.array(searchSchema).parse(response);
+        },
+        keepPreviousData: true,
+        enabled: !!value
+    });

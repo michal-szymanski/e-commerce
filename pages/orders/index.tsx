@@ -10,7 +10,7 @@ import { orderLinesTable, ordersTable, productsTable } from '@/schema';
 import { desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 
@@ -50,8 +50,8 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
                 <div className="text-center">
                     <Button
                         variant="link"
-                        onClick={() => {
-                            router.push(`/orders/${row.getValue('id')}`);
+                        onClick={async () => {
+                            await router.push(`/orders/${row.getValue('id')}`);
                         }}
                     >
                         Details
