@@ -14,7 +14,7 @@ const ProductTile = ({ product }: Props) => {
 
     return (
         <article
-            className="hover:shadow-product-tile flex cursor-pointer flex-col rounded-md bg-white p-5 transition-shadow"
+            className="flex cursor-pointer flex-col rounded-md bg-white p-5 transition-shadow hover:shadow-product-tile"
             onClick={() => dispatch(addToCart(product))}
             role="button"
             tabIndex={0}
@@ -22,7 +22,7 @@ const ProductTile = ({ product }: Props) => {
             <Image src={product.src} alt={product.name} width={200} height={200} />
             <header className="mt-3 flex flex-col gap-2 px-2">
                 <h3 className="font-semibold">{product.name}</h3>
-                <Rating value={getRandomValue(1, 5)} count={getRandomValue(1, 100)} />
+                <Rating value={3} count={99} />
                 <span className="size text-xl font-bold">{product.price} PLN</span>
             </header>
         </article>

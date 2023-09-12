@@ -1,24 +1,26 @@
 import { useState } from 'react';
-import { useProducts } from '@/hooks/queries';
 import Sidebar from '@/components/layouts/sidebar';
 import Pagination from '@/components/ui/custom/pagination';
 import ProductTile from '@/components/ui/custom/product-tile';
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import { ProductWithMedia, productWithMediaSchema } from '@/types';
+import { z } from 'zod';
+import postgres from 'postgres';
+import { env } from '@/env.mjs';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { mediaTable, productsTable } from '@/schema';
+import { eq, ilike, sql } from 'drizzle-orm';
 
-export default () => {
+export default ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [limit, setLimit] = useState(50);
     const [offset, setOffset] = useState(0);
 
-    const { data, isLoading } = useProducts(limit, offset);
     const renderProducts = () => {
-        if (isLoading) {
-            return <div>Loading</div>;
-        }
-
-        if (!data?.length) {
+        if (!products.length) {
             return <div>No items</div>;
         }
 
-        return data.map((product) => <ProductTile key={product.id} product={product} />);
+        return products.map((product) => <ProductTile key={product.id} product={product} />);
     };
 
     return (
@@ -34,4 +36,44 @@ export default () => {
             </div>
         </>
     );
+};
+
+export const getServerSideProps: GetServerSideProps<{ products: ProductWithMedia[] }> = async (context) => {
+    const parsedSearch = z.string().safeParse(context.query.search);
+    const parsedLimit = z.coerce.number().min(0).max(100).safeParse(context.query.limit);
+    const parsedOffset = z.coerce.number().min(0).safeParse(context.query.offset);
+
+    const search = parsedSearch.success ? parsedSearch.data : '';
+    const limit = parsedLimit.success ? parsedLimit.data : 10;
+    const offset = parsedOffset.success ? parsedOffset.data : 0;
+
+    const client = postgres(env.CONNECTION_STRING);
+    const db = drizzle(client);
+
+    const products = await db
+        .select({
+            id: productsTable.id,
+            name: productsTable.name,
+            description: productsTable.description,
+            categoryId: productsTable.categoryId,
+            price: productsTable.price,
+            src: mediaTable.src,
+            mimeType: mediaTable.mimeType
+        })
+        .from(productsTable)
+        .where(ilike(productsTable.name, `%${search}%`))
+        .orderBy(productsTable.name)
+        .limit(limit)
+        .offset(offset)
+        .leftJoin(mediaTable, eq(productsTable.id, mediaTable.productId));
+
+    await client.end();
+
+    const parsedProducts = z.array(productWithMediaSchema).parse(products);
+
+    return {
+        props: {
+            products: parsedProducts
+        }
+    };
 };
