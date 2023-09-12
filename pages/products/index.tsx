@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import Sidebar from '@/components/layouts/sidebar';
 import Pagination from '@/components/ui/custom/pagination';
 import ProductTile from '@/components/ui/custom/product-tile';
@@ -9,12 +8,9 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { mediaTable, productsTable } from '@/schema';
-import { eq, ilike, sql } from 'drizzle-orm';
+import { eq, ilike } from 'drizzle-orm';
 
 export default ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-    const [limit, setLimit] = useState(50);
-    const [offset, setOffset] = useState(0);
-
     const renderProducts = () => {
         if (!products.length) {
             return <div>No items</div>;
@@ -29,7 +25,7 @@ export default ({ products }: InferGetServerSidePropsType<typeof getServerSidePr
                 <Sidebar />
                 <main className="border-l pr-20">
                     <div className="mb-5 flex justify-end pr-5">
-                        <Pagination limit={limit} offset={offset} setOffset={setOffset} />
+                        <Pagination />
                     </div>
                     <div className="grid place-items-end gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">{renderProducts()}</div>
                 </main>
