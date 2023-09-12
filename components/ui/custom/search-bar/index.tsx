@@ -45,15 +45,15 @@ const SearchBar = ({ initialSearch, className }: Props) => {
         await router.push(url);
     };
 
-    const isDataToDisplay = !!data && data.length > 0;
+    const isSearchResult = !!data?.length;
 
     return (
         <Command className={className} shouldFilter={false}>
             <CommandInput placeholder="What are you looking for?" value={value} onValueChange={setValue} />
             {isVisible && (
                 <CommandList>
-                    {!isDataToDisplay && <CommandEmpty>No results found.</CommandEmpty>}
-                    {isDataToDisplay && (
+                    {!isSearchResult && <CommandEmpty>No results found.</CommandEmpty>}
+                    {isSearchResult && (
                         <CommandGroup>
                             {data.map((item) => (
                                 <CommandItem key={item.id} onSelect={() => handleSelect(item)} onClick={() => handleSelect(item)} role="button">
