@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/store';
 import { ClerkProvider } from '@clerk/nextjs';
 import Layout from '@/components/layouts/default-layout';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 export default function App({ Component, pageProps }: AppProps) {
     const [queryClient] = useState(() => new QueryClient());
@@ -18,6 +19,7 @@ export default function App({ Component, pageProps }: AppProps) {
                         <Layout>
                             <Component {...pageProps} />
                         </Layout>
+                        <ReactQueryDevtools initialIsOpen={false} />
                     </Hydrate>
                 </QueryClientProvider>
             </Provider>
