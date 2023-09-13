@@ -1,6 +1,6 @@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { ElementRef, HTMLAttributes, useCallback, useEffect, useState, KeyboardEvent } from 'react';
-import { useSearchProducts } from '@/hooks/queries';
+import { useProducts } from '@/hooks/queries';
 import { debounce } from '@/lib/utils';
 import { useRouter } from 'next/router';
 
@@ -12,7 +12,7 @@ const SearchBar = ({ initialSearch, className }: Props) => {
     const router = useRouter();
     const [value, setValue] = useState('');
     const [debouncedValue, setDebouncedValue] = useState('');
-    const { data } = useSearchProducts(debouncedValue);
+    const { data: products } = useProducts(debouncedValue, 10, 0, !!value);
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -51,7 +51,7 @@ const SearchBar = ({ initialSearch, className }: Props) => {
         }
     };
 
-    const isSearchResult = !!data?.length;
+    const isSearchResult = !!products?.length;
 
     return (
         <Command className={className} shouldFilter={false}>
@@ -61,9 +61,9 @@ const SearchBar = ({ initialSearch, className }: Props) => {
                     {!isSearchResult && <CommandEmpty>No results found.</CommandEmpty>}
                     {isSearchResult && (
                         <CommandGroup>
-                            {data.map((item) => (
-                                <CommandItem key={item.id} onSelect={() => handleSelect(item.name)} onClick={() => handleSelect(item.name)}>
-                                    {item.name}
+                            {products.map((p) => (
+                                <CommandItem key={p.id} onSelect={() => handleSelect(p.name)} onClick={() => handleSelect(p.name)}>
+                                    {p.name}
                                 </CommandItem>
                             ))}
                         </CommandGroup>

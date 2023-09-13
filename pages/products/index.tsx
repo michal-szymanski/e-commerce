@@ -2,16 +2,11 @@ import Sidebar from '@/components/layouts/sidebar';
 import Pagination from '@/components/ui/custom/pagination';
 import ProductTile from '@/components/ui/custom/product-tile';
 import { GetServerSideProps } from 'next';
-import { productWithMediaSchema } from '@/types';
 import { z } from 'zod';
-import postgres from 'postgres';
-import { env } from '@/env.mjs';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { mediaTable, productsTable } from '@/schema';
-import { eq, ilike } from 'drizzle-orm';
-import { dehydrate, DehydratedState, QueryClient, useQuery } from '@tanstack/react-query';
+import { dehydrate, DehydratedState, QueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useProducts } from '@/hooks/queries';
+import { getProducts } from '@/sql-service';
 
 export default () => {
     const searchParams = useSearchParams();
@@ -54,31 +49,7 @@ export const getServerSideProps: GetServerSideProps<{ dehydratedState: Dehydrate
 
     const queryClient = new QueryClient();
 
-    await queryClient.prefetchQuery(['products', search, limit, offset], async () => {
-        const client = postgres(env.CONNECTION_STRING);
-        const db = drizzle(client);
-
-        const products = await db
-            .select({
-                id: productsTable.id,
-                name: productsTable.name,
-                description: productsTable.description,
-                categoryId: productsTable.categoryId,
-                price: productsTable.price,
-                src: mediaTable.src,
-                mimeType: mediaTable.mimeType
-            })
-            .from(productsTable)
-            .where(ilike(productsTable.name, `%${search}%`))
-            .orderBy(productsTable.name)
-            .limit(limit)
-            .offset(offset)
-            .leftJoin(mediaTable, eq(productsTable.id, mediaTable.productId));
-
-        await client.end();
-
-        return z.array(productWithMediaSchema).parse(products);
-    });
+    await queryClient.prefetchQuery(['products', { search }, { limit }, { offset }], () => getProducts(search, limit, offset, 'ssr'));
 
     return {
         props: {
