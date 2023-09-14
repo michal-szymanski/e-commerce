@@ -11,9 +11,10 @@ import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/router';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
+import Link from 'next/link';
+import { getProductUrl } from '@/lib/utils';
 
 const orderLineWithProduct = z.object({
     productId: z.number(),
@@ -24,8 +25,6 @@ const orderLineWithProduct = z.object({
 });
 
 export default function Page({ order, orderLines }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    const router = useRouter();
-
     const columns: ColumnDef<z.infer<typeof orderLineWithProduct>>[] = [
         {
             accessorKey: 'productId',
@@ -55,14 +54,9 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
             header: () => <div className="text-center">Actions</div>,
             cell: ({ row }) => (
                 <div className="text-center">
-                    <Button
-                        variant="link"
-                        onClick={async () => {
-                            await router.push(`/products/${row.getValue('productId')}`);
-                        }}
-                    >
-                        Product Page
-                    </Button>
+                    <Link href={getProductUrl(row.getValue('productId'), row.getValue('productName'))}>
+                        <Button variant="link">Product Page</Button>
+                    </Link>
                 </div>
             )
         }

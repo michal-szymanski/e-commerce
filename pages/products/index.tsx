@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { getProducts } from '@/sql-service';
 import { ProductWithMedia } from '@/types';
 import Link from 'next/link';
+import { getProductUrl } from '@/lib/utils';
 
 export default ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
@@ -14,7 +15,7 @@ export default ({ products }: InferGetServerSidePropsType<typeof getServerSidePr
         }
 
         return products.map((product) => (
-            <Link key={product.id} href={`/products/${product.id}/${product.name.replace(/\s/g, '-')}`}>
+            <Link key={product.id} href={getProductUrl(product.id, product.name)}>
                 <ProductTile product={product} />
             </Link>
         ));
@@ -24,12 +25,12 @@ export default ({ products }: InferGetServerSidePropsType<typeof getServerSidePr
         <>
             <div className="grid grid-cols-sidebar grid-rows-1">
                 <Sidebar />
-                <main className="border-l pr-20">
+                <div className="border-l pr-20">
                     <div className="mb-5 flex justify-end pr-5">
                         <Pagination />
                     </div>
                     <div className="grid place-items-end gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">{renderProducts()}</div>
-                </main>
+                </div>
             </div>
         </>
     );

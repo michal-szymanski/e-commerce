@@ -11,7 +11,7 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
     const limit = parsedLimit.success ? parsedLimit.data : 10;
     const offset = parsedOffset.success ? parsedOffset.data : 0;
 
-    const products = await getProducts(search, limit, offset, 'api');
+    const products = await getProducts(search, limit, offset);
 
     res.status(200).json(products);
 };

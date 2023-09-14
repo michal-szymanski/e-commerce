@@ -9,7 +9,7 @@ type Props = {
 const Layout = ({ children }: Props) => (
     <>
         <Navbar />
-        {children}
+        <main className="py-12">{children}</main>
         <CartFooter />
     </>
 );

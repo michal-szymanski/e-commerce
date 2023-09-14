@@ -18,3 +18,5 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
 }
 
 export const getTotalPrice = (product: ProductWithMedia, quantity: number) => (z.coerce.number().parse(product.price) * quantity).toFixed(2);
+
+export const getProductUrl = (id: number, name: string) => `/products/${id}/${name.replace(/\s/g, '-')}`;
