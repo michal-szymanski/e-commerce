@@ -8,12 +8,18 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    const parsedId = z.coerce.number().parse(context.query.id);
-    const product = await getProduct(parsedId);
+    try {
+        const parsedId = z.coerce.number().parse(context.query.id);
+        const product = await getProduct(parsedId);
 
-    return {
-        props: {
-            product
-        }
-    };
+        return {
+            props: {
+                product
+            }
+        };
+    } catch {
+        return {
+            notFound: true
+        };
+    }
 };
