@@ -8,6 +8,12 @@ type Props = {
     initialSearch: string;
 } & HTMLAttributes<ElementRef<'div'>>;
 
+const passwordManagersProps = {
+    'data-np-intersection-state': '',
+    'data-np-disabled': 'true',
+    'data-lpignore': 'true'
+};
+
 const SearchBar = ({ initialSearch, className }: Props) => {
     const router = useRouter();
     const [value, setValue] = useState('');
@@ -55,7 +61,8 @@ const SearchBar = ({ initialSearch, className }: Props) => {
 
     return (
         <Command className={className} shouldFilter={false}>
-            <CommandInput placeholder="What are you looking for?" value={value} onValueChange={setValue} onKeyDown={handleKeyDown} />
+            <CommandInput placeholder="What are you looking for?" value={value} onValueChange={setValue} onKeyDown={handleKeyDown} {...passwordManagersProps} />
+
             {isVisible && (
                 <CommandList>
                     {!isSearchResult && <CommandEmpty>No results found.</CommandEmpty>}
