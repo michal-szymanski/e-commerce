@@ -1,26 +1,23 @@
 import Sidebar from '@/components/layouts/sidebar';
 import Pagination from '@/components/ui/custom/pagination';
 import ProductTile from '@/components/ui/custom/product-tile';
-import { GetServerSideProps } from 'next';
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
-import { dehydrate, DehydratedState, QueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'next/navigation';
-import { useProducts } from '@/hooks/queries';
 import { getProducts } from '@/sql-service';
+import { ProductWithMedia } from '@/types';
+import Link from 'next/link';
 
-export default () => {
-    const searchParams = useSearchParams();
-    const search = searchParams.get('search') ?? '';
-    const limit = Number(searchParams.get('limit') ?? 10);
-    const offset = Number(searchParams.get('offset') ?? 0);
-    const { data: products } = useProducts(search, limit, offset);
-
+export default ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
         if (!products?.length) {
             return <div>No items</div>;
         }
 
-        return products.map((product) => <ProductTile key={product.id} product={product} />);
+        return products.map((product) => (
+            <Link key={product.id} href={`/products/${product.id}/${product.name.replace(/\s/g, '-')}`}>
+                <ProductTile product={product} />
+            </Link>
+        ));
     };
 
     return (
@@ -38,7 +35,7 @@ export default () => {
     );
 };
 
-export const getServerSideProps: GetServerSideProps<{ dehydratedState: DehydratedState }> = async (context) => {
+export const getServerSideProps: GetServerSideProps<{ products: ProductWithMedia[] }> = async (context) => {
     const parsedSearch = z.string().safeParse(context.query.search);
     const parsedLimit = z.coerce.number().min(0).max(100).safeParse(context.query.limit);
     const parsedOffset = z.coerce.number().min(0).safeParse(context.query.offset);
@@ -47,13 +44,11 @@ export const getServerSideProps: GetServerSideProps<{ dehydratedState: Dehydrate
     const limit = parsedLimit.success ? parsedLimit.data : 10;
     const offset = parsedOffset.success ? parsedOffset.data : 0;
 
-    const queryClient = new QueryClient();
-
-    await queryClient.prefetchQuery(['products', { search }, { limit }, { offset }], () => getProducts(search, limit, offset, 'ssr'));
+    const products = await getProducts(search, limit, offset);
 
     return {
         props: {
-            dehydratedState: dehydrate(queryClient)
+            products
         }
     };
 };
