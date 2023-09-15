@@ -29,7 +29,7 @@ export const mediaRelations = relations(mediaTable, ({ one }) => ({
 }));
 
 export const productsTable = pgTable('products', {
-    id: serial('id').primaryKey(),
+    id: serial('id').primaryKey().notNull(),
     name: text('name').notNull(),
     description: text('description').notNull(),
     categoryId: integer('category_id')
@@ -47,17 +47,14 @@ export const productsRelations = relations(productsTable, ({ one, many }) => ({
     orders: many(ordersTable)
 }));
 
-export const orderStatusEnum = pgEnum('order_status', ['New', 'In Progress', 'Completed', 'Cancelled']);
-
 export const ordersTable = pgTable('orders', {
     id: serial('id').primaryKey(),
-    date: timestamp('date', { mode: 'string', withTimezone: true }).notNull(),
-    status: orderStatusEnum('order_status').notNull(),
     userId: text('user_id').notNull()
 });
 
 export const ordersRelations = relations(ordersTable, ({ many }) => ({
-    products: many(productsTable)
+    products: many(productsTable),
+    orderHistories: many(orderHistoriesTable)
 }));
 
 export const orderLinesTable = pgTable(
@@ -84,5 +81,23 @@ export const orderLinesRelations = relations(orderLinesTable, ({ one }) => ({
     product: one(productsTable, {
         fields: [orderLinesTable.productId],
         references: [productsTable.id]
+    })
+}));
+
+export const orderStatusEnum = pgEnum('order_status', ['New', 'Pending', 'In Progress', 'Completed', 'Cancelled']);
+
+export const orderHistoriesTable = pgTable('order_histories', {
+    id: serial('id').primaryKey(),
+    orderId: integer('order_id')
+        .notNull()
+        .references(() => ordersTable.id),
+    status: orderStatusEnum('order_status').notNull(),
+    date: timestamp('date', { mode: 'string', withTimezone: true }).notNull()
+});
+
+export const orderHistoriesRelations = relations(orderHistoriesTable, ({ one }) => ({
+    order: one(ordersTable, {
+        fields: [orderHistoriesTable.orderId],
+        references: [ordersTable.id]
     })
 }));

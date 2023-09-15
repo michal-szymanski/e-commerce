@@ -1,54 +1,35 @@
 import { ProductWithMedia } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch } from 'react-redux';
-import { removeFromCart, updateQuantity } from '@/store/slices/order';
+import { removeFromCart } from '@/store/slices/order';
 import { Button } from '@/components/ui/button';
 import { XMarkIcon } from '@heroicons/react/20/solid';
-import { useEffect } from 'react';
 import { getTotalPrice } from '@/lib/utils';
 import QuantityCounter from '@/components/ui/custom/quantity-counter';
+import { useUpdateCart } from '@/hooks/mutations';
 
 type Props = {
     product: ProductWithMedia;
-    initialQuantity: number;
+    quantity: number;
 };
 
-const formSchema = z.object({
-    quantity: z.string()
-});
-
-const CartItem = ({ product, initialQuantity }: Props) => {
+const CartItem = ({ product, quantity }: Props) => {
     const dispatch = useDispatch();
+    const updateCart = useUpdateCart();
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            quantity: z.coerce.string().parse(initialQuantity)
-        }
-    });
+    const handleMinus = async () => {
+        if (quantity === 1) return;
 
-    const currentQuantity = z.coerce.number().parse(form.watch().quantity);
-
-    useEffect(() => {
-        form.setValue('quantity', z.coerce.string().parse(initialQuantity));
-    }, [initialQuantity]);
-
-    const handleMinus = () => {
-        if (currentQuantity === 1) return;
-
-        dispatch(updateQuantity({ productId: product.id, quantity: currentQuantity - 1 }));
+        await updateCart.mutate([{ product, quantity: quantity - 1 }]);
     };
 
-    const handlePlus = () => {
-        dispatch(updateQuantity({ productId: product.id, quantity: currentQuantity + 1 }));
+    const handlePlus = async () => {
+        await updateCart.mutate([{ product, quantity: quantity + 1 }]);
     };
 
-    const handleBlur = (value: number) => {
-        dispatch(updateQuantity({ productId: product.id, quantity: value }));
+    const handleBlur = async (value: number) => {
+        await updateCart.mutate([{ product, quantity: value }]);
     };
 
     const handleRemove = () => {
@@ -67,8 +48,8 @@ const CartItem = ({ product, initialQuantity }: Props) => {
                     <span>
                         <XMarkIcon className="h-4 w-4" />
                     </span>
-                    <QuantityCounter initialQuantity={initialQuantity} handlePlus={handlePlus} handleMinus={handleMinus} handleBlur={handleBlur} />
-                    <span className="font-bold">{getTotalPrice(product, currentQuantity)} zł</span>
+                    <QuantityCounter initialQuantity={quantity} handlePlus={handlePlus} handleMinus={handleMinus} handleBlur={handleBlur} />
+                    <span className="font-bold">{getTotalPrice(product, quantity)} zł</span>
                     <Button variant="ghost" className="text-red-500 hover:bg-red-500 hover:text-white" onClick={handleRemove}>
                         Remove
                     </Button>

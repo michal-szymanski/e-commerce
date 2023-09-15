@@ -6,8 +6,8 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
-import { orderLinesTable, ordersTable, productsTable } from '@/schema';
-import { desc, eq, sql } from 'drizzle-orm';
+import { orderHistoriesTable, orderLinesTable, ordersTable, productsTable } from '@/schema';
+import { and, desc, eq, not, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
@@ -16,8 +16,8 @@ import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
-    date: z.string(),
-    status: orderSchema.shape.status,
+    // date: z.string(),
+    // status: orderSchema.shape.status,
     totalPrice: z.string()
 });
 
@@ -29,15 +29,15 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
             accessorKey: 'id',
             header: 'Id'
         },
-        {
-            accessorKey: 'date',
-            header: 'Date'
-        },
-        {
-            accessorKey: 'status',
-            header: 'Status',
-            cell: ({ row }) => <OrderStatusBadge status={row.getValue('status')} />
-        },
+        // {
+        //     accessorKey: 'date',
+        //     header: 'Date'
+        // },
+        // {
+        //     accessorKey: 'status',
+        //     header: 'Status',
+        //     cell: ({ row }) => <OrderStatusBadge status={row.getValue('status')} />
+        // },
         {
             accessorKey: 'totalPrice',
             header: () => <div className="text-right">Total Price</div>,
@@ -61,11 +61,11 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         }
     ];
 
-    const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
+    //const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
 
     return (
         <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={data} />
+            <DataTable columns={columns} data={orders} />
         </div>
     );
 }
@@ -90,20 +90,21 @@ export const getServerSideProps: GetServerSideProps<{
     const orders = await db
         .select({
             id: ordersTable.id,
-            date: ordersTable.date,
-            status: ordersTable.status,
+            // date: orderHistoriesTable.date,
+            // status: orderHistoriesTable.status,
             totalPrice: sql`SUM(ROUND(${productsTable.price} * ${orderLinesTable.quantity}, 2))`
         })
         .from(ordersTable)
-        .where(eq(ordersTable.userId, userId))
         .leftJoin(orderLinesTable, eq(ordersTable.id, orderLinesTable.orderId))
         .leftJoin(productsTable, eq(orderLinesTable.productId, productsTable.id))
+        .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
+        .where(and(eq(ordersTable.userId, userId), not(eq(orderHistoriesTable.status, 'New'))))
         .groupBy(ordersTable.id)
         .orderBy(desc(ordersTable.id));
 
     await client.end();
 
-    const parsedOrders = z.array(orderWithTotalPriceSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date).toISOString() })));
-
+    //const parsedOrders = z.array(orderWithTotalPriceSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date).toISOString() })));
+    const parsedOrders = z.array(orderWithTotalPriceSchema).parse(orders);
     return { props: { orders: parsedOrders } };
 };

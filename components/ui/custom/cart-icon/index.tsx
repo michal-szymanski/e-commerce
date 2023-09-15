@@ -1,11 +1,11 @@
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { useCart } from '@/hooks/queries';
 
 const CartCounter = () => {
-    const cart = useSelector((state: RootState) => state.order.cart);
-    const numberOfProducts = cart.reduce((acc, curr) => acc + curr.quantity, 0);
+    const { data: cart } = useCart();
+
+    const numberOfProducts = cart?.reduce((acc, curr) => acc + Number(curr.quantity), 0);
 
     return (
         <div className="relative">

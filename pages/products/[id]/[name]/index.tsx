@@ -1,19 +1,21 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import Image from 'next/image';
-import { QueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { getProduct } from '@/sql-service';
 import { ProductWithMedia } from '@/types';
 import { Button } from '@/components/ui/button';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '@/store/slices/order';
 import QuantityCounter from '@/components/ui/custom/quantity-counter';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUpdateCart } from '@/hooks/mutations';
+import { useCart } from '@/hooks/queries';
 
 export default ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-    const dispatch = useDispatch();
     const [quantity, setQuantity] = useState(1);
+    const { data: cart } = useCart();
+    const updateCart = useUpdateCart();
+    const cartItemQuantity = cart?.find((ol) => ol.product.id === product.id)?.quantity ?? 0;
 
     const handlePlus = () => {
         setQuantity((prev) => prev + 1);
@@ -45,7 +47,7 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
                                 <span className="text-lg font-semibold">Quantity:</span>
                                 <QuantityCounter initialQuantity={quantity} handlePlus={handlePlus} handleMinus={handleMinus} handleBlur={handleBlur} />
                             </div>
-                            <Button className="w-full" onClick={() => dispatch(addToCart({ product, quantity }))}>
+                            <Button className="w-full" onClick={() => updateCart.mutate([{ product, quantity: quantity + Number(cartItemQuantity) }])}>
                                 Add to cart
                             </Button>
                         </CardContent>

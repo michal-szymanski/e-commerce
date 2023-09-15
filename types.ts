@@ -1,4 +1,4 @@
-import { categoriesTable, ordersTable, orderLinesTable, mediaTable, productsTable } from '@/schema';
+import { categoriesTable, ordersTable, orderLinesTable, mediaTable, productsTable, orderHistoriesTable } from '@/schema';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -14,6 +14,9 @@ export const orderLineSchema = createSelectSchema(orderLinesTable);
 export const newOrderLineSchema = createInsertSchema(orderLinesTable);
 export type OrderLine = z.infer<typeof orderLineSchema>;
 
+export const orderHistorySchema = createSelectSchema(orderHistoriesTable);
+export type OrderHistory = z.infer<typeof orderHistorySchema>;
+
 export const mediaSchema = createSelectSchema(mediaTable);
 export const newMediaSchema = createInsertSchema(mediaTable);
 export type Media = z.infer<typeof mediaSchema>;
@@ -22,8 +25,12 @@ export const productSchema = createSelectSchema(productsTable);
 export const newProductSchema = createInsertSchema(productsTable);
 export type Product = z.infer<typeof productSchema>;
 
-export type OrderStatus = z.infer<typeof orderSchema.shape.status>;
-export type MimeType = z.infer<typeof mediaSchema.shape.mimeType>;
+export const orderStatusSchema = orderHistorySchema.shape.status;
+export type OrderStatus = z.infer<typeof orderStatusSchema>;
+
+export const mimeTypeSchema = mediaSchema.shape.mimeType;
+
+export type MimeType = z.infer<typeof mimeTypeSchema>;
 
 export const productWithMediaSchema = z.object({ ...productSchema.shape, src: mediaSchema.shape.src, mimeType: mediaSchema.shape.mimeType });
 export type ProductWithMedia = z.infer<typeof productWithMediaSchema>;
