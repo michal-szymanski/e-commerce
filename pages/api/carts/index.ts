@@ -36,7 +36,8 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
         .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
         .leftJoin(productsTable, eq(productsTable.id, orderLinesTable.productId))
         .leftJoin(mediaTable, eq(mediaTable.productId, productsTable.id))
-        .where(and(eq(ordersTable.userId, userId), eq(orderHistoriesTable.status, 'New')));
+        .where(and(eq(ordersTable.userId, userId), eq(orderHistoriesTable.status, 'New')))
+        .orderBy(orderLinesTable.productId);
 
     await client.end();
 
