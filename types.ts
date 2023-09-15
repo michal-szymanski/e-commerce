@@ -37,7 +37,7 @@ export type ProductWithMedia = z.infer<typeof productWithMediaSchema>;
 
 export const cartItemSchema = z.object({
     product: productWithMediaSchema,
-    quantity: z.number().min(1)
+    quantity: z.number().min(0)
 });
 
 export type CartItem = z.infer<typeof cartItemSchema>;

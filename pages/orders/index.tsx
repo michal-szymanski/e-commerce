@@ -1,6 +1,6 @@
 import { DataTable } from '@/components/ui/data-table';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { orderSchema } from '@/types';
+import { orderHistorySchema } from '@/types';
 import { ColumnDef } from '@tanstack/react-table';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
@@ -16,8 +16,8 @@ import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
-    // date: z.string(),
-    // status: orderSchema.shape.status,
+    date: z.string(),
+    status: orderHistorySchema.shape.status,
     totalPrice: z.string()
 });
 
@@ -29,15 +29,15 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
             accessorKey: 'id',
             header: 'Id'
         },
-        // {
-        //     accessorKey: 'date',
-        //     header: 'Date'
-        // },
-        // {
-        //     accessorKey: 'status',
-        //     header: 'Status',
-        //     cell: ({ row }) => <OrderStatusBadge status={row.getValue('status')} />
-        // },
+        {
+            accessorKey: 'date',
+            header: 'Date'
+        },
+        {
+            accessorKey: 'status',
+            header: 'Status',
+            cell: ({ row }) => <OrderStatusBadge status={row.getValue('status')} />
+        },
         {
             accessorKey: 'totalPrice',
             header: () => <div className="text-right">Total Price</div>,
@@ -61,11 +61,11 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         }
     ];
 
-    //const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
+    const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
 
     return (
         <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={orders} />
+            <DataTable columns={columns} data={data} />
         </div>
     );
 }
@@ -90,8 +90,8 @@ export const getServerSideProps: GetServerSideProps<{
     const orders = await db
         .select({
             id: ordersTable.id,
-            // date: orderHistoriesTable.date,
-            // status: orderHistoriesTable.status,
+            date: sql`min(${orderHistoriesTable.date})`,
+            status: sql`max(${orderHistoriesTable.date})`,
             totalPrice: sql`SUM(ROUND(${productsTable.price} * ${orderLinesTable.quantity}, 2))`
         })
         .from(ordersTable)
@@ -104,7 +104,7 @@ export const getServerSideProps: GetServerSideProps<{
 
     await client.end();
 
-    //const parsedOrders = z.array(orderWithTotalPriceSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date).toISOString() })));
-    const parsedOrders = z.array(orderWithTotalPriceSchema).parse(orders);
+    const parsedOrders = z.array(orderWithTotalPriceSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date as string).toISOString() })));
+
     return { props: { orders: parsedOrders } };
 };

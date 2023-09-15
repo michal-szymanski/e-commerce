@@ -26,7 +26,7 @@ export const useCart = () =>
         queryKey: ['order'],
         queryFn: async () => {
             const response = await (
-                await fetch('/api/orders', {
+                await fetch('/api/carts', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'

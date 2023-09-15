@@ -86,10 +86,14 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
 
         if (orderLines.length) {
             if (Number(orderLines[0].quantity) !== cartItem.quantity) {
-                await db
-                    .update(orderLinesTable)
-                    .set({ quantity: String(cartItem.quantity) })
-                    .where(and(eq(orderLinesTable.orderId, order.id), eq(orderLinesTable.productId, cartItem.product.id)));
+                if (cartItem.quantity > 0) {
+                    await db
+                        .update(orderLinesTable)
+                        .set({ quantity: String(cartItem.quantity) })
+                        .where(and(eq(orderLinesTable.orderId, order.id), eq(orderLinesTable.productId, cartItem.product.id)));
+                } else {
+                    await db.delete(orderLinesTable).where(and(eq(orderLinesTable.orderId, order.id), eq(orderLinesTable.productId, cartItem.product.id)));
+                }
             }
         } else {
             await db.insert(orderLinesTable).values({ orderId: order.id, quantity: String(cartItem.quantity), productId: cartItem.product.id });

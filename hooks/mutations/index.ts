@@ -1,15 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CartItem, cartItemSchema } from '@/types';
-import { z } from 'zod';
+import { CartItem } from '@/types';
 
 export const useUpdateCart = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (cart: CartItem[]) => {
-            const payload = JSON.stringify(z.array(cartItemSchema).parse(cart));
+            const payload = JSON.stringify(cart);
 
-            return fetch('/api/orders', {
+            return fetch('/api/carts', {
                 method: 'POST',
                 body: payload,
                 headers: {
@@ -21,9 +20,9 @@ export const useUpdateCart = () => {
             await queryClient.cancelQueries({ queryKey: ['order'] });
             const previousCart = queryClient.getQueryData(['order']) as CartItem[];
 
-            const newCart = [...previousCart.filter((pc) => !cart.some((c) => pc.product.id === c.product.id)), ...cart].sort((a, b) =>
-                a.product.id > b.product.id ? 1 : -1
-            );
+            const newCart = [...previousCart.filter((pc) => !cart.some((c) => pc.product.id === c.product.id)), ...cart]
+                .filter((c) => c.quantity)
+                .sort((a, b) => (a.product.id > b.product.id ? 1 : -1));
 
             queryClient.setQueryData(['order'], () => newCart);
 

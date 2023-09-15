@@ -32,8 +32,8 @@ const CartItem = ({ product, quantity }: Props) => {
         await updateCart.mutate([{ product, quantity: value }]);
     };
 
-    const handleRemove = () => {
-        dispatch(removeFromCart({ productId: product.id }));
+    const handleRemove = async () => {
+        await updateCart.mutate([{ product, quantity: 0 }]);
     };
 
     return (
