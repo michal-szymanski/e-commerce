@@ -1,13 +1,12 @@
 import { ProductWithMedia } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { useDispatch } from 'react-redux';
-import { removeFromCart } from '@/store/slices/order';
 import { Button } from '@/components/ui/button';
 import { XMarkIcon } from '@heroicons/react/20/solid';
-import { getTotalPrice } from '@/lib/utils';
+import { getProductUrl, getTotalPrice } from '@/lib/utils';
 import QuantityCounter from '@/components/ui/custom/quantity-counter';
 import { useUpdateCart } from '@/hooks/mutations';
+import Link from 'next/link';
 
 type Props = {
     product: ProductWithMedia;
@@ -15,7 +14,6 @@ type Props = {
 };
 
 const CartItem = ({ product, quantity }: Props) => {
-    const dispatch = useDispatch();
     const updateCart = useUpdateCart();
 
     const handleMinus = async () => {
@@ -39,7 +37,13 @@ const CartItem = ({ product, quantity }: Props) => {
     return (
         <Card className="w-[700px]">
             <CardHeader>
-                <CardTitle>{product.name}</CardTitle>
+                <CardTitle>
+                    <Link href={getProductUrl(product.id, product.name)}>
+                        <Button variant="link" className="p-0 text-2xl">
+                            {product.name}
+                        </Button>
+                    </Link>
+                </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center">
                 <Image src={product.src} alt={product.name} width={50} height={50} />

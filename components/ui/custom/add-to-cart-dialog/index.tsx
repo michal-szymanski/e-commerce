@@ -29,7 +29,6 @@ const AddToCartDialog = ({ open, setOpen, cartItem: { product, quantity } }: Pro
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogTrigger>Open</AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Added to cart</AlertDialogTitle>

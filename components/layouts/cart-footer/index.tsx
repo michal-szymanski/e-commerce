@@ -2,10 +2,24 @@ import { Button } from '@/components/ui/button';
 import { z } from 'zod';
 import { cn, getTotalPrice } from '@/lib/utils';
 import { useCart } from '@/hooks/queries';
+import { useRouter } from 'next/router';
 
 const CartFooter = () => {
     const { data: cart } = useCart();
     const totalPrice = cart?.reduce((acc, curr) => acc + z.coerce.number().parse(getTotalPrice(curr.product, curr.quantity)), 0).toFixed(2);
+    const router = useRouter();
+
+    const renderButton = () => {
+        if (router.asPath === '/cart') {
+            return <Button className="w-40">Buy</Button>;
+        }
+
+        return (
+            <Button className="w-40" onClick={() => router.push('/cart')}>
+                Go to cart
+            </Button>
+        );
+    };
 
     return (
         <footer
@@ -14,7 +28,7 @@ const CartFooter = () => {
             })}
         >
             <span className="text-2xl font-bold">{totalPrice} zł</span>
-            <Button className="w-40">Buy</Button>
+            {renderButton()}
         </footer>
     );
 };
