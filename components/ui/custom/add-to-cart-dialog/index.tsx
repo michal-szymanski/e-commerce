@@ -6,8 +6,7 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
+    AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/router';
 import { debounce, getTotalPrice } from '@/lib/utils';

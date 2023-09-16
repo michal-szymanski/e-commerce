@@ -1,12 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { createLogger } from 'redux-logger';
-import orderReducer from '@/store/slices/order';
-
-const logger = createLogger({});
+import { logger } from 'redux-logger';
+import uiReducer from '@/store/slices/ui';
 
 export const store = configureStore({
     reducer: {
-        order: orderReducer
+        ui: uiReducer
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
     devTools: process.env.NODE_ENV !== 'production'

@@ -10,12 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useUpdateCart } from '@/hooks/mutations';
 import { useCart } from '@/hooks/queries';
 import AddToCartDialog from '@/components/ui/custom/add-to-cart-dialog';
+import { useDispatch } from 'react-redux';
+import { setIsDialogOpen } from '@/store/slices/ui';
 
 export default ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [quantity, setQuantity] = useState(1);
     const { data: cart } = useCart();
     const updateCart = useUpdateCart();
     const [open, setOpen] = useState(false);
+    const dispatch = useDispatch();
 
     const cartItemQuantity = cart?.find((ol) => ol.product.id === product.id)?.quantity ?? 0;
 
@@ -29,6 +32,11 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
 
     const handleBlur = (value: number) => {
         setQuantity(value);
+    };
+
+    const handleOpenDialog = (isDialogOpen: boolean) => {
+        dispatch(setIsDialogOpen({ isDialogOpen }));
+        setOpen(isDialogOpen);
     };
 
     return (
@@ -53,7 +61,7 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
                                 <Button
                                     className="w-full"
                                     onClick={async () => {
-                                        setOpen(true);
+                                        handleOpenDialog(true);
                                         await updateCart.mutate([{ product, quantity: quantity + Number(cartItemQuantity) }]);
                                     }}
                                 >
@@ -64,7 +72,7 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
                     </div>
                 </article>
             </div>
-            <AddToCartDialog open={open} setOpen={setOpen} cartItem={{ product, quantity }} />
+            <AddToCartDialog open={open} setOpen={handleOpenDialog} cartItem={{ product, quantity }} />
         </>
     );
 };
