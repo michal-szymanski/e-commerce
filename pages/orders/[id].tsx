@@ -4,9 +4,9 @@ import { getAuth } from '@clerk/nextjs/server';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { orderLinesTable, ordersTable, productsTable } from '@/schema';
+import { orderHistoriesTable, orderLinesTable, ordersTable, productsTable } from '@/schema';
 import { and, eq, sql } from 'drizzle-orm';
-import { Order, orderSchema } from '@/types';
+import { OrderStatus, orderStatusSchema } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
@@ -62,7 +62,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
         }
     ];
 
-    const formattedOrder = { ...order, date: dayjs(order.date).format('DD/MM/YYYY HH:mm') };
+    const formattedOrder = { ...order, date: dayjs(order.date as string).format('DD/MM/YYYY HH:mm') };
     const totalPrice = orderLines.reduce((acc, curr) => acc + +curr.totalPrice, 0);
     return (
         <div className="container mx-auto py-10">
@@ -88,7 +88,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
 }
 
 export const getServerSideProps: GetServerSideProps<{
-    order: Order;
+    order: { id: number; date: string; status: OrderStatus };
     orderLines: z.infer<typeof orderLineWithProduct>[];
 }> = async (context) => {
     const { userId } = getAuth(context.req);
@@ -109,9 +109,15 @@ export const getServerSideProps: GetServerSideProps<{
 
     const order = (
         await db
-            .select()
+            .select({
+                id: ordersTable.id,
+                date: sql`min(${orderHistoriesTable.date})`,
+                status: sql`max(${orderHistoriesTable.status})`
+            })
             .from(ordersTable)
+            .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
             .where(and(eq(ordersTable.userId, userId), eq(ordersTable.id, orderId)))
+            .groupBy(ordersTable.id)
     )[0];
 
     const orderLines = await db
@@ -129,7 +135,13 @@ export const getServerSideProps: GetServerSideProps<{
 
     await client.end();
 
-    const parsedOrder = orderSchema.parse({ ...order, date: dayjs(order.date).toISOString() });
+    const parsedOrder = z
+        .object({
+            id: z.number(),
+            date: z.string(),
+            status: orderStatusSchema
+        })
+        .parse({ ...order, date: dayjs(order.date as Date).toISOString() });
     const parsedOrderLines = z.array(orderLineWithProduct).parse(orderLines);
 
     return { props: { order: parsedOrder, orderLines: parsedOrderLines } };

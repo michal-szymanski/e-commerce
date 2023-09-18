@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CartItem } from '@/types';
+import { z } from 'zod';
 
 export const useUpdateCart = () => {
     const queryClient = useQueryClient();
@@ -33,6 +34,29 @@ export const useUpdateCart = () => {
         },
         onSettled: async () => {
             await queryClient.invalidateQueries({ queryKey: ['order'] });
+        }
+    });
+};
+
+export const useCreateOrder = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async () => {
+            const response = await (
+                await fetch('/api/orders', {
+                    method: 'POST'
+                })
+            ).json();
+
+            return z
+                .object({
+                    orderId: z.number()
+                })
+                .parse(response);
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries(['order']);
         }
     });
 };

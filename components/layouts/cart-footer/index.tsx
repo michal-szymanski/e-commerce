@@ -5,16 +5,28 @@ import { useCart } from '@/hooks/queries';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { useCreateOrder } from '@/hooks/mutations';
 
 const CartFooter = () => {
     const { data: cart } = useCart();
     const totalPrice = cart?.reduce((acc, curr) => acc + z.coerce.number().parse(getTotalPrice(curr.product, curr.quantity)), 0).toFixed(2);
     const router = useRouter();
     const isDialogOpen = useSelector((state: RootState) => state.ui.isDialogOpen);
+    const createOrder = useCreateOrder();
 
     const renderButton = () => {
         if (router.asPath === '/cart') {
-            return <Button className="w-40">Buy</Button>;
+            return (
+                <Button
+                    className="w-40"
+                    onClick={async () => {
+                        const { orderId } = await createOrder.mutateAsync();
+                        await router.push(`/orders/${orderId}`);
+                    }}
+                >
+                    Buy
+                </Button>
+            );
         }
 
         return (

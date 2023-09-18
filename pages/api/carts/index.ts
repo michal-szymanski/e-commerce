@@ -4,9 +4,10 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { z } from 'zod';
-import { cartItemSchema, Order } from '@/types';
+import { cartItemSchema, Order, orderSchema } from '@/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
+import { getCartOrders } from '@/sql-service';
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     const { userId } = getAuth(req);
@@ -18,30 +19,39 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
-    const cartItems = await db
-        .select({
-            product: {
-                id: productsTable.id,
-                name: productsTable.name,
-                categoryId: productsTable.categoryId,
-                description: productsTable.description,
-                price: productsTable.price,
-                src: mediaTable.src,
-                mimeType: mediaTable.mimeType
-            },
-            quantity: orderLinesTable.quantity
-        })
-        .from(orderLinesTable)
-        .leftJoin(ordersTable, eq(ordersTable.id, orderLinesTable.orderId))
-        .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
-        .leftJoin(productsTable, eq(productsTable.id, orderLinesTable.productId))
-        .leftJoin(mediaTable, eq(mediaTable.productId, productsTable.id))
-        .where(and(eq(ordersTable.userId, userId), eq(orderHistoriesTable.status, 'New')))
-        .orderBy(orderLinesTable.productId);
+    const orders = await getCartOrders(db, userId);
+
+    const parsedOrders = z.array(orderSchema).length(1).safeParse(orders);
+
+    if (parsedOrders.success) {
+        const cartItems = await db
+            .select({
+                product: {
+                    id: productsTable.id,
+                    name: productsTable.name,
+                    categoryId: productsTable.categoryId,
+                    description: productsTable.description,
+                    price: productsTable.price,
+                    src: mediaTable.src,
+                    mimeType: mediaTable.mimeType
+                },
+                quantity: orderLinesTable.quantity
+            })
+            .from(orderLinesTable)
+            .leftJoin(ordersTable, eq(ordersTable.id, orderLinesTable.orderId))
+            .leftJoin(productsTable, eq(productsTable.id, orderLinesTable.productId))
+            .leftJoin(mediaTable, eq(mediaTable.productId, productsTable.id))
+            .where(eq(ordersTable.id, parsedOrders.data[0].id))
+            .orderBy(orderLinesTable.productId);
+
+        await client.end();
+
+        return res.status(200).json(cartItems.map((c) => ({ ...c, quantity: Number(c.quantity) })));
+    }
 
     await client.end();
 
-    res.status(200).json(cartItems.map((c) => ({ ...c, quantity: Number(c.quantity) })));
+    res.status(200).json([]);
 }
 
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
@@ -58,14 +68,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
 
     let order: Order;
 
-    const orders = await db
-        .select({
-            id: ordersTable.id,
-            userId: ordersTable.userId
-        })
-        .from(ordersTable)
-        .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
-        .where(and(eq(ordersTable.userId, userId), eq(orderHistoriesTable.status, 'New')));
+    const orders = await getCartOrders(db, userId);
 
     if (!orders.length) {
         order = (await db.insert(ordersTable).values({ userId }).returning())[0];

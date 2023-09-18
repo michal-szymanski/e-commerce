@@ -91,7 +91,7 @@ export const getServerSideProps: GetServerSideProps<{
         .select({
             id: ordersTable.id,
             date: sql`min(${orderHistoriesTable.date})`,
-            status: sql`max(${orderHistoriesTable.date})`,
+            status: sql`max(${orderHistoriesTable.status})`,
             totalPrice: sql`SUM(ROUND(${productsTable.price} * ${orderLinesTable.quantity}, 2))`
         })
         .from(ordersTable)
