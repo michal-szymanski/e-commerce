@@ -3,25 +3,38 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 import { useSearchParams } from 'next/navigation';
 
-const limit = 10;
+type Props = {
+    nextPage: string;
+};
 
-const Pagination = () => {
+const Pagination = ({ nextPage }: Props) => {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const search = searchParams.get('search') ?? '';
-    const offset = Number(searchParams.get('offset') ?? 0);
+    const name = searchParams.get('name') ?? '';
+    const page = searchParams.get('page') ?? '';
+    const prevPage = searchParams.get('prevPage') ?? '';
 
-    const pageNumber = 1 + offset / limit;
+    type QueryString = {
+        name?: string;
+        page?: string;
+        prevPage?: string;
+    };
 
     const handleNext = async () => {
-        const query: { search?: string; offset?: number } = {};
+        const query: QueryString = {};
 
-        if (search) {
-            query.search = search;
+        if (name) {
+            query.name = name;
         }
 
-        query.offset = offset + limit;
+        if (nextPage) {
+            query.page = nextPage;
+        }
+
+        if (page) {
+            query.prevPage = page;
+        }
 
         await router.push({
             pathname: '/products',
@@ -30,16 +43,14 @@ const Pagination = () => {
     };
 
     const handlePrev = async () => {
-        if (pageNumber === 1) return;
+        const query: QueryString = {};
 
-        const query: { search?: string; offset?: number } = {};
-
-        if (search) {
-            query.search = search;
+        if (name) {
+            query.name = name;
         }
 
-        if (pageNumber > 2) {
-            query.offset = offset - limit;
+        if (prevPage) {
+            query.page = prevPage;
         }
 
         await router.push({
@@ -50,12 +61,11 @@ const Pagination = () => {
 
     return (
         <div className="flex gap-3">
-            <span className="flex w-[100px] items-center justify-center text-sm font-medium">Page {pageNumber}</span>
             <Button
                 variant="outline"
                 onClick={handlePrev}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-transparent p-0 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                disabled={pageNumber === 1}
+                disabled={!page && !prevPage}
             >
                 <ChevronLeftIcon className="h-4 w-4" />
             </Button>
@@ -63,6 +73,7 @@ const Pagination = () => {
                 variant="outline"
                 onClick={handleNext}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-transparent p-0 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                disabled={!nextPage}
             >
                 <ChevronRightIcon className="h-4 w-4" />
             </Button>

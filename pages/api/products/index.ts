@@ -1,19 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { getProducts } from '@/sql-service';
+import stripe from '@/stripe';
+import { stripeSearchResultSchema } from '@/types';
 
 const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
-    const parsedSearch = z.string().safeParse(req.query.search);
+    const parsedName = z.string().safeParse(req.query.name);
     const parsedLimit = z.coerce.number().min(0).max(100).safeParse(req.query.limit);
-    const parsedOffset = z.coerce.number().min(0).safeParse(req.query.offset);
 
-    const search = parsedSearch.success ? parsedSearch.data : '';
+    const name = parsedName.success ? parsedName.data : '';
     const limit = parsedLimit.success ? parsedLimit.data : 10;
-    const offset = parsedOffset.success ? parsedOffset.data : 0;
 
-    const products = await getProducts(search, limit, offset);
+    const response = await stripe.products.search({
+        query: `active:\'true\'${name ? ` AND name~\'${name}\'` : ''}`,
+        limit
+    });
 
-    res.status(200).json(products);
+    const searchResult = stripeSearchResultSchema.parse(response);
+
+    res.status(200).json(searchResult);
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

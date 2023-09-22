@@ -1,19 +1,20 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { mediaTable, orderHistoriesTable, orderLinesTable, ordersTable, productsTable } from '@/schema';
+import { orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { z } from 'zod';
-import { cartItemSchema, Order, orderSchema } from '@/types';
+import { CartItem, cartItemSchema, Order, orderLineSchema, orderSchema, stripeProductSchema } from '@/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
 import { getCartOrders } from '@/sql-service';
+import stripe from '@/stripe';
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     const { userId } = getAuth(req);
 
     if (!userId) {
-        return res.status(401).end();
+        return res.status(200).json([]);
     }
 
     const client = postgres(env.CONNECTION_STRING);
@@ -23,35 +24,29 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 
     const parsedOrders = z.array(orderSchema).length(1).safeParse(orders);
 
+    const cartItems: CartItem[] = [];
+
     if (parsedOrders.success) {
-        const cartItems = await db
-            .select({
-                product: {
-                    id: productsTable.id,
-                    name: productsTable.name,
-                    categoryId: productsTable.categoryId,
-                    description: productsTable.description,
-                    price: productsTable.price,
-                    src: mediaTable.src,
-                    mimeType: mediaTable.mimeType
-                },
-                quantity: orderLinesTable.quantity
-            })
+        const orderLines = await db
+            .select()
             .from(orderLinesTable)
-            .leftJoin(ordersTable, eq(ordersTable.id, orderLinesTable.orderId))
-            .leftJoin(productsTable, eq(productsTable.id, orderLinesTable.productId))
-            .leftJoin(mediaTable, eq(mediaTable.productId, productsTable.id))
-            .where(eq(ordersTable.id, parsedOrders.data[0].id))
+            .where(eq(orderLinesTable.orderId, parsedOrders.data[0].id))
             .orderBy(orderLinesTable.productId);
 
         await client.end();
 
-        return res.status(200).json(cartItems.map((c) => ({ ...c, quantity: Number(c.quantity) })));
+        const parsedOrderLines = z.array(orderLineSchema).parse(orderLines);
+
+        for (let ol of parsedOrderLines) {
+            const product = await stripe.products.retrieve(ol.productId, {
+                expand: ['default_price']
+            });
+
+            cartItems.push({ product: stripeProductSchema.parse(product), quantity: Number(ol.quantity) });
+        }
     }
 
-    await client.end();
-
-    res.status(200).json([]);
+    return res.status(200).json(cartItems);
 }
 
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {

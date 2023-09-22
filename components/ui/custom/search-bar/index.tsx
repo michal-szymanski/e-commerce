@@ -39,11 +39,11 @@ const SearchBar = ({ initialSearch, className }: Props) => {
         handleSearch(value);
     }, [value, handleSearch, initialSearch]);
 
-    const handleSelect = async (search: string) => {
-        const url = `/products${search ? '?search=' + encodeURIComponent(search) : ''}`;
+    const handleSelect = async (name: string) => {
+        const url = `/products${name ? '?name=' + encodeURIComponent(name) : ''}`;
 
         if (url === router.asPath) {
-            setValue(search);
+            setValue(name);
             setIsVisible(false);
             return;
         }

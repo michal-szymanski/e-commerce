@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'next/router';
 import { debounce, getTotalPrice } from '@/lib/utils';
 import { useCallback } from 'react';
-import { CartItem } from '@/types';
+import { CartItem, StripePrice } from '@/types';
 
 type Props = {
     open: boolean;
@@ -32,7 +32,7 @@ const AddToCartDialog = ({ open, setOpen, cartItem: { product, quantity } }: Pro
                 <AlertDialogHeader>
                     <AlertDialogTitle>Added to cart</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {product.name} {quantity} x {product.price} = {getTotalPrice(product, quantity)}
+                        {product.name} {quantity} x {(product.default_price as StripePrice).unit_amount} = {getTotalPrice(product, quantity)}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -3,18 +3,18 @@ import Pagination from '@/components/ui/custom/pagination';
 import ProductTile from '@/components/ui/custom/product-tile';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
-import { getProducts } from '@/sql-service';
-import { ProductWithMedia } from '@/types';
+import { StripeProductSearchResult, stripeSearchResultSchema } from '@/types';
 import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
+import stripe from '@/stripe';
 
-export default ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+export default ({ searchResult }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
-        if (!products?.length) {
+        if (!searchResult.data?.length) {
             return <div>No items</div>;
         }
 
-        return products.map((product) => (
+        return searchResult.data.map((product) => (
             <Link key={product.id} href={getProductUrl(product.id, product.name)}>
                 <ProductTile product={product} />
             </Link>
@@ -27,7 +27,7 @@ export default ({ products }: InferGetServerSidePropsType<typeof getServerSidePr
                 <Sidebar />
                 <div className="border-l pr-20">
                     <div className="mb-5 flex justify-end pr-5">
-                        <Pagination />
+                        <Pagination nextPage={searchResult.next_page ?? ''} />
                     </div>
                     <div className="grid place-items-end gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">{renderProducts()}</div>
                 </div>
@@ -36,20 +36,32 @@ export default ({ products }: InferGetServerSidePropsType<typeof getServerSidePr
     );
 };
 
-export const getServerSideProps: GetServerSideProps<{ products: ProductWithMedia[] }> = async (context) => {
-    const parsedSearch = z.string().safeParse(context.query.search);
+export const getServerSideProps: GetServerSideProps<{ searchResult: StripeProductSearchResult }> = async (context) => {
+    const parsedName = z.string().safeParse(context.query.name);
     const parsedLimit = z.coerce.number().min(0).max(100).safeParse(context.query.limit);
-    const parsedOffset = z.coerce.number().min(0).safeParse(context.query.offset);
+    const parsedPage = z.string().safeParse(context.query.page);
 
-    const search = parsedSearch.success ? parsedSearch.data : '';
+    const name = parsedName.success ? parsedName.data : '';
     const limit = parsedLimit.success ? parsedLimit.data : 10;
-    const offset = parsedOffset.success ? parsedOffset.data : 0;
+    const page = parsedPage.success ? parsedPage.data : '';
 
-    const products = await getProducts(search, limit, offset);
+    const requestConfig: Record<string, string | number | string[]> = {
+        query: `active:\'true\'${name ? ` AND name~\'${name}\'` : ''}`,
+        limit,
+        expand: ['data.default_price']
+    };
+
+    if (page) {
+        requestConfig.page = page;
+    }
+
+    const response = await stripe.products.search(requestConfig);
+
+    const searchResult = stripeSearchResultSchema.parse(response);
 
     return {
         props: {
-            products
+            searchResult
         }
     };
 };

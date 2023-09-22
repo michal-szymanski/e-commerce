@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 const Navbar = () => {
     const router = useRouter();
-    const querySearch = z.string().nonempty().safeParse(router.query.search);
+    const querySearch = z.string().nonempty().safeParse(router.query.name);
 
     return (
         <NavigationMenu className="relative max-w-[100%] justify-between p-3">

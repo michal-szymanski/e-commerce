@@ -1,8 +1,7 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import Image from 'next/image';
 import { z } from 'zod';
-import { getProduct } from '@/sql-service';
-import { ProductWithMedia } from '@/types';
+import { StripePrice, StripeProduct, stripeProductSchema } from '@/types';
 import { Button } from '@/components/ui/button';
 import QuantityCounter from '@/components/ui/custom/quantity-counter';
 import { useState } from 'react';
@@ -12,6 +11,7 @@ import { useCart } from '@/hooks/queries';
 import AddToCartDialog from '@/components/ui/custom/add-to-cart-dialog';
 import { useDispatch } from 'react-redux';
 import { setIsDialogOpen } from '@/store/slices/ui';
+import stripe from '@/stripe';
 
 export default ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [quantity, setQuantity] = useState(1);
@@ -39,6 +39,8 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
         setOpen(isDialogOpen);
     };
 
+    const { unit_amount, currency } = product.default_price as StripePrice;
+
     return (
         <>
             <div className="container">
@@ -47,10 +49,12 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
                         <h2 className="text-2xl font-bold">{product.name}</h2>
                     </header>
                     <div className="flex gap-10 py-10">
-                        <Image src={product.src} alt={product.name} width={500} height={500} />
+                        <Image src={product.images[0]} alt={product.name} width={500} height={500} />
                         <Card className="w-[400px]">
                             <CardHeader>
-                                <CardTitle className="font-bold">{product.price}</CardTitle>
+                                <CardTitle className="font-bold">
+                                    {unit_amount} {currency.toUpperCase()}
+                                </CardTitle>
                                 <CardDescription>+ VAT</CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -77,17 +81,22 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
     );
 };
 
-export const getServerSideProps: GetServerSideProps<{ product: ProductWithMedia }> = async (context) => {
+export const getServerSideProps: GetServerSideProps<{ product: StripeProduct }> = async (context) => {
     try {
-        const parsedId = z.coerce.number().parse(context.query.id);
-        const product = await getProduct(parsedId);
+        const parsedId = z.string().parse(context.query.id);
+        const response = await stripe.products.retrieve(parsedId, {
+            expand: ['default_price']
+        });
+        const product = stripeProductSchema.parse(response);
 
         return {
             props: {
                 product
             }
         };
-    } catch {
+    } catch (e) {
+        console.error(e);
+
         return {
             notFound: true
         };

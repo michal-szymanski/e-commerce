@@ -1,21 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { cartItemSchema, productWithMediaSchema } from '@/types';
+import { stripeProductSchema, stripeSearchResultSchema } from '@/types';
 import { z } from 'zod';
 
-export const useProducts = (search: string, limit: number, offset: number, enabled: boolean = true) =>
+export const useProducts = (name: string, limit: number, offset: number, enabled: boolean = true) =>
     useQuery({
-        queryKey: ['products', { search }, { limit }, { offset }],
+        queryKey: ['products', { name }],
         queryFn: async () => {
-            const response = await (
-                await fetch(`/api/products?search=${search}&limit=${limit}&offset=${offset}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-            ).json();
+            const response = await (await fetch(`/api/products?name=${name}`)).json();
 
-            return z.array(productWithMediaSchema).parse(response);
+            return stripeSearchResultSchema.parse(response).data;
         },
         keepPreviousData: false,
         enabled
@@ -34,6 +27,6 @@ export const useCart = () =>
                 })
             ).json();
 
-            return z.array(cartItemSchema).parse(response);
+            return z.array(z.object({ product: stripeProductSchema, quantity: z.number() })).parse(response);
         }
     });

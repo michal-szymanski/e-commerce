@@ -15,7 +15,7 @@ const CartFooter = () => {
     const createOrder = useCreateOrder();
 
     const renderButton = () => {
-        if (router.asPath === '/cart') {
+        if (router.asPath === '/checkout') {
             return (
                 <Button
                     className="w-40"
@@ -25,6 +25,14 @@ const CartFooter = () => {
                     }}
                 >
                     Buy
+                </Button>
+            );
+        }
+
+        if (router.asPath === '/cart') {
+            return (
+                <Button className="w-40" onClick={() => router.push('/checkout')}>
+                    Checkout
                 </Button>
             );
         }

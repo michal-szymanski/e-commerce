@@ -4,9 +4,9 @@ import { getAuth } from '@clerk/nextjs/server';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { orderHistoriesTable, orderLinesTable, ordersTable, productsTable } from '@/schema';
+import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, eq, sql } from 'drizzle-orm';
-import { OrderStatus, orderStatusSchema } from '@/types';
+import { CartItem, OrderLineWithProduct, orderLineWithProductSchema, OrderStatus, orderStatusSchema, StripePrice } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
@@ -15,17 +15,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
-
-const orderLineWithProduct = z.object({
-    productId: z.number(),
-    productName: z.string(),
-    productPrice: z.string(),
-    quantity: z.string(),
-    totalPrice: z.string()
-});
+import { getOrderLinesWithProducts } from '@/sql-service';
 
 export default function Page({ order, orderLines }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    const columns: ColumnDef<z.infer<typeof orderLineWithProduct>>[] = [
+    const columns: ColumnDef<OrderLineWithProduct>[] = [
         {
             accessorKey: 'productId',
             header: 'Id'
@@ -63,7 +56,8 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
     ];
 
     const formattedOrder = { ...order, date: dayjs(order.date as string).format('DD/MM/YYYY HH:mm') };
-    const totalPrice = orderLines.reduce((acc, curr) => acc + +curr.totalPrice, 0);
+    const totalPrice = orderLines.reduce((acc, curr) => acc + curr.totalPrice, 0);
+
     return (
         <div className="container mx-auto py-10">
             <header className="mb-10 grid grid-cols-[300px_300px] gap-10">
@@ -89,7 +83,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
 
 export const getServerSideProps: GetServerSideProps<{
     order: { id: number; date: string; status: OrderStatus };
-    orderLines: z.infer<typeof orderLineWithProduct>[];
+    orderLines: OrderLineWithProduct[];
 }> = async (context) => {
     const { userId } = getAuth(context.req);
 
@@ -120,18 +114,7 @@ export const getServerSideProps: GetServerSideProps<{
             .groupBy(ordersTable.id)
     )[0];
 
-    const orderLines = await db
-        .select({
-            productId: productsTable.id,
-            productName: productsTable.name,
-            productPrice: productsTable.price,
-            quantity: orderLinesTable.quantity,
-            totalPrice: sql`SUM(ROUND(${productsTable.price} * ${orderLinesTable.quantity}, 2))`
-        })
-        .from(orderLinesTable)
-        .where(eq(orderLinesTable.orderId, order.id))
-        .leftJoin(productsTable, eq(orderLinesTable.productId, productsTable.id))
-        .groupBy(productsTable.id, orderLinesTable.quantity);
+    const orderLines = await getOrderLinesWithProducts(db, order.id);
 
     await client.end();
 
@@ -142,7 +125,8 @@ export const getServerSideProps: GetServerSideProps<{
             status: orderStatusSchema
         })
         .parse({ ...order, date: dayjs(order.date as Date).toISOString() });
-    const parsedOrderLines = z.array(orderLineWithProduct).parse(orderLines);
+
+    const parsedOrderLines = z.array(orderLineWithProductSchema).parse(orderLines);
 
     return { props: { order: parsedOrder, orderLines: parsedOrderLines } };
 };

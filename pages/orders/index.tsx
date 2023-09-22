@@ -6,7 +6,7 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
-import { orderHistoriesTable, orderLinesTable, ordersTable, productsTable } from '@/schema';
+import { orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
 import { and, desc, eq, not, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
@@ -91,12 +91,10 @@ export const getServerSideProps: GetServerSideProps<{
         .select({
             id: ordersTable.id,
             date: sql`min(${orderHistoriesTable.date})`,
-            status: sql`max(${orderHistoriesTable.status})`,
-            totalPrice: sql`SUM(ROUND(${productsTable.price} * ${orderLinesTable.quantity}, 2))`
+            status: sql`max(${orderHistoriesTable.status})`
         })
         .from(ordersTable)
         .leftJoin(orderLinesTable, eq(ordersTable.id, orderLinesTable.orderId))
-        .leftJoin(productsTable, eq(orderLinesTable.productId, productsTable.id))
         .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
         .where(and(eq(ordersTable.userId, userId), not(eq(orderHistoriesTable.status, 'New'))))
         .groupBy(ordersTable.id)
