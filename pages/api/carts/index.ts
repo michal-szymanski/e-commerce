@@ -33,8 +33,6 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
             .where(eq(orderLinesTable.orderId, parsedOrders.data[0].id))
             .orderBy(orderLinesTable.productId);
 
-        await client.end();
-
         const parsedOrderLines = z.array(orderLineSchema).parse(orderLines);
 
         for (let ol of parsedOrderLines) {
@@ -45,6 +43,8 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
             cartItems.push({ product: stripeProductSchema.parse(product), quantity: Number(ol.quantity) });
         }
     }
+
+    await client.end();
 
     return res.status(200).json(cartItems);
 }

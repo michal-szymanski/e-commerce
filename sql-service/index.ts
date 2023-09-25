@@ -64,7 +64,8 @@ export const getCartOrders = async (db: PostgresJsDatabase, userId: string) => {
     return await db
         .select({
             id: ordersTable.id,
-            userId: ordersTable.userId
+            userId: ordersTable.userId,
+            checkoutSessionId: ordersTable.checkoutSessionId
         })
         .from(ordersTable)
         .leftJoin(h1, eq(ordersTable.id, h1.orderId))

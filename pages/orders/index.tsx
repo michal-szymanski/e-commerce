@@ -6,19 +6,21 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
-import { orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
+import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, desc, eq, not, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
+import stripe from '@/stripe';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
     date: z.string(),
     status: orderHistorySchema.shape.status,
-    totalPrice: z.string()
+    totalPrice: z.string(),
+    checkoutSessionId: z.string()
 });
 
 export default function Page({ orders }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -91,18 +93,31 @@ export const getServerSideProps: GetServerSideProps<{
         .select({
             id: ordersTable.id,
             date: sql`min(${orderHistoriesTable.date})`,
-            status: sql`max(${orderHistoriesTable.status})`
+            status: sql`max(${orderHistoriesTable.status})`,
+            checkoutSessionId: ordersTable.checkoutSessionId
         })
         .from(ordersTable)
-        .leftJoin(orderLinesTable, eq(ordersTable.id, orderLinesTable.orderId))
         .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
         .where(and(eq(ordersTable.userId, userId), not(eq(orderHistoriesTable.status, 'New'))))
         .groupBy(ordersTable.id)
         .orderBy(desc(ordersTable.id));
 
+    const ordersWithTotals = orders.map(async (o) => {
+        const session = await stripe.checkout.sessions.retrieve(o.checkoutSessionId, {
+            expand: ['line_items']
+        });
+
+        return {
+            ...o,
+            date: dayjs(o.date as string).toISOString(),
+            checkoutSessionId: session.id,
+            totalPrice: session.line_items.data.reduce((acc, curr) => acc + curr.amount_total / 100, 0).toFixed(2)
+        };
+    });
+
     await client.end();
 
-    const parsedOrders = z.array(orderWithTotalPriceSchema).parse(orders.map((row) => ({ ...row, date: dayjs(row.date as string).toISOString() })));
+    const parsedOrdersWithTotals = z.array(orderWithTotalPriceSchema).parse(await Promise.all(ordersWithTotals));
 
-    return { props: { orders: parsedOrders } };
+    return { props: { orders: parsedOrdersWithTotals } };
 };

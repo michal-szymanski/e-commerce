@@ -7,7 +7,7 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getCartOrders } from '@/sql-service';
-import { orderLinesTable } from '@/schema';
+import { orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
 import { eq } from 'drizzle-orm';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -28,25 +28,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             const cartItems: CartItem[] = [];
 
-            if (parsedOrders.success) {
-                const orderLines = await db
-                    .select()
-                    .from(orderLinesTable)
-                    .where(eq(orderLinesTable.orderId, parsedOrders.data[0].id))
-                    .orderBy(orderLinesTable.productId);
-
-                const parsedOrderLines = z.array(orderLineSchema).parse(orderLines);
-
-                for (let ol of parsedOrderLines) {
-                    const product = await stripe.products.retrieve(ol.productId, {
-                        expand: ['default_price']
-                    });
-
-                    cartItems.push({ product: stripeProductSchema.parse(product), quantity: Number(ol.quantity) });
-                }
+            if (!parsedOrders.success) {
+                return res.status(422).end();
             }
 
-            await client.end();
+            const orderLines = await db
+                .select()
+                .from(orderLinesTable)
+                .where(eq(orderLinesTable.orderId, parsedOrders.data[0].id))
+                .orderBy(orderLinesTable.productId);
+
+            const parsedOrderLines = z.array(orderLineSchema).parse(orderLines);
+
+            for (let ol of parsedOrderLines) {
+                const product = await stripe.products.retrieve(ol.productId, {
+                    expand: ['default_price']
+                });
+
+                cartItems.push({ product: stripeProductSchema.parse(product), quantity: Number(ol.quantity) });
+            }
 
             // Create Checkout Sessions from body params.
             const session = await stripe.checkout.sessions.create({
@@ -58,6 +58,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 success_url: `${req.headers.origin}/?success=true`,
                 cancel_url: `${req.headers.origin}/?canceled=true`
             });
+
+            const now = new Date().toISOString();
+            await db.update(ordersTable).set({ checkoutSessionId: session.id }).where(eq(ordersTable.id, parsedOrders.data[0].id));
+            await db.insert(orderHistoriesTable).values({ orderId: parsedOrders.data[0].id, date: now, status: 'Pending' });
+            await db.delete(orderLinesTable).where(eq(orderLinesTable.orderId, parsedOrders.data[0].id));
+
+            await client.end();
 
             res.redirect(303, session.url);
         } catch (err: any) {

@@ -8,7 +8,8 @@ export const categoriesTable = pgTable('categories', {
 
 export const ordersTable = pgTable('orders', {
     id: serial('id').primaryKey(),
-    userId: text('user_id').notNull()
+    userId: text('user_id').notNull(),
+    checkoutSessionId: text('checkout_session_id')
 });
 
 export const ordersRelations = relations(ordersTable, ({ many }) => ({
