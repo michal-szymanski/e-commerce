@@ -5,14 +5,16 @@ import { Button } from '@/components/ui/button';
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    hiddenColumns?: string[];
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, hiddenColumns }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel()
+        getPaginationRowModel: getPaginationRowModel(),
+        initialState: { columnVisibility: hiddenColumns?.reduce((acc, curr) => ({ ...acc, [curr]: false }), {}) }
     });
 
     return (

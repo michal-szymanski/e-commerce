@@ -6,7 +6,7 @@ import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, eq, sql } from 'drizzle-orm';
-import { CartItem, OrderLineWithProduct, orderLineWithProductSchema, OrderStatus, orderStatusSchema, StripePrice } from '@/types';
+import { OrderStatus, orderStatusSchema, stripeOrderLineSchema, StripeOrderLine } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
@@ -15,22 +15,23 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
-import { getOrderLinesWithProducts } from '@/sql-service';
+import stripe from '@/stripe';
 
 export default function Page({ order, orderLines }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    const columns: ColumnDef<OrderLineWithProduct>[] = [
+    const columns: ColumnDef<StripeOrderLine>[] = [
         {
-            accessorKey: 'productId',
-            header: 'Id'
+            id: 'price.product',
+            accessorKey: 'price.product'
         },
         {
-            accessorKey: 'productName',
+            accessorKey: 'description',
             header: 'Name'
         },
         {
-            accessorKey: 'productPrice',
+            id: 'price.unit_amount',
+            accessorKey: 'price.unit_amount',
             header: () => <div className="text-right">Unit Price</div>,
-            cell: ({ row }) => <div className="text-right">{row.getValue('productPrice')}</div>
+            cell: ({ row }) => <div className="text-right">{(row.getValue('price.unit_amount') as number) / 100}</div>
         },
         {
             accessorKey: 'quantity',
@@ -38,16 +39,17 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
             cell: ({ row }) => <div className="text-right">{z.coerce.number().parse(row.getValue('quantity'))}</div>
         },
         {
-            accessorKey: 'totalPrice',
+            id: 'amount_total',
+            accessorKey: 'amount_total',
             header: () => <div className="text-right">Total Price</div>,
-            cell: ({ row }) => <div className="text-right font-medium">{row.getValue('totalPrice')}</div>
+            cell: ({ row }) => <div className="text-right font-medium">{(row.getValue('amount_total') as number) / 100}</div>
         },
         {
             accessorKey: 'actions',
             header: () => <div className="text-center">Actions</div>,
             cell: ({ row }) => (
                 <div className="text-center">
-                    <Link href={getProductUrl(row.getValue('productId'), row.getValue('productName'))}>
+                    <Link href={getProductUrl(row.getValue('price.product'), row.getValue('description'))}>
                         <Button variant="link">Product Page</Button>
                     </Link>
                 </div>
@@ -56,7 +58,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
     ];
 
     const formattedOrder = { ...order, date: dayjs(order.date as string).format('DD/MM/YYYY HH:mm') };
-    const totalPrice = orderLines.reduce((acc, curr) => acc + curr.totalPrice, 0);
+    const totalPrice = orderLines.reduce((acc, curr) => acc + curr.amount_total, 0) / 100;
 
     return (
         <div className="container mx-auto py-10">
@@ -76,14 +78,14 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
                     </CardFooter>
                 </Card>
             </header>
-            <DataTable columns={columns} data={orderLines} />
+            <DataTable columns={columns} data={orderLines} hiddenColumns={['price.product']} />
         </div>
     );
 }
 
 export const getServerSideProps: GetServerSideProps<{
     order: { id: number; date: string; status: OrderStatus };
-    orderLines: OrderLineWithProduct[];
+    orderLines: StripeOrderLine[];
 }> = async (context) => {
     const { userId } = getAuth(context.req);
 
@@ -106,7 +108,8 @@ export const getServerSideProps: GetServerSideProps<{
             .select({
                 id: ordersTable.id,
                 date: sql`min(${orderHistoriesTable.date})`,
-                status: sql`max(${orderHistoriesTable.status})`
+                status: sql`max(${orderHistoriesTable.status})`,
+                checkoutSessionId: ordersTable.checkoutSessionId
             })
             .from(ordersTable)
             .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
@@ -114,7 +117,9 @@ export const getServerSideProps: GetServerSideProps<{
             .groupBy(ordersTable.id)
     )[0];
 
-    const orderLines = await getOrderLinesWithProducts(db, order.id);
+    const checkoutSession = await stripe.checkout.sessions.retrieve(order.checkoutSessionId, {
+        expand: ['line_items']
+    });
 
     await client.end();
 
@@ -124,9 +129,9 @@ export const getServerSideProps: GetServerSideProps<{
             date: z.string(),
             status: orderStatusSchema
         })
-        .parse({ ...order, date: dayjs(order.date as Date).toISOString() });
+        .parse({ ...order, date: dayjs(order.date as string).toISOString() });
 
-    const parsedOrderLines = z.array(orderLineWithProductSchema).parse(orderLines);
+    const parsedOrderLines = z.array(stripeOrderLineSchema).parse(checkoutSession.line_items.data);
 
     return { props: { order: parsedOrder, orderLines: parsedOrderLines } };
 };

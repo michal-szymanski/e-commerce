@@ -92,3 +92,18 @@ export const orderLineWithProductSchema = z.object({
 });
 
 export type OrderLineWithProduct = z.infer<typeof orderLineWithProductSchema>;
+
+export const stripeOrderLineSchema = z.object({
+    id: z.string(),
+    object: z.literal('item'),
+    amount_discount: z.number(),
+    amount_subtotal: z.number(),
+    amount_tax: z.number(),
+    amount_total: z.number(),
+    currency: z.string(),
+    description: z.string(),
+    price: stripePriceSchema,
+    quantity: z.number()
+});
+
+export type StripeOrderLine = z.infer<typeof stripeOrderLineSchema>;
