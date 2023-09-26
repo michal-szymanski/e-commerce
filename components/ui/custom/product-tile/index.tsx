@@ -15,7 +15,7 @@ const ProductTile = ({ product }: Props) => {
                 <h3 className="font-semibold">{product.name}</h3>
                 <Rating value={3} count={99} />
                 <span className="size text-xl font-bold">
-                    {unit_amount} {currency.toUpperCase()}
+                    {unit_amount / 100} {currency.toUpperCase()}
                 </span>
             </header>
         </article>
