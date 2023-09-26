@@ -6,6 +6,8 @@ import { getAuth, clerkClient } from '@clerk/nextjs/server';
 import { Button } from '@/components/ui/button';
 import Confetti from 'react-confetti';
 import { useEffect, useState } from 'react';
+import Head from 'next/head';
+import { env } from '@/env.mjs';
 
 export default ({ session, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
@@ -23,6 +25,9 @@ export default ({ session, firstName }: InferGetServerSidePropsType<typeof getSe
 
     return (
         <>
+            <Head>
+                <title>Order Confirmation | {env.NEXT_PUBLIC_APP_NAME}</title>
+            </Head>
             <Confetti width={width} height={height} numberOfPieces={500} recycle={false} />
             <div className="container grid h-[60%] place-items-center">
                 <div>

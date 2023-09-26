@@ -12,11 +12,11 @@ const Navbar = () => {
     const querySearch = z.string().nonempty().safeParse(router.query.name);
 
     return (
-        <NavigationMenu className="relative max-w-[100%] justify-between p-3">
+        <NavigationMenu className="fixed h-[100px] min-w-full justify-between p-3 shadow-sm">
             <SearchBar
                 key={router.asPath}
                 initialSearch={querySearch.success ? querySearch.data : ''}
-                className="absolute left-1/2 top-5 h-auto w-[600px] -translate-x-1/2 rounded-lg border shadow-md"
+                className="absolute left-1/2 top-1/2 h-auto w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-lg border shadow-md"
             />
             <NavigationMenuList>
                 <NavigationMenuItem>
