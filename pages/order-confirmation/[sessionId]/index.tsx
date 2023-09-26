@@ -14,6 +14,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { ordersTable } from '@/schema';
 import { eq } from 'drizzle-orm';
 import { orderSchema } from '@/types';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
@@ -49,44 +50,50 @@ export default ({ orderId, firstName }: InferGetServerSidePropsType<typeof getSe
                 />
             ))}
             <div className="container grid h-[60%] place-items-center">
-                <div>
-                    <h2 className="text-3xl font-bold">Thank you{firstName ? `, ${firstName}` : ''}!</h2>
-                    <p className="py-5 text-xl">
-                        Your order number{' '}
-                        {
-                            <Link href={`/orders/${orderId}`} className="font-bold underline">
-                                {orderId}
-                            </Link>
-                        }{' '}
-                        has been created.
-                    </p>
-                    <p className="pb-2 text-lg">
-                        You should receive an order confirmation email shortly. If the email hasn't arrived within few minutes, please check your spam folder to
-                        see if the email was routed there.
-                    </p>
-                    <p className="text-lg">
-                        You can safely close this page or head back to the{' '}
-                        {
-                            <Link href="/">
-                                <Button>Home Page</Button>
-                            </Link>
-                        }
-                    </p>
+                <Card className="border-green-300 bg-green-100 text-green-950">
+                    <CardHeader>
+                        <CardTitle>Thank you{firstName ? `, ${firstName}` : ''}!</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-lg">
+                            Your order number{' '}
+                            {
+                                <Link href={`/orders/${orderId}`} className="font-bold underline">
+                                    {orderId}
+                                </Link>
+                            }{' '}
+                            has been created.
+                        </p>
+                        <p className="text-lg">
+                            You should receive an order confirmation email shortly. If the email hasn't arrived within few minutes, please check your spam
+                            folder to see if the email was routed there.
+                        </p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col items-start">
+                        <p className="text-lg">
+                            You can safely close this page or head back to the{' '}
+                            {
+                                <Link href="/">
+                                    <Button>Home Page</Button>
+                                </Link>
+                            }
+                        </p>
 
-                    <p className="select-none text-lg">
-                        And if you like confetti{' '}
-                        <Button
-                            disabled={confettiIds.length === 10}
-                            variant="secondary"
-                            onClick={() => {
-                                if (confettiIds.length === 10) return;
-                                setConfettiIds((prev) => [...prev, uuidv4()]);
-                            }}
-                        >
-                            Click here
-                        </Button>
-                    </p>
-                </div>
+                        <p className="select-none text-lg">
+                            And if you like confetti{' '}
+                            <Button
+                                disabled={confettiIds.length === 10}
+                                variant="outline"
+                                onClick={() => {
+                                    if (confettiIds.length === 10) return;
+                                    setConfettiIds((prev) => [...prev, uuidv4()]);
+                                }}
+                            >
+                                Click here
+                            </Button>
+                        </p>
+                    </CardFooter>
+                </Card>
             </div>
         </>
     );
