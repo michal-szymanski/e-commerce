@@ -56,7 +56,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 })),
                 mode: 'payment',
                 success_url: `${req.headers.origin}/?success=true`,
-                cancel_url: `${req.headers.origin}/?canceled=true`
+                cancel_url: `${req.headers.origin}/?canceled=true`,
+                metadata: {
+                    orderId: parsedOrders.data[0].id
+                }
             });
 
             const now = new Date().toISOString();

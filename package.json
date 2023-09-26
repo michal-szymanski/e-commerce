@@ -10,7 +10,8 @@
     "format": "prettier . --write",
     "db:generate": "drizzle-kit generate:pg",
     "db:push": "drizzle-kit push:pg",
-    "db:seed": "ts-node seed.ts"
+    "db:seed": "ts-node seed.ts",
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhook"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.23.5",
