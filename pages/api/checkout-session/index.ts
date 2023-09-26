@@ -32,11 +32,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(422).end();
             }
 
-            const orderLines = await db
-                .select()
-                .from(orderLinesTable)
-                .where(eq(orderLinesTable.orderId, parsedOrders.data[0].id))
-                .orderBy(orderLinesTable.productId);
+            const orderId = parsedOrders.data[0].id;
+
+            const orderLines = await db.select().from(orderLinesTable).where(eq(orderLinesTable.orderId, orderId)).orderBy(orderLinesTable.productId);
 
             const parsedOrderLines = z.array(orderLineSchema).parse(orderLines);
 
@@ -55,17 +53,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     quantity: c.quantity
                 })),
                 mode: 'payment',
-                success_url: `${req.headers.origin}/?success=true`,
-                cancel_url: `${req.headers.origin}/?canceled=true`,
+                success_url: `${req.headers.origin}/order-confirmation/{CHECKOUT_SESSION_ID}`,
+                cancel_url: `${req.headers.origin}`,
                 metadata: {
-                    orderId: parsedOrders.data[0].id
+                    orderId
                 }
             });
 
             const now = new Date().toISOString();
-            await db.update(ordersTable).set({ checkoutSessionId: session.id }).where(eq(ordersTable.id, parsedOrders.data[0].id));
-            await db.insert(orderHistoriesTable).values({ orderId: parsedOrders.data[0].id, date: now, status: 'Pending' });
-            await db.delete(orderLinesTable).where(eq(orderLinesTable.orderId, parsedOrders.data[0].id));
+            await db.update(ordersTable).set({ checkoutSessionId: session.id }).where(eq(ordersTable.id, orderId));
+            await db.insert(orderHistoriesTable).values({ orderId, date: now, status: 'Pending' });
 
             await client.end();
 

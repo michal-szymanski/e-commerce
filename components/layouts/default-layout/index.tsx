@@ -14,7 +14,7 @@ const Layout = ({ children }: Props) => (
             <title>{env.NEXT_PUBLIC_APP_NAME}</title>
         </Head>
         <Navbar />
-        <main className="py-12">{children}</main>
+        <main className="h-full py-12">{children}</main>
         <CartFooter />
     </>
 );

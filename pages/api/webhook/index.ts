@@ -2,7 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { orderHistoriesTable } from '@/schema';
+import { orderHistoriesTable, orderLinesTable } from '@/schema';
+import { eq } from 'drizzle-orm';
 
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     const event = req.body;
@@ -14,6 +15,7 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
         const client = postgres(env.CONNECTION_STRING);
         const db = drizzle(client);
         await db.insert(orderHistoriesTable).values({ orderId, status: 'In Progress', date: new Date().toISOString() });
+        await db.delete(orderLinesTable).where(eq(orderLinesTable.orderId, orderId));
         await client.end();
     }
 

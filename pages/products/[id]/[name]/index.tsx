@@ -60,7 +60,7 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
                         <Card className="w-[400px]">
                             <CardHeader>
                                 <CardTitle className="font-bold">
-                                    {unit_amount} {currency.toUpperCase()}
+                                    {unit_amount / 100} {currency.toUpperCase()}
                                 </CardTitle>
                                 <CardDescription>+ VAT</CardDescription>
                             </CardHeader>
