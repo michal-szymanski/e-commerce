@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import stripe from '@/stripe';
 import { alias } from 'drizzle-orm/pg-core';
+import Head from 'next/head';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
@@ -67,9 +68,14 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
     const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
 
     return (
-        <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={data} />
-        </div>
+        <>
+            <Head>
+                <title>Orders | {env.NEXT_PUBLIC_APP_NAME}</title>
+            </Head>
+            <div className="container mx-auto py-10">
+                <DataTable columns={columns} data={data} />
+            </div>
+        </>
     );
 }
 
@@ -88,7 +94,7 @@ export const getServerSideProps: GetServerSideProps<{
     }
 
     const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client, { logger: true });
+    const db = drizzle(client);
 
     const excludedStatuses: OrderStatus[] = ['New'];
 

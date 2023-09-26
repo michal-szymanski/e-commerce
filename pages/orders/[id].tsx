@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
 import stripe from '@/stripe';
 import { alias } from 'drizzle-orm/pg-core';
+import Head from 'next/head';
 
 export default function Page({ order, orderLines }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const columns: ColumnDef<StripeOrderLine>[] = [
@@ -62,25 +63,30 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
     const totalPrice = orderLines.reduce((acc, curr) => acc + curr.amount_total, 0) / 100;
 
     return (
-        <div className="container mx-auto py-10">
-            <header className="mb-10 grid grid-cols-[300px_300px] gap-10">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Order {formattedOrder.id}</CardTitle>
-                        <CardDescription>{formattedOrder.date}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-lg">
-                            Total Price: <span className="font-semibold">{totalPrice}</span>
-                        </div>
-                    </CardContent>
-                    <CardFooter>
-                        <OrderStatusBadge status={formattedOrder.status} />
-                    </CardFooter>
-                </Card>
-            </header>
-            <DataTable columns={columns} data={orderLines} hiddenColumns={['price.product']} />
-        </div>
+        <>
+            <Head>
+                <title>Order | {env.NEXT_PUBLIC_APP_NAME}</title>
+            </Head>
+            <div className="container mx-auto py-10">
+                <header className="mb-10 grid grid-cols-[300px_300px] gap-10">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Order {formattedOrder.id}</CardTitle>
+                            <CardDescription>{formattedOrder.date}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-lg">
+                                Total Price: <span className="font-semibold">{totalPrice}</span>
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <OrderStatusBadge status={formattedOrder.status} />
+                        </CardFooter>
+                    </Card>
+                </header>
+                <DataTable columns={columns} data={orderLines} hiddenColumns={['price.product']} />
+            </div>
+        </>
     );
 }
 

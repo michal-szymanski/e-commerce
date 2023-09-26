@@ -7,6 +7,8 @@ import { StripeProductSearchResult, stripeSearchResultSchema } from '@/types';
 import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
 import stripe from '@/stripe';
+import { env } from '@/env.mjs';
+import Head from 'next/head';
 
 export default ({ searchResult }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
@@ -23,6 +25,9 @@ export default ({ searchResult }: InferGetServerSidePropsType<typeof getServerSi
 
     return (
         <>
+            <Head>
+                <title>Products | {env.NEXT_PUBLIC_APP_NAME}</title>
+            </Head>
             <div className="grid grid-cols-sidebar grid-rows-1">
                 <Sidebar />
                 <div className="border-l pr-20">

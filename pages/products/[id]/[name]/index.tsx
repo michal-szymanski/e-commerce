@@ -12,6 +12,8 @@ import AddToCartDialog from '@/components/ui/custom/add-to-cart-dialog';
 import { useDispatch } from 'react-redux';
 import { setIsDialogOpen } from '@/store/slices/ui';
 import stripe from '@/stripe';
+import { env } from '@/env.mjs';
+import Head from 'next/head';
 
 export default ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [quantity, setQuantity] = useState(1);
@@ -43,6 +45,11 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
 
     return (
         <>
+            <Head>
+                <title>
+                    {product.name} | {env.NEXT_PUBLIC_APP_NAME}
+                </title>
+            </Head>
             <div className="container">
                 <article>
                     <header>
