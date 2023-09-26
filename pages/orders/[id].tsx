@@ -5,7 +5,7 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, ordersTable } from '@/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, sql, inArray, not, desc } from 'drizzle-orm';
 import { OrderStatus, orderStatusSchema, stripeOrderLineSchema, StripeOrderLine } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
@@ -16,6 +16,7 @@ import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
 import stripe from '@/stripe';
+import { alias } from 'drizzle-orm/pg-core';
 
 export default function Page({ order, orderLines }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const columns: ColumnDef<StripeOrderLine>[] = [
@@ -103,25 +104,49 @@ export const getServerSideProps: GetServerSideProps<{
 
     const orderId = z.coerce.number().parse(context.query.id);
 
-    const order = (
-        await db
-            .select({
-                id: ordersTable.id,
-                date: sql`min(${orderHistoriesTable.date})`,
-                status: sql`max(${orderHistoriesTable.status})`,
-                checkoutSessionId: ordersTable.checkoutSessionId
-            })
-            .from(ordersTable)
-            .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
-            .where(and(eq(ordersTable.userId, userId), eq(ordersTable.id, orderId)))
-            .groupBy(ordersTable.id)
-    )[0];
+    const excludedStatuses: OrderStatus[] = ['New'];
 
-    const checkoutSession = await stripe.checkout.sessions.retrieve(order.checkoutSessionId, {
-        expand: ['line_items']
-    });
+    const firstHistory = alias(orderHistoriesTable, 'oh1');
+    const lastHistory = alias(orderHistoriesTable, 'oh2');
+
+    const orders = await db
+        .select({
+            id: ordersTable.id,
+            date: firstHistory.date,
+            status: lastHistory.status,
+            checkoutSessionId: ordersTable.checkoutSessionId
+        })
+        .from(ordersTable)
+        .leftJoin(firstHistory, eq(firstHistory.orderId, ordersTable.id))
+        .leftJoin(lastHistory, eq(lastHistory.orderId, ordersTable.id))
+        .where(
+            and(
+                eq(ordersTable.userId, userId),
+                eq(ordersTable.id, orderId),
+                eq(
+                    firstHistory.date,
+                    db
+                        .select({ date: sql`min(${orderHistoriesTable.date})` })
+                        .from(orderHistoriesTable)
+                        .where(eq(orderHistoriesTable.orderId, ordersTable.id))
+                ),
+                eq(
+                    lastHistory.date,
+                    db
+                        .select({ date: sql`max(${orderHistoriesTable.date})` })
+                        .from(orderHistoriesTable)
+                        .where(eq(orderHistoriesTable.orderId, ordersTable.id))
+                ),
+                not(inArray(lastHistory.status, excludedStatuses))
+            )
+        )
+        .orderBy(desc(ordersTable.id));
 
     await client.end();
+
+    const checkoutSession = await stripe.checkout.sessions.retrieve(orders[0].checkoutSessionId, {
+        expand: ['line_items']
+    });
 
     const parsedOrder = z
         .object({
@@ -129,7 +154,7 @@ export const getServerSideProps: GetServerSideProps<{
             date: z.string(),
             status: orderStatusSchema
         })
-        .parse({ ...order, date: dayjs(order.date as string).toISOString() });
+        .parse({ ...orders[0], date: dayjs(orders[0].date as string).toISOString() });
 
     const parsedOrderLines = z.array(stripeOrderLineSchema).parse(checkoutSession.line_items.data);
 

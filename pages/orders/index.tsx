@@ -1,19 +1,20 @@
 import { DataTable } from '@/components/ui/data-table';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { orderHistorySchema } from '@/types';
+import { orderHistorySchema, OrderStatus } from '@/types';
 import { ColumnDef } from '@tanstack/react-table';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
 import { orderHistoriesTable, ordersTable } from '@/schema';
-import { and, desc, eq, not, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, not, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import stripe from '@/stripe';
+import { alias } from 'drizzle-orm/pg-core';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
@@ -87,20 +88,46 @@ export const getServerSideProps: GetServerSideProps<{
     }
 
     const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client);
+    const db = drizzle(client, { logger: true });
+
+    const excludedStatuses: OrderStatus[] = ['New'];
+
+    const firstHistory = alias(orderHistoriesTable, 'oh1');
+    const lastHistory = alias(orderHistoriesTable, 'oh2');
 
     const orders = await db
         .select({
             id: ordersTable.id,
-            date: sql`min(${orderHistoriesTable.date})`,
-            status: sql`max(${orderHistoriesTable.status})`,
+            date: firstHistory.date,
+            status: lastHistory.status,
             checkoutSessionId: ordersTable.checkoutSessionId
         })
         .from(ordersTable)
-        .leftJoin(orderHistoriesTable, eq(orderHistoriesTable.orderId, ordersTable.id))
-        .where(and(eq(ordersTable.userId, userId), not(eq(orderHistoriesTable.status, 'New'))))
-        .groupBy(ordersTable.id)
+        .leftJoin(firstHistory, eq(firstHistory.orderId, ordersTable.id))
+        .leftJoin(lastHistory, eq(lastHistory.orderId, ordersTable.id))
+        .where(
+            and(
+                eq(ordersTable.userId, userId),
+                eq(
+                    firstHistory.date,
+                    db
+                        .select({ date: sql`min(${orderHistoriesTable.date})` })
+                        .from(orderHistoriesTable)
+                        .where(eq(orderHistoriesTable.orderId, ordersTable.id))
+                ),
+                eq(
+                    lastHistory.date,
+                    db
+                        .select({ date: sql`max(${orderHistoriesTable.date})` })
+                        .from(orderHistoriesTable)
+                        .where(eq(orderHistoriesTable.orderId, ordersTable.id))
+                ),
+                not(inArray(lastHistory.status, excludedStatuses))
+            )
+        )
         .orderBy(desc(ordersTable.id));
+
+    await client.end();
 
     const ordersWithTotals = orders.map(async (o) => {
         const session = await stripe.checkout.sessions.retrieve(o.checkoutSessionId, {
@@ -114,8 +141,6 @@ export const getServerSideProps: GetServerSideProps<{
             totalPrice: session.line_items.data.reduce((acc, curr) => acc + curr.amount_total / 100, 0).toFixed(2)
         };
     });
-
-    await client.end();
 
     const parsedOrdersWithTotals = z.array(orderWithTotalPriceSchema).parse(await Promise.all(ordersWithTotals));
 
