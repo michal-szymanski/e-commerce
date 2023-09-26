@@ -8,30 +8,48 @@ import Confetti from 'react-confetti';
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
+import { v4 as uuidv4 } from 'uuid';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { ordersTable } from '@/schema';
+import { eq } from 'drizzle-orm';
+import { orderSchema } from '@/types';
 
-export default ({ session, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+export default ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
+    const [confettiIds, setConfettiIds] = useState<string[]>([uuidv4()]);
 
     useEffect(() => {
         const eventHandler = () => {
             setDimensions({ width: window.innerWidth, height: innerHeight });
         };
+
         eventHandler();
+
         window.addEventListener('resize', eventHandler);
         return () => window.removeEventListener('resize', eventHandler);
     }, []);
-
-    const orderId = session.metadata.orderId;
 
     return (
         <>
             <Head>
                 <title>Order Confirmation | {env.NEXT_PUBLIC_APP_NAME}</title>
             </Head>
-            <Confetti width={width} height={height} numberOfPieces={500} recycle={false} />
+            {confettiIds.map((id) => (
+                <Confetti
+                    key={id}
+                    width={width}
+                    height={height}
+                    numberOfPieces={500}
+                    recycle={false}
+                    onConfettiComplete={() => {
+                        setConfettiIds((prev) => prev.filter((prevId) => prevId !== id));
+                    }}
+                />
+            ))}
             <div className="container grid h-[60%] place-items-center">
                 <div>
-                    <h2 className="text-3xl font-bold">Thank you, {firstName}!</h2>
+                    <h2 className="text-3xl font-bold">Thank you{firstName ? `, ${firstName}` : ''}!</h2>
                     <p className="py-5 text-xl">
                         Your order number{' '}
                         {
@@ -46,13 +64,26 @@ export default ({ session, firstName }: InferGetServerSidePropsType<typeof getSe
                         see if the email was routed there.
                     </p>
                     <p className="text-lg">
-                        Feel free to close this page or head back to the{' '}
+                        You can safely close this page or head back to the{' '}
                         {
                             <Link href="/">
                                 <Button>Home Page</Button>
                             </Link>
-                        }{' '}
-                        .
+                        }
+                    </p>
+
+                    <p className="select-none text-lg">
+                        And if you like confetti{' '}
+                        <Button
+                            disabled={confettiIds.length === 10}
+                            variant="secondary"
+                            onClick={() => {
+                                if (confettiIds.length === 10) return;
+                                setConfettiIds((prev) => [...prev, uuidv4()]);
+                            }}
+                        >
+                            Click here
+                        </Button>
                     </p>
                 </div>
             </div>
@@ -60,7 +91,7 @@ export default ({ session, firstName }: InferGetServerSidePropsType<typeof getSe
     );
 };
 
-export const getServerSideProps: GetServerSideProps<{ session: any; firstName: string | null }> = async (context) => {
+export const getServerSideProps: GetServerSideProps<{ orderId: number; firstName: string | null }> = async (context) => {
     const { userId } = getAuth(context.req);
 
     if (!userId) {
@@ -72,14 +103,29 @@ export const getServerSideProps: GetServerSideProps<{ session: any; firstName: s
         };
     }
 
-    const user = await clerkClient.users.getUser(userId);
+    const { firstName } = await clerkClient.users.getUser(userId);
     const sessionId = z.string().parse(context.query.sessionId);
-    const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['customer'] });
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const orderId = z.coerce.number().parse(session.metadata.orderId);
+    const client = postgres(env.CONNECTION_STRING);
+    const db = drizzle(client);
+    const orders = await db.select().from(ordersTable).where(eq(ordersTable.id, orderId));
+    await client.end();
+    const order = z.array(orderSchema).length(1).parse(orders)[0];
+
+    if (order.userId !== userId) {
+        return {
+            redirect: {
+                destination: '/sign-in',
+                permanent: false
+            }
+        };
+    }
 
     return {
         props: {
-            session,
-            firstName: user.firstName
+            orderId,
+            firstName
         }
     };
 };
