@@ -42,6 +42,7 @@ export default ({ orderId, firstName }: InferGetServerSidePropsType<typeof getSe
                     height={height}
                     numberOfPieces={500}
                     recycle={false}
+                    tweenDuration={10000}
                     onConfettiComplete={() => {
                         setConfettiIds((prev) => prev.filter((prevId) => prevId !== id));
                     }}
