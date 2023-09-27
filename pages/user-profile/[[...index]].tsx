@@ -5,7 +5,7 @@ import { env } from '@/env.mjs';
 export default () => (
     <>
         <Head>
-            <title>User Profile | {env.NEXT_PUBLIC_APP_NAME}</title>
+            <title>{`User Profile | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
         </Head>
         <UserProfile
             path="/user-profile"

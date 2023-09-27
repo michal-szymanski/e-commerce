@@ -34,7 +34,7 @@ export default ({ orderId, firstName }: InferGetServerSidePropsType<typeof getSe
     return (
         <>
             <Head>
-                <title>Order Confirmation | {env.NEXT_PUBLIC_APP_NAME}</title>
+                <title>{`Order Confirmation | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             {confettiIds.map((id) => (
                 <Confetti

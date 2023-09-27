@@ -46,9 +46,7 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
     return (
         <>
             <Head>
-                <title>
-                    {product.name} | {env.NEXT_PUBLIC_APP_NAME}
-                </title>
+                <title>{`${product.name} | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             <div className="container">
                 <article>

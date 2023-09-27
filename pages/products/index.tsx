@@ -26,7 +26,7 @@ export default ({ searchResult }: InferGetServerSidePropsType<typeof getServerSi
     return (
         <>
             <Head>
-                <title>Products | {env.NEXT_PUBLIC_APP_NAME}</title>
+                <title>{`Products | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             <div className="grid grid-cols-sidebar grid-rows-1">
                 <Sidebar />

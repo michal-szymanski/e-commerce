@@ -9,7 +9,7 @@ export default () => {
     return (
         <>
             <Head>
-                <title>Cart | {env.NEXT_PUBLIC_APP_NAME}</title>
+                <title>{`Cart | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             <div className="flex flex-col items-center gap-5 pb-36">
                 {cart?.map(({ quantity, product }) => <CartItem key={product.id} quantity={quantity} product={product} />)}

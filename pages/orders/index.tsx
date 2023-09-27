@@ -70,7 +70,7 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
     return (
         <>
             <Head>
-                <title>Orders | {env.NEXT_PUBLIC_APP_NAME}</title>
+                <title>{`Orders | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             <div className="container mx-auto py-10">
                 <DataTable columns={columns} data={data} />

@@ -5,7 +5,7 @@ import Head from 'next/head';
 export default () => (
     <>
         <Head>
-            <title>Sign Up | {env.NEXT_PUBLIC_APP_NAME}</title>
+            <title>{`Sign Up | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
         </Head>
         <SignUp
             path="/sign-up"

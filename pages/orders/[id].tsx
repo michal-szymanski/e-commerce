@@ -65,7 +65,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
     return (
         <>
             <Head>
-                <title>Order | {env.NEXT_PUBLIC_APP_NAME}</title>
+                <title>{`Order | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             <div className="container mx-auto py-10">
                 <header className="mb-10 grid grid-cols-[300px_300px] gap-10">
