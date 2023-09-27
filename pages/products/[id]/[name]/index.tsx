@@ -14,10 +14,12 @@ import { setIsDialogOpen } from '@/store/slices/ui';
 import stripe from '@/stripe';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
+import { useUser } from '@clerk/nextjs';
 
 export default ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [quantity, setQuantity] = useState(1);
-    const { data: cart } = useCart();
+    const { isSignedIn } = useUser();
+    const { data: cart } = useCart(!!isSignedIn);
     const updateCart = useUpdateCart();
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();

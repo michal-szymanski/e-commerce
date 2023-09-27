@@ -2,9 +2,11 @@ import CartItem from '@/components/ui/custom/cart-item';
 import { useCart } from '@/hooks/queries';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
+import { useUser } from '@clerk/nextjs';
 
 export default () => {
-    const { data: cart } = useCart();
+    const { isSignedIn } = useUser();
+    const { data: cart } = useCart(!!isSignedIn);
 
     return (
         <>

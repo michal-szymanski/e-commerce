@@ -14,7 +14,7 @@ export const useProducts = (name: string, limit: number, offset: number, enabled
         enabled
     });
 
-export const useCart = () =>
+export const useCart = (enabled: boolean) =>
     useQuery({
         queryKey: ['order'],
         queryFn: async () => {
@@ -28,5 +28,6 @@ export const useCart = () =>
             ).json();
 
             return z.array(z.object({ product: stripeProductSchema, quantity: z.number() })).parse(response);
-        }
+        },
+        enabled
     });

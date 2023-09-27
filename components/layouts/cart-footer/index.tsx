@@ -5,9 +5,11 @@ import { useCart } from '@/hooks/queries';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { useUser } from '@clerk/nextjs';
 
 const CartFooter = () => {
-    const { data: cart } = useCart();
+    const { isSignedIn } = useUser();
+    const { data: cart } = useCart(!!isSignedIn);
     const totalPrice = cart?.reduce((acc, curr) => acc + z.coerce.number().parse(getTotalPrice(curr.product, curr.quantity)), 0).toFixed(2);
     const router = useRouter();
     const isDialogOpen = useSelector((state: RootState) => state.ui.isDialogOpen);
