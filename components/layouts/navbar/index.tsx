@@ -46,12 +46,12 @@ const Navbar = () => {
                 </SignedIn>
                 <SignedOut>
                     <NavigationMenuItem>
-                        <Link href={'/sign-up'} legacyBehavior passHref>
+                        <Link href="/sign-up" legacyBehavior passHref>
                             <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Sign Up</NavigationMenuLink>
                         </Link>
                     </NavigationMenuItem>
                     <NavigationMenuItem>
-                        <Link href={'/sign-in'} legacyBehavior passHref>
+                        <Link href="/sign-in" legacyBehavior passHref>
                             <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Sign In</NavigationMenuLink>
                         </Link>
                     </NavigationMenuItem>
