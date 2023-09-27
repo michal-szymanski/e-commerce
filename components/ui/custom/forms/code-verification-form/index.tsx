@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 const formSchema = z.object({
-    code: z.string()
+    code: z.string().nonempty({ message: 'Code is required' })
 });
 
 type Props = {

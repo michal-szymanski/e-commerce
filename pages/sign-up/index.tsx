@@ -7,18 +7,11 @@ import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import CodeVerificationForm from '@/components/ui/custom/forms/code-verification-form';
 import SignUpForm from '@/components/ui/custom/forms/sign-up-form';
+import { cn } from '@/lib/utils';
 
 export default () => {
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
     const [pendingVerification, setPendingVerification] = useState(false);
-
-    const renderForms = () => {
-        if (pendingVerification) {
-            return <CodeVerificationForm setSummaryErrors={setSummaryErrors} />;
-        }
-
-        return <SignUpForm setSummaryErrors={setSummaryErrors} setPendingVerification={setPendingVerification} />;
-    };
 
     return (
         <>
@@ -40,7 +33,16 @@ export default () => {
                             </AlertDescription>
                         </Alert>
                     )}
-                    {renderForms()}
+                    <div className="w-[400px] overflow-hidden">
+                        <div
+                            className={cn('grid grid-cols-[repeat(2,_400px)] transition-transform', {
+                                '-translate-x-full': pendingVerification
+                            })}
+                        >
+                            <SignUpForm setSummaryErrors={setSummaryErrors} setPendingVerification={setPendingVerification} />
+                            <CodeVerificationForm setSummaryErrors={setSummaryErrors} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </>
