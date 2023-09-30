@@ -1,7 +1,7 @@
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import Link from 'next/link';
 import CartCounter from '@/components/ui/custom/cart-icon';
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import { OrganizationSwitcher, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import SearchBar from '@/components/ui/custom/search-bar';
 import { useRouter } from 'next/router';
@@ -42,7 +42,12 @@ const Navbar = () => {
                             <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Orders</NavigationMenuLink>
                         </Link>
                     </NavigationMenuItem>
-                    <UserButton afterSignOutUrl="/" userProfileMode="navigation" userProfileUrl="/user-profile" />
+                    <NavigationMenuItem>
+                        <OrganizationSwitcher createOrganizationMode="navigation" createOrganizationUrl="/create-organization" />
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                        <UserButton afterSignOutUrl="/" userProfileMode="navigation" userProfileUrl="/user-profile" />
+                    </NavigationMenuItem>
                 </SignedIn>
                 <SignedOut>
                     <NavigationMenuItem>
