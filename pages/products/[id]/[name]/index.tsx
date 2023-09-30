@@ -14,12 +14,11 @@ import { setIsDialogOpen } from '@/store/slices/ui';
 import stripe from '@/stripe';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
-import { useUser } from '@clerk/nextjs';
+import PersonalAccount from '@/components/utils/personal-account';
 
 export default ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [quantity, setQuantity] = useState(1);
-    const { isSignedIn } = useUser();
-    const { data: cart } = useCart(!!isSignedIn);
+    const { data: cart } = useCart();
     const updateCart = useUpdateCart();
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
@@ -65,19 +64,21 @@ export default ({ product }: InferGetServerSidePropsType<typeof getServerSidePro
                                 <CardDescription>+ VAT</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex items-center gap-5 pb-5">
-                                    <span className="text-lg font-semibold">Quantity:</span>
-                                    <QuantityCounter initialQuantity={quantity} handlePlus={handlePlus} handleMinus={handleMinus} handleBlur={handleBlur} />
-                                </div>
-                                <Button
-                                    className="w-full"
-                                    onClick={async () => {
-                                        handleOpenDialog(true);
-                                        await updateCart.mutate([{ product, quantity: quantity + Number(cartItemQuantity) }]);
-                                    }}
-                                >
-                                    Add to cart
-                                </Button>
+                                <PersonalAccount>
+                                    <div className="flex items-center gap-5 pb-5">
+                                        <span className="text-lg font-semibold">Quantity:</span>
+                                        <QuantityCounter initialQuantity={quantity} handlePlus={handlePlus} handleMinus={handleMinus} handleBlur={handleBlur} />
+                                    </div>
+                                    <Button
+                                        className="w-full"
+                                        onClick={async () => {
+                                            handleOpenDialog(true);
+                                            await updateCart.mutate([{ product, quantity: quantity + Number(cartItemQuantity) }]);
+                                        }}
+                                    >
+                                        Add to cart
+                                    </Button>
+                                </PersonalAccount>
                             </CardContent>
                         </Card>
                     </div>

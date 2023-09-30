@@ -7,6 +7,7 @@ import SearchBar from '@/components/ui/custom/search-bar';
 import { useRouter } from 'next/router';
 import { z } from 'zod';
 import UserDropdown from '@/components/ui/custom/user-dropdown';
+import PersonalAccount from '@/components/utils/personal-account';
 
 const Navbar = () => {
     const router = useRouter();
@@ -30,13 +31,15 @@ const Navbar = () => {
                 </NavigationMenuItem>
             </NavigationMenuList>
             <NavigationMenuList>
-                <NavigationMenuItem>
-                    <Link href="/cart" legacyBehavior passHref>
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                            <CartCounter />
-                        </NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
+                <PersonalAccount>
+                    <NavigationMenuItem>
+                        <Link href="/cart" legacyBehavior passHref>
+                            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                <CartCounter />
+                            </NavigationMenuLink>
+                        </Link>
+                    </NavigationMenuItem>
+                </PersonalAccount>
                 <SignedIn>
                     <NavigationMenuItem>
                         <Link href="/orders" legacyBehavior passHref>
