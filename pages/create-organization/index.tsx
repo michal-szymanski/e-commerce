@@ -1,22 +1,19 @@
-import { env } from '@/env.mjs';
+import { AnimatePresence, motion } from 'framer-motion';
+import CreateOrganizationForm from '@/components/ui/custom/forms/create-organization-form';
 import Head from 'next/head';
-import { useState } from 'react';
+import { env } from '@/env.mjs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ExclamationCircleIcon } from '@heroicons/react/20/solid';
+import { useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
-import CodeVerificationForm from '@/components/ui/custom/forms/code-verification-form';
-import SignUpForm from '@/components/ui/custom/forms/sign-up-form';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default () => {
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
-    const [step, setStep] = useState(0);
-
     return (
         <>
             <Head>
-                <title>{`Sign Up | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
+                <title>{`Create Organization | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             <div className="container flex h-1/5 w-[400px] flex-col items-center justify-end">
                 <div className="flex flex-col gap-5">
@@ -38,30 +35,9 @@ export default () => {
                         )}
                     </AnimatePresence>
                     <div className="relative">
-                        <AnimatePresence>
-                            {step === 0 && (
-                                <motion.div
-                                    initial={{ translateX: '-50%', opacity: 1 }}
-                                    exit={{ translateX: '-150%', opacity: 0 }}
-                                    key="sign-up-form"
-                                    className="absolute left-1/2 top-0 w-[400px]"
-                                >
-                                    <SignUpForm nextStep={() => setStep((prev) => prev + 1)} setSummaryErrors={setSummaryErrors} />
-                                </motion.div>
-                            )}
-
-                            {step === 1 && (
-                                <motion.div
-                                    initial={{ translateX: '50%', opacity: 0 }}
-                                    animate={{ translateX: '-50%', opacity: 1 }}
-                                    exit={{ translateX: '-150%', opacity: 0 }}
-                                    key="code-verification-form"
-                                    className="absolute left-1/2  top-0 w-[400px]"
-                                >
-                                    <CodeVerificationForm setSummaryErrors={setSummaryErrors} />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <div className="absolute left-1/2 top-0  w-[400px] -translate-x-1/2">
+                            <CreateOrganizationForm setSummaryErrors={setSummaryErrors} />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -70,9 +46,9 @@ export default () => {
 };
 
 export const getServerSideProps: GetServerSideProps<{}> = async (context) => {
-    const { userId } = getAuth(context.req);
+    const { orgId } = getAuth(context.req);
 
-    if (userId) {
+    if (orgId) {
         return {
             redirect: {
                 destination: '/',

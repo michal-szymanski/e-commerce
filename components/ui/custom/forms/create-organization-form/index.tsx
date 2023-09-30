@@ -1,44 +1,44 @@
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isClerkAPIResponseError, useSignUp } from '@clerk/nextjs';
-import { useRouter } from 'next/router';
+import { isClerkAPIResponseError, useOrganizationList } from '@clerk/nextjs';
 import { Dispatch, SetStateAction } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/router';
 
 const formSchema = z.object({
-    code: z.string().nonempty({ message: 'Code is required' })
+    name: z.string().nonempty({ message: 'Name is required' })
 });
 
 type Props = {
     setSummaryErrors: Dispatch<SetStateAction<{ id: string; message: string }[]>>;
 };
-const CodeVerificationForm = ({ setSummaryErrors }: Props) => {
+
+const CreateOrganizationForm = ({ setSummaryErrors }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            code: ''
+            name: ''
         }
     });
 
-    const { signUp, setActive, isLoaded } = useSignUp();
     const router = useRouter();
 
-    const onSubmit = async ({ code }: z.infer<typeof formSchema>) => {
-        if (!signUp) return;
+    const { createOrganization, isLoaded, setActive } = useOrganizationList({});
+
+    const onSubmit = async ({ name }: z.infer<typeof formSchema>) => {
+        if (!createOrganization) return;
 
         try {
-            const { status, createdSessionId } = await signUp.attemptEmailAddressVerification({
-                code
+            const organization = await createOrganization({
+                name
             });
 
-            if (status === 'complete') {
-                await router.push('/');
-                await setActive({ session: createdSessionId });
-            }
+            await router.push('/');
+            await setActive({ organization });
         } catch (error) {
             if (isClerkAPIResponseError(error)) {
                 setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
@@ -56,18 +56,15 @@ const CodeVerificationForm = ({ setSummaryErrors }: Props) => {
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <Card className="">
                     <CardHeader>
-                        <CardTitle>Verify email</CardTitle>
+                        <CardTitle>Create Organization</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <FormField
                             control={form.control}
-                            name="code"
+                            name="name"
                             render={({ field }) => (
                                 <FormItem>
-                                    <CardDescription className="pb-5">
-                                        We have sent you a verification code to your email address. Please enter the code below:
-                                    </CardDescription>
-                                    <FormLabel>Code</FormLabel>
+                                    <FormLabel>Name</FormLabel>
                                     <FormControl>
                                         <Input {...field} />
                                     </FormControl>
@@ -89,4 +86,4 @@ const CodeVerificationForm = ({ setSummaryErrors }: Props) => {
     );
 };
 
-export default CodeVerificationForm;
+export default CreateOrganizationForm;

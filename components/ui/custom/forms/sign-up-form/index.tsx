@@ -21,11 +21,11 @@ const formSchema = z
     });
 
 type Props = {
+    nextStep: () => void;
     setSummaryErrors: Dispatch<SetStateAction<{ id: string; message: string }[]>>;
-    setPendingVerification: Dispatch<SetStateAction<boolean>>;
 };
 
-const SignUpForm = ({ setSummaryErrors, setPendingVerification }: Props) => {
+const SignUpForm = ({ nextStep, setSummaryErrors }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -34,11 +34,11 @@ const SignUpForm = ({ setSummaryErrors, setPendingVerification }: Props) => {
             confirmPassword: ''
         }
     });
-    const { signUp } = useSignUp();
+
+    const { signUp, isLoaded } = useSignUp();
 
     const onSubmit = async ({ email, password }: z.infer<typeof formSchema>) => {
         if (!signUp) return;
-        setSummaryErrors([]);
 
         try {
             await signUp.create({
@@ -47,7 +47,7 @@ const SignUpForm = ({ setSummaryErrors, setPendingVerification }: Props) => {
             });
 
             await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-            setPendingVerification(true);
+            nextStep();
         } catch (error) {
             if (isClerkAPIResponseError(error)) {
                 setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
@@ -58,8 +58,10 @@ const SignUpForm = ({ setSummaryErrors, setPendingVerification }: Props) => {
         }
     };
 
+    if (!isLoaded) return null;
+
     return (
-        <Form {...form} key="sign-up-form">
+        <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <Card className="">
                     <CardHeader>
