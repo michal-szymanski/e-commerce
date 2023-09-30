@@ -35,13 +35,18 @@ const UserDropdown = () => {
                     <div className="text-sm font-normal text-muted-foreground">{organization ? 'Business' : 'Personal'} Account</div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/user-profile')}>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/user-profile')}>
                     <Cog8ToothIcon className="h-5 w-5" />
                     <span className="pl-2">Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Accounts</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setActive({ organization: null })}>
+                <DropdownMenuItem
+                    onClick={() => setActive({ organization: null })}
+                    className={cn('cursor-pointer', {
+                        'text-muted-foreground': organization
+                    })}
+                >
                     <CheckIcon
                         className={cn('h-5 w-5', {
                             invisible: organization
@@ -50,7 +55,13 @@ const UserDropdown = () => {
                     <span className="pl-2">Personal</span>
                 </DropdownMenuItem>
                 {user.organizationMemberships.map((m) => (
-                    <DropdownMenuItem key={m.id} onClick={() => setActive({ organization: m.organization })}>
+                    <DropdownMenuItem
+                        key={m.id}
+                        onClick={() => setActive({ organization: m.organization })}
+                        className={cn('cursor-pointer', {
+                            'text-muted-foreground': organization?.id !== m.organization.id
+                        })}
+                    >
                         <CheckIcon
                             className={cn('h-5 w-5', {
                                 invisible: organization?.id !== m.organization.id
@@ -60,13 +71,13 @@ const UserDropdown = () => {
                     </DropdownMenuItem>
                 ))}
                 {user.organizationMemberships.length === 0 && (
-                    <DropdownMenuItem onClick={() => router.push('/create-organization')}>
+                    <DropdownMenuItem onClick={() => router.push('/create-organization')} className="cursor-pointer">
                         <PlusSmallIcon className="h-5 w-5" />
                         <span className="pl-2">Create Organization</span>
                     </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>
+                <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
                     <ArrowRightOnRectangleIcon className="h-5 w-5" />
                     <span className="pl-2">Sign Out</span>
                 </DropdownMenuItem>

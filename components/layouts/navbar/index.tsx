@@ -47,9 +47,6 @@ const Navbar = () => {
                         </Link>
                     </NavigationMenuItem>
                     <NavigationMenuItem>
-                        <OrganizationSwitcher createOrganizationMode="navigation" createOrganizationUrl="/create-organization" />
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
                         <UserDropdown />
                     </NavigationMenuItem>
                 </SignedIn>
