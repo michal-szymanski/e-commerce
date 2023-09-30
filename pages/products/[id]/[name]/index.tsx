@@ -15,11 +15,14 @@ import stripe from '@/stripe';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
 import PersonalAccount from '@/components/utils/personal-account';
+import { useOrganization, useUser } from '@clerk/nextjs';
 
 export default ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-    const [quantity, setQuantity] = useState(1);
-    const { data: cart } = useCart();
+    const { isSignedIn } = useUser();
+    const { organization } = useOrganization();
+    const { data: cart } = useCart(!!isSignedIn && !organization);
     const updateCart = useUpdateCart();
+    const [quantity, setQuantity] = useState(1);
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
 

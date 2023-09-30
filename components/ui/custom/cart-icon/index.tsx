@@ -1,9 +1,12 @@
 import { ShoppingCartIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/hooks/queries';
+import { useOrganization, useUser } from '@clerk/nextjs';
 
 const CartCounter = () => {
-    const { data: cart } = useCart();
+    const { isSignedIn } = useUser();
+    const { organization } = useOrganization();
+    const { data: cart } = useCart(!!isSignedIn && !organization);
 
     const numberOfProducts = cart?.reduce((acc, curr) => acc + Number(curr.quantity), 0);
 

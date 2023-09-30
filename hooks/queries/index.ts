@@ -15,11 +15,8 @@ export const useProducts = (name: string, limit: number, offset: number, enabled
         enabled
     });
 
-export const useCart = () => {
-    const { isSignedIn } = useUser();
-    const { organization } = useOrganization();
-
-    return useQuery({
+export const useCart = (enabled: boolean) =>
+    useQuery({
         queryKey: ['order'],
         queryFn: async () => {
             const response = await (
@@ -33,6 +30,5 @@ export const useCart = () => {
 
             return z.array(z.object({ product: stripeProductSchema, quantity: z.number() })).parse(response);
         },
-        enabled: isSignedIn && !organization
+        enabled
     });
-};
