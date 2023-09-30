@@ -11,6 +11,8 @@ import { Dispatch, SetStateAction } from 'react';
 
 const formSchema = z
     .object({
+        firstName: z.string().nonempty({ message: 'First name is required' }),
+        lastName: z.string().nonempty({ message: 'Last name is required' }),
         email: z.string().nonempty({ message: 'Email is required' }).email(),
         password: z.string().nonempty({ message: 'Password is required' }),
         confirmPassword: z.string().nonempty({ message: 'Please confirm password' })
@@ -37,13 +39,16 @@ const SignUpForm = ({ nextStep, setSummaryErrors }: Props) => {
 
     const { signUp, isLoaded } = useSignUp();
 
-    const onSubmit = async ({ email, password }: z.infer<typeof formSchema>) => {
+    const onSubmit = async ({ email, password, firstName, lastName }: z.infer<typeof formSchema>) => {
         if (!signUp) return;
+        setSummaryErrors([]);
 
         try {
             await signUp.create({
                 emailAddress: email,
-                password
+                password,
+                firstName,
+                lastName
             });
 
             await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
@@ -68,6 +73,36 @@ const SignUpForm = ({ nextStep, setSummaryErrors }: Props) => {
                         <CardTitle>Sign Up</CardTitle>
                     </CardHeader>
                     <CardContent>
+                        <FormField
+                            control={form.control}
+                            name="firstName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>First name</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <div className="h-5">
+                                        <FormMessage />
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Last name</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <div className="h-5">
+                                        <FormMessage />
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             control={form.control}
                             name="email"

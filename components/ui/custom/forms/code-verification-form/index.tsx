@@ -29,6 +29,7 @@ const CodeVerificationForm = ({ setSummaryErrors }: Props) => {
 
     const onSubmit = async ({ code }: z.infer<typeof formSchema>) => {
         if (!signUp) return;
+        setSummaryErrors([]);
 
         try {
             const { status, createdSessionId } = await signUp.attemptEmailAddressVerification({

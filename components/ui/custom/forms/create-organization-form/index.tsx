@@ -27,10 +27,11 @@ const CreateOrganizationForm = ({ setSummaryErrors }: Props) => {
 
     const router = useRouter();
 
-    const { createOrganization, isLoaded, setActive } = useOrganizationList({});
+    const { createOrganization, isLoaded, setActive } = useOrganizationList();
 
     const onSubmit = async ({ name }: z.infer<typeof formSchema>) => {
         if (!createOrganization) return;
+        setSummaryErrors([]);
 
         try {
             const organization = await createOrganization({
