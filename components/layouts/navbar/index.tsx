@@ -14,7 +14,7 @@ const Navbar = () => {
     const querySearch = z.string().nonempty().safeParse(router.query.name);
 
     return (
-        <NavigationMenu className="fixed h-[70px] min-w-full justify-between px-10 py-3 shadow-sm">
+        <NavigationMenu className="fixed top-0 h-[70px] min-w-full justify-between bg-background/95 px-10 py-3 shadow-sm backdrop-blur">
             <SearchBar
                 key={router.asPath}
                 initialSearch={querySearch.success ? querySearch.data : ''}
