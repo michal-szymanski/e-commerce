@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default () => {
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
     const [step, setStep] = useState(0);
+    const [organizationName, setOrganizationName] = useState<string | undefined>();
 
     return (
         <>
@@ -57,6 +58,7 @@ export default () => {
                                                 <SignUpForm
                                                     nextStep={() => setStep((prev) => prev + 1)}
                                                     setSummaryErrors={setSummaryErrors}
+                                                    setOrganizationName={setOrganizationName}
                                                     accountType={accountType}
                                                 />
                                             </TabsContent>
@@ -72,7 +74,7 @@ export default () => {
                                     key="code-verification-form"
                                     className="absolute left-1/2 top-0 w-full"
                                 >
-                                    <CodeVerificationForm setSummaryErrors={setSummaryErrors} />
+                                    <CodeVerificationForm setSummaryErrors={setSummaryErrors} organizationName={organizationName} />
                                 </motion.div>
                             )}
                         </AnimatePresence>

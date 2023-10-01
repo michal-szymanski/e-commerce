@@ -26,10 +26,11 @@ const formSchema = z
 type Props = {
     nextStep: () => void;
     setSummaryErrors: Dispatch<SetStateAction<{ id: string; message: string }[]>>;
+    setOrganizationName: Dispatch<SetStateAction<string | undefined>>;
     accountType: 'personal' | 'business';
 };
 
-const SignUpForm = ({ nextStep, setSummaryErrors, accountType }: Props) => {
+const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountType }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -45,7 +46,7 @@ const SignUpForm = ({ nextStep, setSummaryErrors, accountType }: Props) => {
 
     const { signUp, isLoaded } = useSignUp();
 
-    const onSubmit = async ({ email, password, firstName, lastName }: z.infer<typeof formSchema>) => {
+    const onSubmit = async ({ email, password, firstName, lastName, organizationName }: z.infer<typeof formSchema>) => {
         if (!signUp) return;
         setSummaryErrors([]);
 
@@ -58,6 +59,8 @@ const SignUpForm = ({ nextStep, setSummaryErrors, accountType }: Props) => {
             });
 
             await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+
+            setOrganizationName(organizationName);
             nextStep();
         } catch (error) {
             if (isClerkAPIResponseError(error)) {

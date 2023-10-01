@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isClerkAPIResponseError, useSignUp } from '@clerk/nextjs';
+import { isClerkAPIResponseError, useOrganizationList, useSignUp } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
 import { Dispatch, SetStateAction } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,8 +15,10 @@ const formSchema = z.object({
 
 type Props = {
     setSummaryErrors: Dispatch<SetStateAction<{ id: string; message: string }[]>>;
+    organizationName?: string;
 };
-const CodeVerificationForm = ({ setSummaryErrors }: Props) => {
+
+const CodeVerificationForm = ({ setSummaryErrors, organizationName }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -25,6 +27,7 @@ const CodeVerificationForm = ({ setSummaryErrors }: Props) => {
     });
 
     const { signUp, setActive, isLoaded } = useSignUp();
+
     const router = useRouter();
 
     const onSubmit = async ({ code }: z.infer<typeof formSchema>) => {
@@ -32,12 +35,27 @@ const CodeVerificationForm = ({ setSummaryErrors }: Props) => {
         setSummaryErrors([]);
 
         try {
-            const { status, createdSessionId } = await signUp.attemptEmailAddressVerification({
+            const { status, createdSessionId, createdUserId } = await signUp.attemptEmailAddressVerification({
                 code
             });
 
             if (status === 'complete') {
-                await router.push('/');
+                if (organizationName && createdSessionId) {
+                    const { organizationId } = (await (
+                        await fetch('/api/organizations', {
+                            method: 'POST',
+                            body: JSON.stringify({ userId: createdUserId, organizationName }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    ).json()) as { organizationId: string };
+
+                    await setActive({ session: createdSessionId, organization: organizationId });
+                    await router.push('/');
+                    return;
+                }
+
                 await setActive({ session: createdSessionId });
             }
         } catch (error) {
