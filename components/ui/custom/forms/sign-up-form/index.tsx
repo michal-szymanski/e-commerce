@@ -15,7 +15,8 @@ const formSchema = z
         lastName: z.string().nonempty({ message: 'Last name is required' }),
         email: z.string().nonempty({ message: 'Email is required' }).email(),
         password: z.string().nonempty({ message: 'Password is required' }),
-        confirmPassword: z.string().nonempty({ message: 'Please confirm password' })
+        confirmPassword: z.string().nonempty({ message: 'Please confirm password' }),
+        organizationName: z.string().nonempty({ message: 'Organization name is required' }).optional()
     })
     .refine(({ password, confirmPassword }) => password === confirmPassword, {
         message: "Passwords don't match",
@@ -25,16 +26,21 @@ const formSchema = z
 type Props = {
     nextStep: () => void;
     setSummaryErrors: Dispatch<SetStateAction<{ id: string; message: string }[]>>;
+    accountType: 'personal' | 'business';
 };
 
-const SignUpForm = ({ nextStep, setSummaryErrors }: Props) => {
+const SignUpForm = ({ nextStep, setSummaryErrors, accountType }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            organizationName: '',
+            firstName: '',
+            lastName: '',
             email: '',
             password: '',
             confirmPassword: ''
-        }
+        },
+        shouldUnregister: true
     });
 
     const { signUp, isLoaded } = useSignUp();
@@ -73,6 +79,23 @@ const SignUpForm = ({ nextStep, setSummaryErrors }: Props) => {
                         <CardTitle>Sign Up</CardTitle>
                     </CardHeader>
                     <CardContent>
+                        {accountType === 'business' && (
+                            <FormField
+                                control={form.control}
+                                name="organizationName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Organization name</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} />
+                                        </FormControl>
+                                        <div className="h-5">
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         <FormField
                             control={form.control}
                             name="firstName"

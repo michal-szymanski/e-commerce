@@ -8,6 +8,7 @@ import { getAuth } from '@clerk/nextjs/server';
 import CodeVerificationForm from '@/components/ui/custom/forms/code-verification-form';
 import SignUpForm from '@/components/ui/custom/forms/sign-up-form';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default () => {
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
@@ -37,26 +38,39 @@ export default () => {
                             </motion.div>
                         )}
                     </AnimatePresence>
-                    <div className="relative">
+                    <div className="relative w-[400px]">
                         <AnimatePresence>
                             {step === 0 && (
                                 <motion.div
                                     initial={{ translateX: '-50%', opacity: 1 }}
                                     exit={{ translateX: '-150%', opacity: 0 }}
-                                    key="sign-up-form"
-                                    className="absolute left-1/2 top-0 w-[400px]"
+                                    key="tabs"
+                                    className="absolute left-1/2 top-0 w-full"
                                 >
-                                    <SignUpForm nextStep={() => setStep((prev) => prev + 1)} setSummaryErrors={setSummaryErrors} />
+                                    <Tabs defaultValue="personal">
+                                        <TabsList className="grid w-full grid-cols-2">
+                                            <TabsTrigger value="personal">Personal</TabsTrigger>
+                                            <TabsTrigger value="business">Business</TabsTrigger>
+                                        </TabsList>
+                                        {(['personal', 'business'] as const).map((accountType) => (
+                                            <TabsContent key={accountType} value={accountType}>
+                                                <SignUpForm
+                                                    nextStep={() => setStep((prev) => prev + 1)}
+                                                    setSummaryErrors={setSummaryErrors}
+                                                    accountType={accountType}
+                                                />
+                                            </TabsContent>
+                                        ))}
+                                    </Tabs>
                                 </motion.div>
                             )}
-
                             {step === 1 && (
                                 <motion.div
                                     initial={{ translateX: '50%', opacity: 0 }}
                                     animate={{ translateX: '-50%', opacity: 1 }}
                                     exit={{ translateX: '-150%', opacity: 0 }}
                                     key="code-verification-form"
-                                    className="absolute left-1/2  top-0 w-[400px]"
+                                    className="absolute left-1/2 top-0 w-full"
                                 >
                                     <CodeVerificationForm setSummaryErrors={setSummaryErrors} />
                                 </motion.div>
