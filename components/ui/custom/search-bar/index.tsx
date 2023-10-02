@@ -26,7 +26,7 @@ const SearchBar = ({ initialSearch, className }: Props) => {
     }, [initialSearch]);
 
     const handleSearch = useCallback(
-        () => debounce(async (value: string) => {
+        (value: string) => debounce(async () => {
             setDebouncedValue(value);
             setIsVisible(true);
         }, 500),

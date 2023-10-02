@@ -144,7 +144,7 @@ export const getServerSideProps: GetServerSideProps<{
             ...o,
             date: dayjs(o.date as string).toISOString(),
             checkoutSessionId: session.id,
-            totalPrice: session.line_items.data.reduce((acc, curr) => acc + curr.amount_total / 100, 0).toFixed(2)
+            totalPrice: session.line_items.data.reduce((acc: any, curr: any) => acc + curr.amount_total / 100, 0).toFixed(2)
         };
     });
 
