@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Dispatch, SetStateAction } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const formSchema = z
     .object({
@@ -16,7 +17,10 @@ const formSchema = z
         email: z.string().nonempty({ message: 'Email is required' }).email(),
         password: z.string().nonempty({ message: 'Password is required' }),
         confirmPassword: z.string().nonempty({ message: 'Please confirm password' }),
-        organizationName: z.string().nonempty({ message: 'Organization name is required' }).optional()
+        organizationName: z.string().nonempty({ message: 'Organization name is required' }).optional(),
+        termsAccepted: z.literal<boolean>(true, {
+            errorMap: () => ({ message: 'Your consent is required' })
+        })
     })
     .refine(({ password, confirmPassword }) => password === confirmPassword, {
         message: "Passwords don't match",
@@ -39,7 +43,8 @@ const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountTy
             lastName: '',
             email: '',
             password: '',
-            confirmPassword: ''
+            confirmPassword: '',
+            termsAccepted: false
         },
         shouldUnregister: true
     });
@@ -170,6 +175,34 @@ const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountTy
                                     </FormControl>
                                     <div className="h-5">
                                         <FormMessage />
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="termsAccepted"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                                    <FormControl>
+                                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
+                                    <div>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>
+                                                I accept the{' '}
+                                                <Link href="/terms-of-use" className="text-card-foreground underline">
+                                                    terms of use
+                                                </Link>{' '}
+                                                and{' '}
+                                                <Link href="/privacy-policy" className="text-card-foreground underline">
+                                                    privacy policy
+                                                </Link>
+                                            </FormLabel>
+                                        </div>
+                                        <div className="h-5">
+                                            <FormMessage />
+                                        </div>
                                     </div>
                                 </FormItem>
                             )}
