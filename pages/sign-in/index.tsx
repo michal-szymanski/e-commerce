@@ -22,7 +22,7 @@ const formSchema = z.object({
     password: z.string().nonempty({ message: 'Password is required' })
 });
 
-export default () => {
+const Page = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -119,7 +119,7 @@ export default () => {
                                 </CardContent>
                                 <CardFooter className="flex flex-col items-start gap-2">
                                     <CardDescription>
-                                        Don't have an account?
+                                        {`Don't`} have an account?
                                         <Link href="/sign-up">
                                             <Button type="button" variant="link">
                                                 Sign up
@@ -155,3 +155,5 @@ export const getServerSideProps: GetServerSideProps<{}> = async (context) => {
         props: {}
     };
 };
+
+export default Page;

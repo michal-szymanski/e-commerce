@@ -10,7 +10,7 @@ import stripe from '@/stripe';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
 
-export default ({ searchResult }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Page = ({ searchResult }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
         if (!searchResult.data?.length) {
             return <div>No items</div>;
@@ -70,3 +70,5 @@ export const getServerSideProps: GetServerSideProps<{ searchResult: StripeProduc
         }
     };
 };
+
+export default Page;

@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 
-export default () => {
+const Page = () => {
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
     return (
         <>
@@ -61,3 +61,5 @@ export const getServerSideProps: GetServerSideProps<{}> = async (context) => {
         props: {}
     };
 };
+
+export default Page;

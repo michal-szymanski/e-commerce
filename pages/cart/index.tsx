@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { env } from '@/env.mjs';
 import { useOrganization, useUser } from '@clerk/nextjs';
 
-export default () => {
+const Page = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data: cart } = useCart(!!isSignedIn && !organization);
@@ -20,3 +20,5 @@ export default () => {
         </>
     );
 };
+
+export default Page;

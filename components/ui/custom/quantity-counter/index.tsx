@@ -30,7 +30,7 @@ const QuantityCounter = ({ initialQuantity, handlePlus, handleMinus, handleBlur 
 
     useEffect(() => {
         form.setValue('quantity', z.coerce.string().parse(initialQuantity));
-    }, [initialQuantity]);
+    }, [initialQuantity, form]);
 
     const transformInputToNumber = (event: React.ChangeEvent<HTMLInputElement>) => {
         try {

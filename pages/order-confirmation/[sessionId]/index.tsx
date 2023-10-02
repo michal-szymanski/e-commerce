@@ -16,7 +16,7 @@ import { eq } from 'drizzle-orm';
 import { orderSchema } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Page = ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
     const [confettiIds, setConfettiIds] = useState<string[]>([uuidv4()]);
 
@@ -65,7 +65,7 @@ export default ({ orderId, firstName }: InferGetServerSidePropsType<typeof getSe
                             has been created.
                         </p>
                         <p className="text-lg">
-                            You should receive an order confirmation email shortly. If the email hasn't arrived within few minutes, please check your spam
+                            You should receive an order confirmation email shortly. If the email {`hasn't`} arrived within few minutes, please check your spam
                             folder to see if the email was routed there.
                         </p>
                     </CardContent>
@@ -137,3 +137,5 @@ export const getServerSideProps: GetServerSideProps<{ orderId: number; firstName
         }
     };
 };
+
+export default Page;

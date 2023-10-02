@@ -17,7 +17,7 @@ import Head from 'next/head';
 import PersonalAccount from '@/components/utils/personal-account';
 import { useOrganization, useUser } from '@clerk/nextjs';
 
-export default ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Page = ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data: cart } = useCart(!!isSignedIn && !organization);
@@ -113,3 +113,5 @@ export const getServerSideProps: GetServerSideProps<{ product: StripeProduct }> 
         };
     }
 };
+
+export default Page;

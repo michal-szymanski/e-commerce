@@ -10,7 +10,7 @@ import SignUpForm from '@/components/ui/custom/forms/sign-up-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export default () => {
+const Page = () => {
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
     const [step, setStep] = useState(0);
     const [organizationName, setOrganizationName] = useState<string | undefined>();
@@ -101,3 +101,5 @@ export const getServerSideProps: GetServerSideProps<{}> = async (context) => {
         props: {}
     };
 };
+
+export default Page;

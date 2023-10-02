@@ -2,7 +2,7 @@ import { UserProfile } from '@clerk/nextjs';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
 
-export default () => (
+const Page = () => (
     <>
         <Head>
             <title>{`User Profile | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
@@ -18,3 +18,5 @@ export default () => (
         />
     </>
 );
+
+export default Page;
