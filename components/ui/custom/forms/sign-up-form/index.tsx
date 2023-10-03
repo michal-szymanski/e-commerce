@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
+import SubmitButton from '@/components/ui/custom/submit-button';
 
 const formSchema = z
     .object({
@@ -49,11 +50,14 @@ const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountTy
         shouldUnregister: true
     });
 
-    const { signUp, isLoaded } = useSignUp();
+    const { signUp, isLoaded: isClerkLoaded } = useSignUp();
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     const onSubmit = async ({ email, password, firstName, lastName, organizationName }: z.infer<typeof formSchema>) => {
-        if (!signUp) return;
+        if (!signUp || isSuccess) return;
         setSummaryErrors([]);
+        setIsLoading(true);
 
         try {
             await signUp.create({
@@ -66,18 +70,17 @@ const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountTy
             await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
 
             setOrganizationName(organizationName);
-            nextStep();
+            setIsSuccess(true);
         } catch (error) {
             if (isClerkAPIResponseError(error)) {
                 setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
-                return;
             }
-
-            console.error({ error });
         }
+
+        setIsLoading(false);
     };
 
-    if (!isLoaded) return null;
+    if (!isClerkLoaded) return null;
 
     return (
         <Form {...form}>
@@ -217,9 +220,9 @@ const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountTy
                                 </Button>
                             </Link>
                         </CardDescription>
-                        <Button type="submit" className="w-full">
-                            Submit
-                        </Button>
+                        <div className="relative w-full">
+                            <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onComplete={() => setTimeout(nextStep, 2000)} />
+                        </div>
                     </CardFooter>
                 </Card>
             </form>
