@@ -10,6 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import SubmitButton from '@/components/ui/custom/submit-button';
+import SummaryErrors from '../../summary-errors';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const formSchema = z
     .object({
@@ -30,12 +33,10 @@ const formSchema = z
 
 type Props = {
     nextStep: () => void;
-    setSummaryErrors: Dispatch<SetStateAction<{ id: string; message: string }[]>>;
     setOrganizationName: Dispatch<SetStateAction<string | undefined>>;
-    accountType: 'personal' | 'business';
 };
 
-const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountType }: Props) => {
+const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -50,12 +51,13 @@ const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountTy
         shouldUnregister: true
     });
 
-    const { signUp, isLoaded: isClerkLoaded } = useSignUp();
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const { signUp, isLoaded: isClerkLoaded } = useSignUp();
+    const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
 
     const onSubmit = async ({ email, password, firstName, lastName, organizationName }: z.infer<typeof formSchema>) => {
-        if (!signUp || isSuccess) return;
+        if (!signUp) return;
         setSummaryErrors([]);
         setIsLoading(true);
 
@@ -69,20 +71,17 @@ const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountTy
 
             await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
 
-            setOrganizationName(organizationName);
             setIsSuccess(true);
+            setOrganizationName(organizationName);
         } catch (error) {
             if (isClerkAPIResponseError(error)) {
                 setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
             }
         }
-
         setIsLoading(false);
     };
 
-    if (!isClerkLoaded) return null;
-
-    return (
+    const renderForm = (accountType: 'personal' | 'business') => (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <Card className="">
@@ -220,13 +219,38 @@ const SignUpForm = ({ nextStep, setSummaryErrors, setOrganizationName, accountTy
                                 </Button>
                             </Link>
                         </CardDescription>
-                        <div className="relative w-full">
-                            <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onComplete={() => setTimeout(nextStep, 2000)} />
-                        </div>
+                        <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onComplete={() => setTimeout(nextStep, 1000)} />
                     </CardFooter>
                 </Card>
             </form>
         </Form>
+    );
+
+    if (!isClerkLoaded) return null;
+
+    return (
+        <div className="flex flex-col gap-5">
+            <div className="min-h-[100px]">
+                <AnimatePresence>
+                    {summaryErrors.length > 0 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="summary-errors">
+                            <SummaryErrors errors={summaryErrors} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+            <Tabs defaultValue="personal">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="personal">Personal</TabsTrigger>
+                    <TabsTrigger value="business">Business</TabsTrigger>
+                </TabsList>
+                {(['personal', 'business'] as const).map((accountType) => (
+                    <TabsContent key={accountType} value={accountType}>
+                        {renderForm(accountType)}
+                    </TabsContent>
+                ))}
+            </Tabs>
+        </div>
     );
 };
 
