@@ -16,6 +16,9 @@ import { ExclamationCircleIcon } from '@heroicons/react/20/solid';
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import Link from 'next/link';
+import SubmitButton from '@/components/ui/custom/submit-button';
+import { AnimatePresence, motion } from 'framer-motion';
+import SummaryErrors from '@/components/ui/custom/summary-errors';
 
 const formSchema = z.object({
     email: z.string().nonempty({ message: 'Email is required' }).email(),
@@ -31,13 +34,16 @@ const Page = () => {
         }
     });
 
-    const { signIn, setActive } = useSignIn();
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const { signIn, setActive, isLoaded: isClerkLoaded } = useSignIn();
     const router = useRouter();
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
 
     const onSubmit = async ({ email, password }: z.infer<typeof formSchema>) => {
         if (!signIn) return;
         setSummaryErrors([]);
+        setIsLoading(true);
 
         try {
             const signInResult = await signIn.create({
@@ -46,39 +52,37 @@ const Page = () => {
             });
 
             if (signInResult.status === 'complete') {
+                setIsSuccess(true);
                 await setActive({ session: signInResult.createdSessionId });
-                await router.push('/');
             }
         } catch (error) {
             if (isClerkAPIResponseError(error)) {
                 setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.message })));
-                return;
             }
-
-            console.error({ error });
         }
+
+        setIsLoading(false);
     };
+
+    if (!isClerkLoaded) return null;
 
     return (
         <>
             <Head>
                 <title>{`Sign In | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
-            <div className="container flex h-3/5 flex-col items-center justify-end">
-                <div className="flex w-96 flex-col gap-5">
-                    {summaryErrors.length > 0 && (
-                        <Alert className="text-destructive">
-                            <ExclamationCircleIcon className="h-5 w-5 !text-destructive" />
-                            <AlertTitle>Heads up!</AlertTitle>
-                            <AlertDescription>
-                                {summaryErrors.map((e) => (
-                                    <p key={e.id} className="text-sm font-medium">
-                                        {e.message}
-                                    </p>
-                                ))}
-                            </AlertDescription>
-                        </Alert>
-                    )}
+            <div className="container flex h-1/5 w-[400px] flex-col items-center justify-end">
+                <div className="w-[400px]">
+                <div className="flex flex-col gap-5">
+                     <div className="min-h-[100px]">
+                        <AnimatePresence>
+                            {summaryErrors.length > 0 && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="summary-errors">
+                                    <SummaryErrors errors={summaryErrors} />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                     </div>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
                             <Card className="">
@@ -126,13 +130,12 @@ const Page = () => {
                                             </Button>
                                         </Link>
                                     </CardDescription>
-                                    <Button type="submit" className="w-full">
-                                        Submit
-                                    </Button>
+                                    <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onComplete={() => setTimeout(() => router.push('/'), 1000)} />
                                 </CardFooter>
                             </Card>
                         </form>
                     </Form>
+                </div>
                 </div>
             </div>
         </>
