@@ -73,69 +73,69 @@ const Page = () => {
             </Head>
             <div className="container flex h-1/5 w-[400px] flex-col items-center justify-end">
                 <div className="w-[400px]">
-                <div className="flex flex-col gap-5">
-                     <div className="min-h-[100px]">
-                        <AnimatePresence>
-                            {summaryErrors.length > 0 && (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="summary-errors">
-                                    <SummaryErrors errors={summaryErrors} />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                     </div>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}>
-                            <Card className="">
-                                <CardHeader>
-                                    <CardTitle>Sign In</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <FormField
-                                        control={form.control}
-                                        name="email"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Email</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} />
-                                                </FormControl>
-                                                <div className="h-5">
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="password"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Password</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="password" />
-                                                </FormControl>
-                                                <div className="h-5">
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </CardContent>
-                                <CardFooter className="flex flex-col items-start gap-2">
-                                    <CardDescription>
-                                        {`Don't`} have an account?
-                                        <Link href="/sign-up">
-                                            <Button type="button" variant="link">
-                                                Sign up
-                                            </Button>
-                                        </Link>
-                                    </CardDescription>
-                                    <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onComplete={() => setTimeout(() => router.push('/'), 1000)} />
-                                </CardFooter>
-                            </Card>
-                        </form>
-                    </Form>
-                </div>
+                    <div className="flex flex-col gap-5">
+                        <div className="min-h-[100px]">
+                            <AnimatePresence>
+                                {summaryErrors.length > 0 && (
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="summary-errors">
+                                        <SummaryErrors errors={summaryErrors} />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)}>
+                                <Card className="">
+                                    <CardHeader>
+                                        <CardTitle>Sign In</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <FormField
+                                            control={form.control}
+                                            name="email"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Email</FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} />
+                                                    </FormControl>
+                                                    <div className="h-5">
+                                                        <FormMessage />
+                                                    </div>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="password"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Password</FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} type="password" />
+                                                    </FormControl>
+                                                    <div className="h-5">
+                                                        <FormMessage />
+                                                    </div>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </CardContent>
+                                    <CardFooter className="flex flex-col items-start gap-2">
+                                        <CardDescription>
+                                            {`Don't`} have an account?
+                                            <Link href="/sign-up">
+                                                <Button type="button" variant="link">
+                                                    Sign up
+                                                </Button>
+                                            </Link>
+                                        </CardDescription>
+                                        <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onComplete={() => setTimeout(() => router.push('/'), 1000)} />
+                                    </CardFooter>
+                                </Card>
+                            </form>
+                        </Form>
+                    </div>
                 </div>
             </div>
         </>

@@ -26,10 +26,11 @@ const SearchBar = ({ initialSearch, className }: Props) => {
     }, [initialSearch]);
 
     const handleSearch = useCallback(
-        (value: string) => debounce(async () => {
-            setDebouncedValue(value);
-            setIsVisible(true);
-        }, 500),
+        (value: string) =>
+            debounce(async () => {
+                setDebouncedValue(value);
+                setIsVisible(true);
+            }, 500),
         []
     );
 

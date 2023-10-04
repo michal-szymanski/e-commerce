@@ -21,10 +21,7 @@ type Props = {
 
 const AddToCartDialog = ({ open, setOpen, cartItem: { product, quantity } }: Props) => {
     const router = useRouter();
-    const handleGoToCart = useCallback(
-        () => debounce(() => router.push('/cart'), 200),
-        [router]
-    );
+    const handleGoToCart = useCallback(() => debounce(() => router.push('/cart'), 200), [router]);
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
