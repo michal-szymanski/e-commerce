@@ -219,7 +219,12 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                                 </Button>
                             </Link>
                         </CardDescription>
-                        <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onComplete={() => setTimeout(nextStep, 1000)} />
+                        <SubmitButton
+                            key={form.formState.submitCount}
+                            isLoading={isLoading}
+                            isSuccess={isSuccess}
+                            onComplete={() => setTimeout(nextStep, 1000)}
+                        />
                     </CardFooter>
                 </Card>
             </form>

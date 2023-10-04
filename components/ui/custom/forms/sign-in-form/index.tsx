@@ -118,6 +118,7 @@ const SignInForm = () => {
                                 </Link>
                             </CardDescription>
                             <SubmitButton
+                                key={form.formState.submitCount}
                                 isLoading={isLoading}
                                 isSuccess={!!submitData}
                                 onComplete={() =>

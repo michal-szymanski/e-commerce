@@ -116,6 +116,7 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
                         </CardContent>
                         <CardFooter>
                             <SubmitButton
+                                key={form.formState.submitCount}
                                 isLoading={isLoading}
                                 isSuccess={!!submitData}
                                 onComplete={() =>
