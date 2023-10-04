@@ -1,74 +1,56 @@
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isClerkAPIResponseError, useSignUp } from '@clerk/nextjs';
-import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { SetActiveParams } from '@clerk/types';
+import { isClerkAPIResponseError, useSignIn } from '@clerk/nextjs';
+import { useRouter } from 'next/router';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SetActiveParams } from '@clerk/types';
 import SummaryErrors from '@/components/ui/custom/summary-errors';
 
 const formSchema = z.object({
-    code: z.string().nonempty({ message: 'Code is required' })
+    email: z.string().nonempty({ message: 'Email is required' }).email(),
+    password: z.string().nonempty({ message: 'Password is required' })
 });
 
-type Props = {
-    organizationName?: string;
-};
-
-const CodeVerificationForm = ({ organizationName }: Props) => {
+const SignInForm = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            code: ''
+            email: '',
+            password: ''
         }
     });
 
     const [isLoading, setIsLoading] = useState(false);
     const [submitData, setSubmitData] = useState<SetActiveParams>();
-    const { signUp, setActive, isLoaded: isClerkLoaded } = useSignUp();
+    const { signIn, setActive, isLoaded: isClerkLoaded } = useSignIn();
+    const router = useRouter();
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
 
-    const router = useRouter();
-
-    const onSubmit = async ({ code }: z.infer<typeof formSchema>) => {
-        if (!signUp) return;
+    const onSubmit = async ({ email, password }: z.infer<typeof formSchema>) => {
+        if (!signIn) return;
         setSummaryErrors([]);
         setIsLoading(true);
 
         try {
-            const { status, createdSessionId, createdUserId } = await signUp.attemptEmailAddressVerification({
-                code
+            const signInResult = await signIn.create({
+                identifier: email,
+                password
             });
 
-            let sessionData: SetActiveParams;
-
-            if (status === 'complete' && createdSessionId) {
-                sessionData = { session: createdSessionId };
-
-                if (organizationName) {
-                    const { organizationId } = (await (
-                        await fetch('/api/organizations', {
-                            method: 'POST',
-                            body: JSON.stringify({ userId: createdUserId, organizationName }),
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
-                    ).json()) as { organizationId: string };
-
-                    sessionData = { ...sessionData, organization: organizationId };
-                }
-
-                setSubmitData(sessionData);
+            if (signInResult.status === 'complete') {
+                setSubmitData({ session: signInResult.createdSessionId });
             }
         } catch (error) {
             if (isClerkAPIResponseError(error)) {
-                setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
+                setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.message })));
             }
         }
 
@@ -92,18 +74,15 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <Card className="">
                         <CardHeader>
-                            <CardTitle>Verify email</CardTitle>
+                            <CardTitle>Sign In</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <FormField
                                 control={form.control}
-                                name="code"
+                                name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <CardDescription className="pb-5">
-                                            We have sent you a verification code to your email address. Please enter the code below:
-                                        </CardDescription>
-                                        <FormLabel>Code</FormLabel>
+                                        <FormLabel>Email</FormLabel>
                                         <FormControl>
                                             <Input {...field} />
                                         </FormControl>
@@ -113,8 +92,31 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
                                     </FormItem>
                                 )}
                             />
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Password</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} type="password" />
+                                        </FormControl>
+                                        <div className="h-5">
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
                         </CardContent>
-                        <CardFooter>
+                        <CardFooter className="flex flex-col items-start gap-2">
+                            <CardDescription>
+                                {`Don't`} have an account?
+                                <Link href="/sign-up">
+                                    <Button type="button" variant="link">
+                                        Sign up
+                                    </Button>
+                                </Link>
+                            </CardDescription>
                             <SubmitButton
                                 isLoading={isLoading}
                                 isSuccess={!!submitData}
@@ -134,4 +136,4 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
     );
 };
 
-export default CodeVerificationForm;
+export default SignInForm;

@@ -10,9 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import SubmitButton from '@/components/ui/custom/submit-button';
-import SummaryErrors from '../../summary-errors';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SummaryErrors from '@/components/ui/custom/summary-errors';
 
 const formSchema = z
     .object({
