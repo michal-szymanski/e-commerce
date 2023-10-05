@@ -113,22 +113,20 @@ const SignInForm = () => {
                         </CardContent>
                         <CardFooter className="flex flex-col items-start gap-2">
                             <CardDescription>
-                                <p>
-                                    {`Don't`} have an account?
-                                    <Link href="/sign-up">
-                                        <Button type="button" variant="link">
-                                            Sign up
-                                        </Button>
-                                    </Link>
-                                </p>
-                                <p>
-                                    Forgot your password?
-                                    <Link href="/reset-password">
-                                        <Button type="button" variant="link">
-                                            Reset it
-                                        </Button>
-                                    </Link>
-                                </p>
+                                {`Don't`} have an account?
+                                <Link href="/sign-up">
+                                    <Button type="button" variant="link">
+                                        Sign up
+                                    </Button>
+                                </Link>
+                            </CardDescription>
+                            <CardDescription>
+                                Forgot your password?
+                                <Link href="/reset-password">
+                                    <Button type="button" variant="link">
+                                        Reset it
+                                    </Button>
+                                </Link>
                             </CardDescription>
                             <SubmitButton
                                 key={form.formState.submitCount}
