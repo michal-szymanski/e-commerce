@@ -174,7 +174,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                             name="confirmPassword"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Confirm Password</FormLabel>
+                                    <FormLabel>Confirm password</FormLabel>
                                     <FormControl>
                                         <Input {...field} type="password" />
                                     </FormControl>

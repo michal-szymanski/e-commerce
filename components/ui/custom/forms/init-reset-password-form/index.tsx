@@ -1,54 +1,51 @@
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { SetActiveParams } from '@clerk/types';
-import { isClerkAPIResponseError, useSignIn } from '@clerk/nextjs';
-import { useRouter } from 'next/router';
+import { AnimatePresence, motion } from 'framer-motion';
+import SummaryErrors from '@/components/ui/custom/summary-errors';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/ui/custom/submit-button';
-import { AnimatePresence, motion } from 'framer-motion';
-import SummaryErrors from '@/components/ui/custom/summary-errors';
+import { useState } from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { isClerkAPIResponseError, useSignIn } from '@clerk/nextjs';
 import { v4 as uuidv4 } from 'uuid';
 
 const formSchema = z.object({
-    email: z.string().nonempty({ message: 'Email is required' }).email(),
-    password: z.string().nonempty({ message: 'Password is required' })
+    email: z.string().nonempty({ message: 'Email is required' }).email()
 });
 
-const SignInForm = () => {
+type Props = {
+    nextStep: () => void;
+};
+
+const InitResetPasswordForm = ({ nextStep }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            email: '',
-            password: ''
+            email: ''
         }
     });
 
     const [isLoading, setIsLoading] = useState(false);
-    const [submitData, setSubmitData] = useState<SetActiveParams>();
-    const { signIn, setActive, isLoaded: isClerkLoaded } = useSignIn();
-    const router = useRouter();
+    const [isSuccess, setIsSuccess] = useState(false);
+    const { isLoaded: isClerkLoaded, signIn } = useSignIn();
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
 
-    const onSubmit = async ({ email, password }: z.infer<typeof formSchema>) => {
+    const onSubmit = async ({ email }: z.infer<typeof formSchema>) => {
         if (!signIn) return;
         setSummaryErrors([]);
         setIsLoading(true);
 
         try {
-            const { status, createdSessionId } = await signIn.create({
-                identifier: email,
-                password
+            await signIn.create({
+                strategy: 'reset_password_email_code',
+                identifier: email
             });
 
-            if (status === 'complete' && createdSessionId) {
-                setSubmitData({ session: createdSessionId });
-            }
+            setIsSuccess(true);
         } catch (error) {
             if (isClerkAPIResponseError(error)) {
                 setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
@@ -77,7 +74,7 @@ const SignInForm = () => {
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <Card className="">
                         <CardHeader>
-                            <CardTitle>Sign In</CardTitle>
+                            <CardTitle>Reset Password</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <FormField
@@ -95,52 +92,21 @@ const SignInForm = () => {
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="password"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Password</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} type="password" />
-                                        </FormControl>
-                                        <div className="h-5">
-                                            <FormMessage />
-                                        </div>
-                                    </FormItem>
-                                )}
-                            />
                         </CardContent>
                         <CardFooter className="flex flex-col items-start gap-2">
                             <CardDescription>
-                                <p>
-                                    {`Don't`} have an account?
-                                    <Link href="/sign-up">
-                                        <Button type="button" variant="link">
-                                            Sign up
-                                        </Button>
-                                    </Link>
-                                </p>
-                                <p>
-                                    Forgot your password?
-                                    <Link href="/reset-password">
-                                        <Button type="button" variant="link">
-                                            Reset it
-                                        </Button>
-                                    </Link>
-                                </p>
+                                Remember your password?
+                                <Link href="/sign-in">
+                                    <Button type="button" variant="link">
+                                        Sign in
+                                    </Button>
+                                </Link>
                             </CardDescription>
                             <SubmitButton
                                 key={form.formState.submitCount}
                                 isLoading={isLoading}
-                                isSuccess={!!submitData}
-                                onAnimationComplete={() =>
-                                    setTimeout(async () => {
-                                        if (!submitData) return;
-                                        await router.push('/');
-                                        await setActive(submitData);
-                                    }, 1000)
-                                }
+                                isSuccess={isSuccess}
+                                onAnimationComplete={() => setTimeout(nextStep, 1000)}
                             />
                         </CardFooter>
                     </Card>
@@ -150,4 +116,4 @@ const SignInForm = () => {
     );
 };
 
-export default SignInForm;
+export default InitResetPasswordForm;

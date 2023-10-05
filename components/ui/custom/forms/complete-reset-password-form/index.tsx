@@ -1,48 +1,54 @@
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { SetActiveParams } from '@clerk/types';
-import { isClerkAPIResponseError, useSignIn } from '@clerk/nextjs';
-import { useRouter } from 'next/router';
+import { AnimatePresence, motion } from 'framer-motion';
+import SummaryErrors from '@/components/ui/custom/summary-errors';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/ui/custom/submit-button';
-import { AnimatePresence, motion } from 'framer-motion';
-import SummaryErrors from '@/components/ui/custom/summary-errors';
+import { useState } from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { isClerkAPIResponseError, useSignIn } from '@clerk/nextjs';
 import { v4 as uuidv4 } from 'uuid';
+import { SetActiveParams } from '@clerk/types';
+import { useRouter } from 'next/router';
 
-const formSchema = z.object({
-    email: z.string().nonempty({ message: 'Email is required' }).email(),
-    password: z.string().nonempty({ message: 'Password is required' })
-});
+const formSchema = z
+    .object({
+        code: z.string().nonempty({ message: 'Code is required' }),
+        password: z.string().nonempty({ message: 'Password is required' }),
+        confirmPassword: z.string().nonempty({ message: 'Please confirm password' })
+    })
+    .refine(({ password, confirmPassword }) => password === confirmPassword, {
+        message: "Passwords don't match",
+        path: ['confirmPassword']
+    });
 
-const SignInForm = () => {
+const CompleteResetPasswordForm = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            email: '',
-            password: ''
+            code: '',
+            password: '',
+            confirmPassword: ''
         }
     });
 
     const [isLoading, setIsLoading] = useState(false);
     const [submitData, setSubmitData] = useState<SetActiveParams>();
-    const { signIn, setActive, isLoaded: isClerkLoaded } = useSignIn();
+    const { isLoaded: isClerkLoaded, signIn, setActive } = useSignIn();
     const router = useRouter();
     const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
 
-    const onSubmit = async ({ email, password }: z.infer<typeof formSchema>) => {
+    const onSubmit = async ({ code, password }: z.infer<typeof formSchema>) => {
         if (!signIn) return;
         setSummaryErrors([]);
         setIsLoading(true);
 
         try {
-            const { status, createdSessionId } = await signIn.create({
-                identifier: email,
+            const { status, createdSessionId } = await signIn.attemptFirstFactor({
+                strategy: 'reset_password_email_code',
+                code,
                 password
             });
 
@@ -77,15 +83,18 @@ const SignInForm = () => {
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <Card className="">
                         <CardHeader>
-                            <CardTitle>Sign In</CardTitle>
+                            <CardTitle>Reset Password</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <FormField
                                 control={form.control}
-                                name="email"
+                                name="code"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <CardDescription className="pb-5">
+                                            We have sent you a verification code to your email address. Please enter the code below:
+                                        </CardDescription>
+                                        <FormLabel>Code</FormLabel>
                                         <FormControl>
                                             <Input {...field} />
                                         </FormControl>
@@ -100,7 +109,22 @@ const SignInForm = () => {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel>New password</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} type="password" />
+                                        </FormControl>
+                                        <div className="h-5">
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="confirmPassword"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Confirm new password</FormLabel>
                                         <FormControl>
                                             <Input {...field} type="password" />
                                         </FormControl>
@@ -112,24 +136,6 @@ const SignInForm = () => {
                             />
                         </CardContent>
                         <CardFooter className="flex flex-col items-start gap-2">
-                            <CardDescription>
-                                <p>
-                                    {`Don't`} have an account?
-                                    <Link href="/sign-up">
-                                        <Button type="button" variant="link">
-                                            Sign up
-                                        </Button>
-                                    </Link>
-                                </p>
-                                <p>
-                                    Forgot your password?
-                                    <Link href="/reset-password">
-                                        <Button type="button" variant="link">
-                                            Reset it
-                                        </Button>
-                                    </Link>
-                                </p>
-                            </CardDescription>
                             <SubmitButton
                                 key={form.formState.submitCount}
                                 isLoading={isLoading}
@@ -150,4 +156,4 @@ const SignInForm = () => {
     );
 };
 
-export default SignInForm;
+export default CompleteResetPasswordForm;
