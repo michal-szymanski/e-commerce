@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
-import stripe from '@/stripe';
+import stripe from '@/lib/stripe';
 import { alias } from 'drizzle-orm/pg-core';
 import Head from 'next/head';
 
@@ -136,7 +136,7 @@ export const getServerSideProps: GetServerSideProps<{
     await client.end();
 
     const ordersWithTotals = orders.map(async (o) => {
-        const session = await stripe.checkout.sessions.retrieve(o.checkoutSessionId, {
+        const session = await stripe.checkout.sessions.retrieve(z.string().parse(o.checkoutSessionId), {
             expand: ['line_items']
         });
 
@@ -144,7 +144,7 @@ export const getServerSideProps: GetServerSideProps<{
             ...o,
             date: dayjs(o.date as string).toISOString(),
             checkoutSessionId: session.id,
-            totalPrice: session.line_items.data.reduce((acc: any, curr: any) => acc + curr.amount_total / 100, 0).toFixed(2)
+            totalPrice: (session.line_items?.data.reduce((acc, curr) => acc + curr.amount_total / 100, 0) ?? 0).toFixed(2)
         };
     });
 

@@ -4,19 +4,22 @@ import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, orderLinesTable } from '@/schema';
 import { eq } from 'drizzle-orm';
+import Stripe from 'stripe';
 
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
-    const event = req.body;
+    const event = req.body as Stripe.Event;
 
     if (event.type === 'checkout.session.completed') {
-        const checkoutSession = event.data.object;
-        const { orderId } = checkoutSession.metadata;
+        const checkoutSession = event.data.object as Stripe.Checkout.Session & { orderId: string };
 
-        const client = postgres(env.CONNECTION_STRING);
-        const db = drizzle(client);
-        await db.insert(orderHistoriesTable).values({ orderId, status: 'In Progress', date: new Date().toISOString() });
-        await db.delete(orderLinesTable).where(eq(orderLinesTable.orderId, orderId));
-        await client.end();
+        if (checkoutSession.metadata) {
+            const { orderId } = checkoutSession.metadata;
+            const client = postgres(env.CONNECTION_STRING);
+            const db = drizzle(client);
+            await db.insert(orderHistoriesTable).values({ orderId: Number(orderId), status: 'In Progress', date: new Date().toISOString() });
+            await db.delete(orderLinesTable).where(eq(orderLinesTable.orderId, Number(orderId)));
+            await client.end();
+        }
     }
 
     res.status(200).json({ received: true });

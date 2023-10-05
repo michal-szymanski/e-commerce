@@ -6,9 +6,10 @@ import { z } from 'zod';
 import { StripeProductSearchResult, stripeSearchResultSchema } from '@/types';
 import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
-import stripe from '@/stripe';
+import stripe from '@/lib/stripe';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
+import Stripe from 'stripe';
 
 const Page = ({ searchResult }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
@@ -50,7 +51,7 @@ export const getServerSideProps: GetServerSideProps<{ searchResult: StripeProduc
     const limit = parsedLimit.success ? parsedLimit.data : 10;
     const page = parsedPage.success ? parsedPage.data : '';
 
-    const requestConfig: Record<string, string | number | string[]> = {
+    const requestConfig: Stripe.ProductSearchParams = {
         query: `active:\'true\'${name ? ` AND name~\'${name}\'` : ''}`,
         limit,
         expand: ['data.default_price']

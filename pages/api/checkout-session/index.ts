@@ -1,4 +1,4 @@
-import stripe from '@/stripe';
+import stripe from '@/lib/stripe';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { CartItem, orderLineSchema, orderSchema, StripePrice, stripeProductSchema } from '@/types';
@@ -66,7 +66,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             await client.end();
 
-            res.redirect(303, session.url);
+            if (session.url) {
+                return res.redirect(303, session.url);
+            }
+
+            res.status(500).json({ error: 'Missing url for checkout session' });
         } catch (err: any) {
             console.error(err);
             res.status(err.statusCode || 500).json(err.message);

@@ -8,7 +8,7 @@ import { CartItem, cartItemSchema, Order, orderLineSchema, orderSchema, stripePr
 import { getAuth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
 import { getCartOrders } from '@/sql-service';
-import stripe from '@/stripe';
+import stripe from '@/lib/stripe';
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     const { userId } = getAuth(req);

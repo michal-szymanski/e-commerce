@@ -1,6 +1,6 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
-import stripe from '@/stripe';
+import stripe from '@/lib/stripe';
 import Link from 'next/link';
 import { getAuth, clerkClient } from '@clerk/nextjs/server';
 import { Button } from '@/components/ui/button';
@@ -114,7 +114,7 @@ export const getServerSideProps: GetServerSideProps<{ orderId: number; firstName
     const { firstName } = await clerkClient.users.getUser(userId);
     const sessionId = z.string().parse(context.query.sessionId);
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const orderId = z.coerce.number().parse(session.metadata.orderId);
+    const orderId = z.coerce.number().parse(session.metadata?.orderId);
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
     const orders = await db.select().from(ordersTable).where(eq(ordersTable.id, orderId));

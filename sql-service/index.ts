@@ -6,7 +6,7 @@ import { eq, ilike, and, isNull, lt, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { alias } from 'drizzle-orm/pg-core';
 import { CartItem, orderLineSchema, OrderLineWithProduct, StripePrice, StripeProduct, stripeProductSchema } from '@/types';
-import stripe from '@/stripe';
+import stripe from '@/lib/stripe';
 
 // export const getProducts = async (search: string, limit: number, offset: number) => {
 //     const client = postgres(env.CONNECTION_STRING);

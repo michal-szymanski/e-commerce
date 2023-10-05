@@ -5,7 +5,7 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, ordersTable } from '@/schema';
-import { and, eq, sql, inArray, not, desc } from 'drizzle-orm';
+import { and, eq, sql, inArray, not, desc, isNotNull } from 'drizzle-orm';
 import { OrderStatus, orderStatusSchema, stripeOrderLineSchema, StripeOrderLine } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
-import stripe from '@/stripe';
+import stripe from '@/lib/stripe';
 import { alias } from 'drizzle-orm/pg-core';
 import Head from 'next/head';
 
@@ -143,14 +143,21 @@ export const getServerSideProps: GetServerSideProps<{
                         .from(orderHistoriesTable)
                         .where(eq(orderHistoriesTable.orderId, ordersTable.id))
                 ),
-                not(inArray(lastHistory.status, excludedStatuses))
+                not(inArray(lastHistory.status, excludedStatuses)),
+                isNotNull(ordersTable.checkoutSessionId)
             )
         )
         .orderBy(desc(ordersTable.id));
 
     await client.end();
 
-    const checkoutSession = await stripe.checkout.sessions.retrieve(orders[0].checkoutSessionId, {
+    if (!orders.length) {
+        return {
+            notFound: true
+        };
+    }
+
+    const checkoutSession = await stripe.checkout.sessions.retrieve(z.string().parse(orders[0].checkoutSessionId), {
         expand: ['line_items']
     });
 
@@ -162,7 +169,7 @@ export const getServerSideProps: GetServerSideProps<{
         })
         .parse({ ...orders[0], date: dayjs(orders[0].date as string).toISOString() });
 
-    const parsedOrderLines = z.array(stripeOrderLineSchema).parse(checkoutSession.line_items.data);
+    const parsedOrderLines = z.array(stripeOrderLineSchema).parse(checkoutSession.line_items?.data);
 
     return { props: { order: parsedOrder, orderLines: parsedOrderLines } };
 };

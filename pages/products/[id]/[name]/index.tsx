@@ -11,7 +11,7 @@ import { useCart } from '@/hooks/queries';
 import AddToCartDialog from '@/components/ui/custom/add-to-cart-dialog';
 import { useDispatch } from 'react-redux';
 import { setIsDialogOpen } from '@/store/slices/ui';
-import stripe from '@/stripe';
+import stripe from '@/lib/stripe';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
 import PersonalAccount from '@/components/utils/personal-account';
