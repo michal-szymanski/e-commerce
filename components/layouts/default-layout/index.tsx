@@ -14,7 +14,7 @@ const Layout = ({ children }: Props) => (
             <title>{env.NEXT_PUBLIC_APP_NAME}</title>
         </Head>
         <Navbar />
-        <main className="h-full pt-[100px]">{children}</main>
+        <main className="absolute bottom-0 left-0 right-0 top-[70px] h-full overflow-y-auto pt-[100px]">{children}</main>
         <CartFooter />
     </>
 );
