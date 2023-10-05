@@ -7,10 +7,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 type Props = {
     isLoading: boolean;
     isSuccess: boolean;
-    onComplete: () => void;
+    onAnimationComplete: () => void;
 };
 
-const SubmitButton = ({ isLoading, isSuccess, onComplete }: Props) => {
+const SubmitButton = ({ isLoading, isSuccess, onAnimationComplete }: Props) => {
     const renderContent = () => {
         if (isSuccess)
             return (
@@ -18,7 +18,7 @@ const SubmitButton = ({ isLoading, isSuccess, onComplete }: Props) => {
                     key="success"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    onAnimationComplete={onComplete}
+                    onAnimationComplete={onAnimationComplete}
                     className="flex h-full w-full items-center justify-center"
                 >
                     <CheckIcon className="h-5 w-5 text-white" />

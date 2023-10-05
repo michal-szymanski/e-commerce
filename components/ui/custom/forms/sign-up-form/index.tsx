@@ -13,6 +13,7 @@ import SubmitButton from '@/components/ui/custom/submit-button';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SummaryErrors from '@/components/ui/custom/summary-errors';
+import { v4 as uuidv4 } from 'uuid';
 
 const formSchema = z
     .object({
@@ -76,6 +77,8 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
         } catch (error) {
             if (isClerkAPIResponseError(error)) {
                 setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
+            } else {
+                setSummaryErrors([{ id: uuidv4(), message: 'There was an error while submitting the form. Please try again.' }]);
             }
         }
         setIsLoading(false);
@@ -223,7 +226,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                             key={form.formState.submitCount}
                             isLoading={isLoading}
                             isSuccess={isSuccess}
-                            onComplete={() => setTimeout(nextStep, 1000)}
+                            onAnimationComplete={() => setTimeout(nextStep, 1000)}
                         />
                     </CardFooter>
                 </Card>
