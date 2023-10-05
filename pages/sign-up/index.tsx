@@ -17,7 +17,7 @@ const Page = () => {
             <Head>
                 <title>{`Sign Up | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
-            <div className="container flex h-1/5 w-[400px] flex-col items-center justify-end">
+            <div className="container flex w-[400px] flex-col items-center justify-end">
                 <div className="relative w-[400px]">
                     <AnimatePresence>
                         {step === 0 && (
