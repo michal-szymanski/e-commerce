@@ -1,7 +1,13 @@
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
+import {
+    NavigationMenu,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    navigationMenuTriggerStyle
+} from '@/components/ui/navigation-menu';
 import Link from 'next/link';
 import CartCounter from '@/components/ui/custom/cart-icon';
-import { OrganizationSwitcher, SignedIn, SignedOut } from '@clerk/nextjs';
+import { SignedIn, SignedOut } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import SearchBar from '@/components/ui/custom/search-bar';
 import { useRouter } from 'next/router';

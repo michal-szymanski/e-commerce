@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
 import { ClerkProvider } from '@clerk/nextjs';
-import Layout from '@/components/layouts/default-layout';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { NextUIProvider } from '@nextui-org/react';
+import Layout from '@/components/layouts/layout';
 
 export default function App({ Component, pageProps }: AppProps) {
     const [queryClient] = useState(() => new QueryClient());
@@ -17,7 +17,7 @@ export default function App({ Component, pageProps }: AppProps) {
             <Provider store={store}>
                 <QueryClientProvider client={queryClient}>
                     <Hydrate state={pageProps.dehydratedState}>
-                        <NextUIProvider>
+                        <NextUIProvider className="h-full">
                             <Layout>
                                 <Component {...pageProps} />
                             </Layout>

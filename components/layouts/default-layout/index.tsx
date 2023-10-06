@@ -11,7 +11,7 @@ type Props = {
     children: ReactNode;
 };
 
-const Layout = ({ children }: Props) => {
+const DefaultLayout = ({ children }: Props) => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data: cart } = useCart(!!isSignedIn && !organization);
@@ -34,4 +34,4 @@ const Layout = ({ children }: Props) => {
     );
 };
 
-export default Layout;
+export default DefaultLayout;

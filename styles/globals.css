@@ -73,7 +73,7 @@
         @apply border-border;
     }
     body {
-        @apply h-full bg-background text-foreground overflow-hidden;
+        @apply h-full overflow-hidden bg-background text-foreground;
     }
     #__next {
         @apply h-full overflow-hidden;
