@@ -38,7 +38,9 @@ const CartFooter = () => {
                 'translate-y-0': cart?.length && !isDialogOpen && !organization
             })}
         >
-            <span className="text-2xl font-bold">{totalPrice} zł</span>
+            <span className="text-2xl font-bold">
+                {totalPrice} {cart?.[0]?.product.default_price.currency.toUpperCase()}
+            </span>
             {renderButton()}
         </footer>
     );
