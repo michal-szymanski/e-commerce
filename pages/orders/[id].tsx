@@ -5,8 +5,8 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, ordersTable } from '@/schema';
-import { and, eq, sql, inArray, not, desc, isNotNull } from 'drizzle-orm';
-import { OrderStatus, orderStatusSchema, stripeOrderLineSchema, StripeOrderLine } from '@/types';
+import { and, desc, eq, inArray, isNotNull, not, sql } from 'drizzle-orm';
+import { OrderStatus, orderStatusSchema, StripeOrderLine, stripeOrderLineSchema } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
@@ -51,9 +51,9 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
             header: () => <div className="text-center">Actions</div>,
             cell: ({ row }) => (
                 <div className="text-center">
-                    <Link href={getProductUrl(row.getValue('price.product'), row.getValue('description'))}>
-                        <Button variant="link">Product Page</Button>
-                    </Link>
+                    <Button variant="link" asChild>
+                        <Link href={getProductUrl(row.getValue('price.product'), row.getValue('description'))}>Product Page</Link>
+                    </Button>
                 </div>
             )
         }

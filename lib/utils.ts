@@ -1,7 +1,5 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { StripePrice, StripeProduct } from '@/types';
-import { z } from 'zod';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -17,7 +15,6 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
     };
 }
 
-export const getTotalPrice = (product: StripeProduct, quantity: number) =>
-    (z.coerce.number().parse((product.default_price as StripePrice).unit_amount * quantity) / 100).toFixed(2);
+export const getTotalPrice = (price: number, quantity: number) => ((price * quantity) / 100).toFixed(2);
 
 export const getProductUrl = (id: string, name: string) => `/products/${id}/${name.replace(/\s/g, '-')}`;

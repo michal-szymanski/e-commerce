@@ -75,7 +75,11 @@ module.exports = {
             },
             gridTemplateColumns: {
                 sidebar: '300px 1fr',
-                dashboard: 'minmax(50px, 250px) 1fr'
+                dashboard: 'minmax(50px, 250px) 1fr',
+                'add-product-preview': '400px 1fr'
+            },
+            gridTemplateRows: {
+                'add-product-preview': '500px 1fr'
             },
             boxShadow: {
                 'product-tile': 'rgba(0, 0, 0, 0.16) 0px 4px 8px 0px, rgba(0, 0, 0, 0.08) 0px 0px 2px 1px'

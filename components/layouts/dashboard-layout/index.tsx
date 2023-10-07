@@ -22,15 +22,15 @@ const DashboardLayout = ({ children }: Props) => {
     const router = useRouter();
 
     return (
-        <div className="grid h-full grid-cols-dashboard">
+        <div className="grid h-full grid-cols-dashboard overflow-y-auto">
             <aside className="flex flex-col gap-1 px-3 pt-80">
                 {items.map(({ text, href, icon }) => (
-                    <Link key={text} href={href}>
-                        <Button variant={router.asPath === href ? 'secondary' : 'ghost'} className="w-full justify-start">
+                    <Button key={text} variant={router.asPath === href ? 'secondary' : 'ghost'} className="w-full justify-start" asChild>
+                        <Link href={href}>
                             <span className="pr-3">{icon}</span>
                             <span>{text}</span>
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 ))}
             </aside>
             <main className="grid grid-rows-[70px_1fr] bg-gray-100">

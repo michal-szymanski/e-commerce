@@ -9,17 +9,17 @@ import {
     AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/router';
-import { debounce, getTotalPrice } from '@/lib/utils';
-import { useCallback } from 'react';
-import { CartItem, StripePrice } from '@/types';
+import { getTotalPrice } from '@/lib/utils';
 
 type Props = {
     open: boolean;
     setOpen: (open: boolean) => void;
-    cartItem: CartItem;
+    name: string;
+    quantity: number;
+    price: number;
 };
 
-const AddToCartDialog = ({ open, setOpen, cartItem: { product, quantity } }: Props) => {
+const AddToCartDialog = ({ open, setOpen, name, quantity, price }: Props) => {
     const router = useRouter();
 
     return (
@@ -28,7 +28,7 @@ const AddToCartDialog = ({ open, setOpen, cartItem: { product, quantity } }: Pro
                 <AlertDialogHeader>
                     <AlertDialogTitle>Added to cart</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {product.name} {quantity} x {(product.default_price as StripePrice).unit_amount} = {getTotalPrice(product, quantity)}
+                        {name} {quantity} x {price} = {getTotalPrice(price, quantity)}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

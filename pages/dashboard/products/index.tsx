@@ -15,8 +15,9 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/router';
-import { EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
+import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { getProductUrl } from '@/lib/utils';
+import Link from 'next/link';
 
 const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     console.log({ products });
@@ -58,9 +59,11 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => router.push(`/dashboard/products/${row.getValue('id')}`)}>Edit</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => router.push(getProductUrl(row.getValue('id'), row.getValue('name')))}>
-                                    View product page
-                                </DropdownMenuItem>
+                                {Boolean(row.getValue('active')) && (
+                                    <DropdownMenuItem onClick={() => router.push(getProductUrl(row.getValue('id'), row.getValue('name')))}>
+                                        View product page
+                                    </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem>View orders with this product</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -75,9 +78,21 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
             <h1 className="pb-10 text-4xl font-bold">Products</h1>
             <div className="container mx-auto py-10">
                 <Card>
-                    <CardHeader>
-                        <h2 className="text-xl font-semibold">Your products</h2>
-                        <CardDescription>Total: {products.length}</CardDescription>
+                    <CardHeader className="flex flex-row items-end justify-between">
+                        <div>
+                            <h2 className="text-xl font-semibold">Your products</h2>
+                            <CardDescription>Total: {products.length}</CardDescription>
+                        </div>
+                        <div>
+                            <Button asChild>
+                                <Link href="/dashboard/products/add">
+                                    <span>
+                                        <PlusIcon className="h-4 w-4" />
+                                    </span>
+                                    <span className="pl-3">Add Product</span>
+                                </Link>
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <DataTable columns={columns} data={products} />
