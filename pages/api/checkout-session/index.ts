@@ -1,7 +1,7 @@
 import stripe from '@/lib/stripe';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { CartItem, orderLineSchema, orderSchema, StripePrice, stripeProductSchema } from '@/types';
+import { CartItem, orderLineSchema, orderSchema, stripeProductSchema } from '@/types';
 import { getAuth } from '@clerk/nextjs/server';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Create Checkout Sessions from body params.
             const session = await stripe.checkout.sessions.create({
                 line_items: cartItems.map((c) => ({
-                    price: (c.product.default_price as StripePrice).id,
+                    price: c.product.default_price.id,
                     quantity: c.quantity
                 })),
                 mode: 'payment',

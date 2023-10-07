@@ -1,6 +1,6 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
-import { StripePrice, StripeProduct, stripeProductSchema } from '@/types';
+import { StripeProduct, stripeProductSchema } from '@/types';
 import stripe from '@/lib/stripe';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
@@ -9,7 +9,7 @@ import { useUpdateCart } from '@/hooks/mutations';
 
 const Page = ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const updateCart = useUpdateCart();
-    const { unit_amount, currency } = product.default_price as StripePrice;
+    const { unit_amount, currency } = product.default_price;
 
     return (
         <>

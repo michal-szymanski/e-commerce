@@ -1,4 +1,4 @@
-import { categoriesTable, ordersTable, orderLinesTable, orderHistoriesTable } from '@/schema';
+import { categoriesTable, orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -49,7 +49,7 @@ export const stripeProductSchema = z.object({
     object: z.literal('product'),
     active: z.boolean(),
     created: z.number(),
-    default_price: z.union([stripePriceSchema, z.string()]),
+    default_price: stripePriceSchema,
     description: z.string(),
     features: z.array(z.any()),
     images: z.array(z.string()),

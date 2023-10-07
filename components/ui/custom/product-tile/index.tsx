@@ -1,4 +1,4 @@
-import { StripePrice, StripeProduct } from '@/types';
+import { StripeProduct } from '@/types';
 import Image from 'next/image';
 import Rating from '@/components/ui/custom/rating';
 import { getTotalPrice } from '@/lib/utils';
@@ -8,7 +8,7 @@ type Props = {
 };
 
 const ProductTile = ({ product }: Props) => {
-    const { unit_amount, currency } = product.default_price as StripePrice;
+    const { unit_amount, currency } = product.default_price;
     return (
         <article className="flex cursor-pointer flex-col rounded-md bg-white p-5 transition-shadow hover:shadow-product-tile">
             <Image src={product.images[0]} alt={product.name} width={200} height={200} />

@@ -1,4 +1,4 @@
-import { StripePrice, StripeProduct } from '@/types';
+import { StripeProduct } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ const CartItem = ({ product, quantity }: Props) => {
         updateCart.mutate([{ product, quantity: 0 }]);
     };
 
-    const { unit_amount, currency } = product.default_price as StripePrice;
+    const { unit_amount, currency } = product.default_price;
 
     return (
         <Card className="w-[700px]">

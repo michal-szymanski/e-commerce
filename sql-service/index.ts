@@ -1,11 +1,9 @@
-import postgres from 'postgres';
-import { env } from '@/env.mjs';
-import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
-import { eq, ilike, and, isNull, lt, or, sql } from 'drizzle-orm';
+import { and, eq, isNull, lt, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { alias } from 'drizzle-orm/pg-core';
-import { CartItem, orderLineSchema, OrderLineWithProduct, StripePrice, StripeProduct, stripeProductSchema } from '@/types';
+import { orderLineSchema, OrderLineWithProduct, stripeProductSchema } from '@/types';
 import stripe from '@/lib/stripe';
 
 // export const getProducts = async (search: string, limit: number, offset: number) => {
@@ -86,14 +84,14 @@ export const getOrderLinesWithProducts = async (db: PostgresJsDatabase, orderId:
                 expand: ['default_price']
             })
         );
-        const price = product.default_price as StripePrice;
+        const price = product.default_price.unit_amount;
 
         cartItems.push({
             productId: product.id,
             productName: product.name,
-            productPrice: price.unit_amount,
+            productPrice: price,
             quantity: Number(ol.quantity),
-            totalPrice: Number(ol.quantity) * price.unit_amount
+            totalPrice: Number(ol.quantity) * price
         });
     }
 
