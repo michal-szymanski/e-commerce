@@ -28,7 +28,7 @@ const AddToCartDialog = ({ open, setOpen, name, quantity, price }: Props) => {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Added to cart</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {name} {quantity} x {price} = {getTotalPrice(price, quantity)}
+                        {name} {quantity} x {getTotalPrice(price, 1)} = {getTotalPrice(price, quantity)}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import Link from 'next/link';
-import { getProductUrl } from '@/lib/utils';
+import { getProductUrl, getTotalPrice } from '@/lib/utils';
 import stripe from '@/lib/stripe';
 import { alias } from 'drizzle-orm/pg-core';
 import Head from 'next/head';
@@ -33,7 +33,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
             id: 'price.unit_amount',
             accessorKey: 'price.unit_amount',
             header: () => <div className="text-right">Unit Price</div>,
-            cell: ({ row }) => <div className="text-right">{(row.getValue('price.unit_amount') as number) / 100}</div>
+            cell: ({ row }) => <div className="text-right">{getTotalPrice(row.getValue('price.unit_amount'), 1)}</div>
         },
         {
             accessorKey: 'quantity',
@@ -44,7 +44,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
             id: 'amount_total',
             accessorKey: 'amount_total',
             header: () => <div className="text-right">Total Price</div>,
-            cell: ({ row }) => <div className="text-right font-medium">{(row.getValue('amount_total') as number) / 100}</div>
+            cell: ({ row }) => <div className="text-right font-medium">{getTotalPrice(row.getValue('amount_total'), 1)}</div>
         },
         {
             accessorKey: 'actions',
@@ -60,7 +60,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
     ];
 
     const formattedOrder = { ...order, date: dayjs(order.date as string).format('DD/MM/YYYY HH:mm') };
-    const totalPrice = orderLines.reduce((acc, curr) => acc + curr.amount_total, 0) / 100;
+    const totalPrice = orderLines.reduce((acc, curr) => acc + getTotalPrice(curr.amount_total, 1), 0);
 
     return (
         <>

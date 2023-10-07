@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/router';
 import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/react/20/solid';
-import { getProductUrl } from '@/lib/utils';
+import { getProductUrl, getTotalPrice } from '@/lib/utils';
 import Link from 'next/link';
 
 const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
@@ -40,7 +40,7 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
             id: 'unit_amount',
             accessorKey: 'default_price.unit_amount',
             header: () => <div className="text-right">Price</div>,
-            cell: ({ row }) => <div className="text-right font-medium">{Number(row.getValue('unit_amount')) / 100} PLN</div>
+            cell: ({ row }) => <div className="text-right font-medium">{getTotalPrice(row.getValue('unit_amount'), 1)} PLN</div>
         },
         {
             id: 'actions',

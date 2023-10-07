@@ -17,8 +17,8 @@ const Page = () => {
                         isPreview
                         id={id}
                         name={name}
-                        price={price}
-                        currency="PLN"
+                        price={price * 100}
+                        currency="pln"
                         images={[
                             'https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'
                         ]}

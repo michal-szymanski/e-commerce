@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { z } from 'zod';
 import { cn, getTotalPrice } from '@/lib/utils';
 import { useCart } from '@/hooks/queries';
 import { useRouter } from 'next/router';
@@ -12,9 +11,7 @@ const CartFooter = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data: cart } = useCart(!!isSignedIn && !organization);
-    const totalPrice = cart
-        ?.reduce((acc, curr) => acc + z.coerce.number().parse(getTotalPrice((curr.product.default_price as StripePrice).unit_amount, curr.quantity)), 0)
-        .toFixed(2);
+    const totalPrice = cart?.reduce((acc, curr) => acc + getTotalPrice((curr.product.default_price as StripePrice).unit_amount, curr.quantity), 0).toFixed(2);
     const router = useRouter();
     const isDialogOpen = useSelector((state: RootState) => state.ui.isDialogOpen);
 

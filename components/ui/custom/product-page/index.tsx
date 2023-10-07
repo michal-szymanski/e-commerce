@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { setIsDialogOpen } from '@/store/slices/ui';
 import AddToCartDialog from '@/components/ui/custom/add-to-cart-dialog';
 import BusinessAccount from '@/components/utils/business-account';
+import { getTotalPrice } from '@/lib/utils';
 
 type Props = {
     isPreview: boolean;
@@ -66,7 +67,7 @@ const ProductPage = ({ isPreview, id, name, price, currency, images, onAddToCart
                 <Card className="w-[400px]">
                     <CardHeader>
                         <CardTitle className="font-bold">
-                            {price} {currency}
+                            {getTotalPrice(price, 1)} {currency.toUpperCase()}
                         </CardTitle>
                         <CardDescription>+ VAT</CardDescription>
                     </CardHeader>

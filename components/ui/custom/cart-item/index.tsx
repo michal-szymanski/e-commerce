@@ -48,7 +48,7 @@ const CartItem = ({ product, quantity }: Props) => {
             <CardContent className="flex items-center">
                 <Image src={product.images[0]} alt={product.name} width={50} height={50} />
                 <div className="flex h-full w-full items-center justify-between px-5">
-                    <span>{unit_amount / 100}</span>
+                    <span>{getTotalPrice(unit_amount, 1)}</span>
                     <span>
                         <XMarkIcon className="h-4 w-4" />
                     </span>

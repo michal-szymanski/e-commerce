@@ -21,8 +21,8 @@ const Page = ({ product }: InferGetServerSidePropsType<typeof getServerSideProps
                     isPreview={false}
                     id={product.id}
                     name={product.name}
-                    price={unit_amount / 100}
-                    currency={currency.toUpperCase()}
+                    price={unit_amount}
+                    currency={currency}
                     images={product.images}
                     onAddToCart={(quantity: number) => updateCart.mutate([{ product, quantity }])}
                 />

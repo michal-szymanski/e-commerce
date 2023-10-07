@@ -16,6 +16,7 @@ import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import stripe from '@/lib/stripe';
 import { alias } from 'drizzle-orm/pg-core';
 import Head from 'next/head';
+import { getTotalPrice } from '@/lib/utils';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
@@ -144,7 +145,7 @@ export const getServerSideProps: GetServerSideProps<{
             ...o,
             date: dayjs(o.date as string).toISOString(),
             checkoutSessionId: session.id,
-            totalPrice: (session.line_items?.data.reduce((acc, curr) => acc + curr.amount_total / 100, 0) ?? 0).toFixed(2)
+            totalPrice: (session.line_items?.data.reduce((acc, curr) => acc + getTotalPrice(curr.amount_total, 1), 0) ?? 0).toFixed(2)
         };
     });
 
