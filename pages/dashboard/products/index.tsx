@@ -2,7 +2,11 @@ import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 
 const Page = () => {
-    return <div><h1 className="font-bold text-4xl pb-10">Products</h1></div>;
+    return (
+        <div>
+            <h1 className="pb-10 text-4xl font-bold">Products</h1>
+        </div>
+    );
 };
 
 export default Page;

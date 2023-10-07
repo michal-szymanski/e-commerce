@@ -1,10 +1,4 @@
-import {
-    NavigationMenu,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    navigationMenuTriggerStyle
-} from '@/components/ui/navigation-menu';
+import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import Link from 'next/link';
 import CartCounter from '@/components/ui/custom/cart-icon';
 import { SignedIn, SignedOut } from '@clerk/nextjs';

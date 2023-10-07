@@ -23,7 +23,7 @@ const UserDropdown = () => {
 
     if (!user) return null;
 
-    const isPersonalAccount = user.organizationMemberships.length === 0;
+    const isPersonalAccount = !organization;
     const isUserInDashboard = router.asPath.startsWith('/dashboard');
 
     return (

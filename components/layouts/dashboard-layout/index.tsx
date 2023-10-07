@@ -11,7 +11,7 @@ const items: SidebarMenuItem[] = [
     { text: 'Overview', href: '/dashboard', icon: <ChartBarIcon className="h-5 w-5" /> },
     { text: 'Orders', href: '/dashboard/orders', icon: <ShoppingCartIcon className="h-5 w-5" /> },
     { text: 'Products', href: '/dashboard/products', icon: <CubeIcon className="h-5 w-5" /> },
-    { text: 'Customers', href: '/dashboard/customers', icon: <UsersIcon className="h-5 w-5" /> },
+    { text: 'Customers', href: '/dashboard/customers', icon: <UsersIcon className="h-5 w-5" /> }
 ];
 
 type Props = {
@@ -22,7 +22,7 @@ const DashboardLayout = ({ children }: Props) => {
     const router = useRouter();
 
     return (
-        <div className="grid grid-cols-dashboard h-full">
+        <div className="grid h-full grid-cols-dashboard">
             <aside className="flex flex-col gap-1 px-3 pt-80">
                 {items.map(({ text, href, icon }) => (
                     <Link key={text} href={href}>
@@ -34,8 +34,8 @@ const DashboardLayout = ({ children }: Props) => {
                 ))}
             </aside>
             <main className="grid grid-rows-[70px_1fr] bg-gray-100">
-                <div className="flex justify-end py-3 px-10 items-center">
-                    <UserDropdown/>
+                <div className="flex items-center justify-end px-10 py-3">
+                    <UserDropdown />
                 </div>
                 <div className="p-10">{children}</div>
             </main>
