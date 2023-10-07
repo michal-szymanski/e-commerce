@@ -13,12 +13,13 @@ import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { ChartBarIcon } from '@heroicons/react/24/solid';
+import { useQueryClient } from '@tanstack/react-query';
 
 const UserDropdown = () => {
     const { user } = useUser();
     const { signOut, setActive } = useClerk();
     const { organization } = useOrganization();
-
+    const queryClient = useQueryClient();
     const router = useRouter();
 
     if (!user) return null;
@@ -73,7 +74,10 @@ const UserDropdown = () => {
                 {user.organizationMemberships.map((m) => (
                     <DropdownMenuItem
                         key={m.id}
-                        onClick={() => setActive({ organization: m.organization })}
+                        onClick={() => {
+                            setActive({ organization: m.organization });
+                            queryClient.removeQueries(['order'])
+                        }}
                         className={cn('cursor-pointer', {
                             'text-muted-foreground': organization?.id !== m.organization.id
                         })}
