@@ -76,7 +76,7 @@ const UserDropdown = () => {
                         key={m.id}
                         onClick={() => {
                             setActive({ organization: m.organization });
-                            queryClient.removeQueries(['order'])
+                            queryClient.removeQueries(['order']);
                         }}
                         className={cn('cursor-pointer', {
                             'text-muted-foreground': organization?.id !== m.organization.id
