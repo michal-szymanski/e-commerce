@@ -87,7 +87,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
     const renderForm = (accountType: 'personal' | 'business') => (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-                <Card className="">
+                <Card>
                     <CardHeader>
                         <CardTitle>Sign Up</CardTitle>
                     </CardHeader>
@@ -216,11 +216,9 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                     <CardFooter className="flex flex-col items-start gap-2">
                         <CardDescription>
                             Already have an account?
-                            <Link href="/sign-in">
-                                <Button type="button" variant="link">
-                                    Sign in
-                                </Button>
-                            </Link>
+                            <Button type="button" variant="link" asChild>
+                                <Link href="/sign-in">Sign in</Link>
+                            </Button>
                         </CardDescription>
                         <SubmitButton
                             key={form.formState.submitCount}

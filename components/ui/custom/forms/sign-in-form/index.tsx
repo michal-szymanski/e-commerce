@@ -75,7 +75,7 @@ const SignInForm = () => {
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Card className="">
+                    <Card>
                         <CardHeader>
                             <CardTitle>Sign In</CardTitle>
                         </CardHeader>
@@ -114,19 +114,15 @@ const SignInForm = () => {
                         <CardFooter className="flex flex-col items-start gap-2">
                             <CardDescription>
                                 {`Don't`} have an account?
-                                <Link href="/sign-up">
-                                    <Button type="button" variant="link">
-                                        Sign up
-                                    </Button>
-                                </Link>
+                                <Button type="button" variant="link" asChild>
+                                    <Link href="/sign-up">Sign up</Link>
+                                </Button>
                             </CardDescription>
                             <CardDescription>
                                 Forgot your password?
-                                <Link href="/reset-password">
-                                    <Button type="button" variant="link">
-                                        Reset it
-                                    </Button>
-                                </Link>
+                                <Button type="button" variant="link" asChild>
+                                    <Link href="/reset-password">Reset it</Link>
+                                </Button>
                             </CardDescription>
                             <SubmitButton
                                 key={form.formState.submitCount}

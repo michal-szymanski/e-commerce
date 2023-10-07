@@ -2,7 +2,7 @@ import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
 import stripe from '@/lib/stripe';
 import Link from 'next/link';
-import { getAuth, clerkClient } from '@clerk/nextjs/server';
+import { clerkClient, getAuth } from '@clerk/nextjs/server';
 import { Button } from '@/components/ui/button';
 import Confetti from 'react-confetti';
 import { useEffect, useState } from 'react';
@@ -73,9 +73,9 @@ const Page = ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServ
                         <p className="text-lg">
                             You can safely close this page or head back to the{' '}
                             {
-                                <Link href="/">
-                                    <Button>Home Page</Button>
-                                </Link>
+                                <Button asChild>
+                                    <Link href="/">Home Page</Link>
+                                </Button>
                             }
                         </p>
 

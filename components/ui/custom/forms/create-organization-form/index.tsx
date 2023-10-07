@@ -69,7 +69,7 @@ const CreateOrganizationForm = () => {
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Card className="">
+                    <Card>
                         <CardHeader>
                             <CardTitle>Create Organization</CardTitle>
                         </CardHeader>

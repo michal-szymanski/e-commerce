@@ -72,7 +72,7 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Card className="">
+                    <Card>
                         <CardHeader>
                             <CardTitle>Reset Password</CardTitle>
                         </CardHeader>
@@ -96,11 +96,9 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
                         <CardFooter className="flex flex-col items-start gap-2">
                             <CardDescription>
                                 Remember your password?
-                                <Link href="/sign-in">
-                                    <Button type="button" variant="link">
-                                        Sign in
-                                    </Button>
-                                </Link>
+                                <Button type="button" variant="link" asChild>
+                                    <Link href="/sign-in">Sign in</Link>
+                                </Button>
                             </CardDescription>
                             <SubmitButton
                                 key={form.formState.submitCount}

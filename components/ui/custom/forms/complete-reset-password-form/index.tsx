@@ -81,7 +81,7 @@ const CompleteResetPasswordForm = () => {
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Card className="">
+                    <Card>
                         <CardHeader>
                             <CardTitle>Reset Password</CardTitle>
                         </CardHeader>

@@ -93,7 +93,7 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Card className="">
+                    <Card>
                         <CardHeader>
                             <CardTitle>Verify email</CardTitle>
                         </CardHeader>
