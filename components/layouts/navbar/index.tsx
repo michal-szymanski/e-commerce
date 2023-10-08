@@ -15,11 +15,6 @@ const Navbar = () => {
 
     return (
         <NavigationMenu className="fixed top-0 h-[70px] min-w-full justify-between bg-background/95 px-10 py-3 shadow-sm backdrop-blur">
-            <SearchBar
-                key={router.asPath}
-                initialSearch={querySearch.success ? querySearch.data : ''}
-                className="absolute left-1/2 top-1/2 h-auto w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-lg border shadow-md"
-            />
             <NavigationMenuList>
                 <NavigationMenuItem>
                     <Link href="/" legacyBehavior passHref>
@@ -30,6 +25,11 @@ const Navbar = () => {
                     </Link>
                 </NavigationMenuItem>
             </NavigationMenuList>
+            <SearchBar
+                key={router.asPath}
+                initialSearch={querySearch.success ? querySearch.data : ''}
+                className="absolute left-1/2 top-[20%] h-auto w-[600px] -translate-x-1/2 rounded-lg border shadow-md"
+            />
             <NavigationMenuList>
                 <PersonalAccount>
                     <NavigationMenuItem>

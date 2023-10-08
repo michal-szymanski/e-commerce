@@ -1,5 +1,5 @@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { ElementRef, HTMLAttributes, useCallback, useEffect, useState, KeyboardEvent } from 'react';
+import { ElementRef, HTMLAttributes, KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useProducts } from '@/hooks/queries';
 import { debounce } from '@/lib/utils';
 import { useRouter } from 'next/router';
@@ -18,16 +18,17 @@ const SearchBar = ({ initialSearch, className }: Props) => {
     const router = useRouter();
     const [value, setValue] = useState('');
     const [debouncedValue, setDebouncedValue] = useState('');
-    const { data: products } = useProducts(debouncedValue, 10, 0, !!value);
+    const { data: products } = useProducts({ name: debouncedValue, enabled: !!debouncedValue });
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
+        if (router.route === '/products/[id]/[name]') return;
         setValue(initialSearch);
-    }, [initialSearch]);
+    }, [initialSearch, router]);
 
-    const handleSearch = useCallback(
-        (value: string) =>
-            debounce(async () => {
+    const handleSearch = useMemo(
+        () =>
+            debounce((value: string) => {
                 setDebouncedValue(value);
                 setIsVisible(true);
             }, 500),

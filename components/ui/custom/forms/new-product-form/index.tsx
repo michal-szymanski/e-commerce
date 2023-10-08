@@ -55,7 +55,7 @@ const NewProductForm = ({ setProduct }: Props) => {
             });
         });
         return () => subscription.unsubscribe();
-    }, [form.watch, setProduct]);
+    }, [form, setProduct]);
 
     return (
         <Form {...form}>

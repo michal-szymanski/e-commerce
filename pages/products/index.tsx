@@ -52,7 +52,7 @@ export const getServerSideProps: GetServerSideProps<{ searchResult: StripeProduc
     const page = parsedPage.success ? parsedPage.data : '';
 
     const requestConfig: Stripe.ProductSearchParams = {
-        query: `active:\'true\'${name ? ` AND name~\'${name}\'` : ''}`,
+        query: `active:\'true\'${name ? ` AND name:\'${name}\' OR name~\'${name}\'` : ''}`,
         limit,
         expand: ['data.default_price']
     };
