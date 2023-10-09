@@ -1,10 +1,14 @@
-import { integer, numeric, pgTable, serial, pgEnum, primaryKey, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, boolean, integer, numeric, pgEnum, pgTable, primaryKey, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const categoriesTable = pgTable('categories', {
     id: serial('id').primaryKey(),
     name: text('name').notNull()
 });
+
+export const categoriesRelations = relations(categoriesTable, ({ many }) => ({
+    products: many(productsTable)
+}));
 
 export const ordersTable = pgTable('orders', {
     id: serial('id').primaryKey(),
@@ -22,7 +26,9 @@ export const orderLinesTable = pgTable(
         orderId: integer('order_id')
             .notNull()
             .references(() => ordersTable.id),
-        productId: text('product_id').notNull(),
+        productId: text('product_id')
+            .notNull()
+            .references(() => productsTable.id),
         quantity: numeric('quantity', { precision: 11, scale: 3 }).notNull()
     },
     (t) => ({
@@ -34,6 +40,10 @@ export const orderLinesRelations = relations(orderLinesTable, ({ one }) => ({
     order: one(ordersTable, {
         fields: [orderLinesTable.orderId],
         references: [ordersTable.id]
+    }),
+    product: one(productsTable, {
+        fields: [orderLinesTable.productId],
+        references: [productsTable.id]
     })
 }));
 
@@ -53,4 +63,40 @@ export const orderHistoriesRelations = relations(orderHistoriesTable, ({ one }) 
         fields: [orderHistoriesTable.orderId],
         references: [ordersTable.id]
     })
+}));
+
+export const productsTable = pgTable('products', {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    active: boolean('active').notNull(),
+    priceId: text('price_id')
+        .notNull()
+        .references(() => pricesTable.id),
+    organizationId: text('organizationId').notNull(),
+    categoryId: integer('categoryId')
+        .notNull()
+        .references(() => categoriesTable.id)
+});
+
+export const productsRelations = relations(productsTable, ({ one }) => ({
+    category: one(categoriesTable, {
+        fields: [productsTable.categoryId],
+        references: [categoriesTable.id]
+    }),
+    price: one(pricesTable, {
+        fields: [productsTable.priceId],
+        references: [pricesTable.id]
+    })
+}));
+
+export const pricesTable = pgTable('prices', {
+    id: text('id').primaryKey(),
+    unitAmount: bigint('unit_amount', { mode: 'number' }).notNull(),
+    currency: text('currency').notNull(),
+    active: boolean('active').notNull()
+});
+
+export const pricesRelations = relations(pricesTable, ({ one }) => ({
+    product: one(productsTable)
 }));

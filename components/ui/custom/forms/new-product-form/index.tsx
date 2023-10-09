@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { useRouter } from 'next/router';
 import { Textarea } from '@/components/ui/textarea';
+import { useCreateProduct } from '@/hooks/mutations';
 
 const formSchema = z.object({
     name: z.string().nonempty({ message: 'Name is required' }),
@@ -32,11 +33,13 @@ const NewProductForm = ({ setProduct }: Props) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const router = useRouter();
+    const createProduct = useCreateProduct();
 
     const onSubmit = async ({ name, description, price }: z.infer<typeof formSchema>) => {
         setIsLoading(true);
 
         try {
+            await createProduct.mutateAsync({ name, description, price: Number(price) });
             setIsSuccess(true);
         } catch (error) {
             console.error(error);

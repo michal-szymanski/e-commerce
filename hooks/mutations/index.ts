@@ -60,3 +60,22 @@ export const useCreateOrder = () => {
         }
     });
 };
+
+export const useCreateProduct = () =>
+    useMutation({
+        mutationFn: async (data: { name: string; description: string; price: number }) => {
+            const payload = JSON.stringify(data);
+
+            const response = await (
+                await fetch('/api/stripe/products', {
+                    method: 'POST',
+                    body: payload,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ).json();
+
+            return response;
+        }
+    });
