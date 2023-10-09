@@ -14,7 +14,7 @@ import { getTotalPrice } from '@/lib/utils';
 
 type Props = {
     isPreview: boolean;
-    id: string;
+    id?: string;
     name: string;
     price: number;
     currency: string;

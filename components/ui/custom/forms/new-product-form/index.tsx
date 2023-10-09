@@ -17,10 +17,10 @@ const formSchema = z.object({
 });
 
 type Props = {
-    setProduct: (product: { id: ''; name: string; price: number; description: string }) => void;
+    setPreviewData: (previewData: { name: string; price: number; description: string }) => void;
 };
 
-const NewProductForm = ({ setProduct }: Props) => {
+const NewProductForm = ({ setPreviewData }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -50,15 +50,14 @@ const NewProductForm = ({ setProduct }: Props) => {
 
     useEffect(() => {
         const subscription = form.watch(({ name, description, price }) => {
-            setProduct({
-                id: '',
+            setPreviewData({
                 name: name ?? '',
                 description: description ?? '',
                 price: Number(price ?? 0)
             });
         });
         return () => subscription.unsubscribe();
-    }, [form, setProduct]);
+    }, [form, setPreviewData]);
 
     return (
         <Form {...form}>
@@ -117,11 +116,7 @@ const NewProductForm = ({ setProduct }: Props) => {
                             key={form.formState.submitCount}
                             isLoading={isLoading}
                             isSuccess={isSuccess}
-                            onAnimationComplete={() =>
-                                setTimeout(() => {
-                                    // router.push('/dashboard/products');
-                                }, 1000)
-                            }
+                            onAnimationComplete={() => setTimeout(() => router.push('/dashboard/products'), 1000)}
                         />
                     </CardFooter>
                 </Card>

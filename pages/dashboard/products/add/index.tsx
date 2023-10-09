@@ -5,17 +5,16 @@ import { useState } from 'react';
 import ProductPage from '@/components/ui/custom/product-page';
 
 const Page = () => {
-    const [{ id, name, price, description }, setProduct] = useState({ id: '', name: '', price: 0, description: '' });
+    const [{ name, price, description }, setPreviewData] = useState({ name: '', price: 0, description: '' });
 
     return (
         <div>
             <h1 className="pb-10 text-4xl font-bold">New Product</h1>
             <div className="container mx-auto py-10">
-                <div className="2xl:grid-cols-add-product-preview lg:grid-rows-add-product-preview grid gap-5">
-                    <NewProductForm setProduct={(value) => setProduct(value)} />
+                <div className="grid gap-5 lg:grid-rows-add-product-preview 2xl:grid-cols-add-product-preview">
+                    <NewProductForm setPreviewData={(value) => setPreviewData(value)} />
                     <ProductPage
                         isPreview
-                        id={id}
                         name={name}
                         price={price * 100}
                         currency="pln"

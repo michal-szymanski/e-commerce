@@ -117,7 +117,7 @@ export const getServerSideProps: GetServerSideProps<{ products: Stripe.Product[]
         };
     }
 
-    const { data: products } = await stripe.products.search({ query: `metadata["organizationId"]:"${1}"`, expand: ['data.default_price'] });
+    const { data: products } = await stripe.products.search({ query: `metadata["organizationId"]:"${orgId}"`, expand: ['data.default_price'] });
 
     return {
         props: { products }
