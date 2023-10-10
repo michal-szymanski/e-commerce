@@ -1,9 +1,9 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
-import { and, eq, isNull, lt, or } from 'drizzle-orm';
+import { imagesTable, orderHistoriesTable, orderLinesTable, ordersTable, pricesTable, productsTable } from '@/schema';
+import { and, eq, inArray, isNull, lt, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { alias } from 'drizzle-orm/pg-core';
-import { orderLineSchema, OrderLineWithProduct, stripeProductSchema } from '@/types';
+import { cartItemSchema, orderLineSchema, OrderLineWithProduct, stripeProductSchema } from '@/types';
 import stripe from '@/lib/stripe';
 
 // export const getProducts = async (search: string, limit: number, offset: number) => {
@@ -69,6 +69,42 @@ export const getCartOrders = async (db: PostgresJsDatabase, userId: string) => {
         .leftJoin(h1, eq(ordersTable.id, h1.orderId))
         .leftJoin(h2, and(eq(ordersTable.id, h2.orderId), or(lt(h1.date, h2.date), and(eq(h1.date, h2.date), lt(h1.id, h2.id)))))
         .where(and(eq(ordersTable.userId, userId), eq(h1.status, 'New'), isNull(h2.id)));
+};
+
+export const getCartItems = async (db: PostgresJsDatabase, orderId: number) => {
+    const productsWithQuantities = await db
+        .select({
+            product: {
+                id: productsTable.id,
+                name: productsTable.name,
+                description: productsTable.description,
+                unitAmount: pricesTable.unitAmount,
+                currency: pricesTable.currency
+            },
+            quantity: orderLinesTable.quantity
+        })
+        .from(orderLinesTable)
+        .innerJoin(productsTable, eq(productsTable.id, orderLinesTable.productId))
+        .innerJoin(pricesTable, eq(pricesTable.id, productsTable.priceId))
+        .innerJoin(imagesTable, eq(imagesTable.productId, productsTable.id))
+        .where(eq(orderLinesTable.orderId, orderId))
+        .orderBy(orderLinesTable.productId);
+
+    const ids = productsWithQuantities.map((p) => p.product.id);
+    const images = await db.select().from(imagesTable).where(inArray(imagesTable.productId, ids));
+
+    const cartItems = productsWithQuantities.map(({ quantity, product }) => ({
+        product: {
+            ...product,
+            images: images
+                .filter((i) => product.id === i.productId)
+                .sort((a, b) => a.sequence - b.sequence)
+                .map((img) => img.src)
+        },
+        quantity: Number(quantity)
+    }));
+
+    return z.array(cartItemSchema).parse(cartItems);
 };
 
 export const getOrderLinesWithProducts = async (db: PostgresJsDatabase, orderId: number) => {

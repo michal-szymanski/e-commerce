@@ -10,7 +10,7 @@ const CartFooter = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data: cart } = useCart(!!isSignedIn && !organization);
-    const totalPrice = cart?.reduce((acc, curr) => acc + getTotalPrice(curr.product.default_price.unit_amount, curr.quantity), 0).toFixed(2);
+    const totalPrice = cart?.reduce((acc, curr) => acc + getTotalPrice(curr.product.unitAmount, curr.quantity), 0).toFixed(2);
     const router = useRouter();
     const isDialogOpen = useSelector((state: RootState) => state.ui.isDialogOpen);
 
@@ -39,7 +39,7 @@ const CartFooter = () => {
             })}
         >
             <span className="text-2xl font-bold">
-                {totalPrice} {cart?.[0]?.product.default_price.currency.toUpperCase()}
+                {totalPrice} {cart?.[0]?.product.currency.toUpperCase()}
             </span>
             {renderButton()}
         </footer>

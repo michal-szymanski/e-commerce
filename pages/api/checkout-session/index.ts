@@ -1,7 +1,7 @@
 import stripe from '@/lib/stripe';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { CartItem, orderLineSchema, orderSchema, stripeProductSchema } from '@/types';
+import { orderLineSchema, orderSchema } from '@/types';
 import { getAuth } from '@clerk/nextjs/server';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
@@ -9,6 +9,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { getCartOrders } from '@/sql-service';
 import { orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
 import { eq } from 'drizzle-orm';
+import Stripe from 'stripe';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
@@ -26,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             const parsedOrders = z.array(orderSchema).length(1).safeParse(orders);
 
-            const cartItems: CartItem[] = [];
+            const cartItems: { product: Stripe.Product; quantity: number }[] = [];
 
             if (!parsedOrders.success) {
                 return res.status(422).end();
@@ -43,13 +44,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     expand: ['default_price']
                 });
 
-                cartItems.push({ product: stripeProductSchema.parse(product), quantity: Number(ol.quantity) });
+                cartItems.push({ product, quantity: Number(ol.quantity) });
             }
 
             // Create Checkout Sessions from body params.
             const session = await stripe.checkout.sessions.create({
                 line_items: cartItems.map((c) => ({
-                    price: c.product.default_price.id,
+                    price: (c.product.default_price as Stripe.Price).id,
                     quantity: c.quantity
                 })),
                 mode: 'payment',

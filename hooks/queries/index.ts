@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { stripeProductSchema } from '@/types';
+import { cartItemSchema, stripeProductSchema } from '@/types';
 import { z } from 'zod';
 
 export const useProducts = ({ name, enabled }: { name: string; enabled: boolean }) =>
@@ -27,7 +27,7 @@ export const useCart = (enabled: boolean) =>
                 })
             ).json();
 
-            return z.array(z.object({ product: stripeProductSchema, quantity: z.number() })).parse(response);
+            return z.array(cartItemSchema).parse(response);
         },
         enabled
     });

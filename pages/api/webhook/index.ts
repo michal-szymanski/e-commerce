@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { orderHistoriesTable, orderLinesTable, pricesTable, productsTable } from '@/schema';
+import { imagesTable, orderHistoriesTable, orderLinesTable, pricesTable, productsTable } from '@/schema';
 import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 
@@ -73,15 +73,23 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
             const client = postgres(env.CONNECTION_STRING);
             const db = drizzle(client);
-            await db.insert(productsTable).values({
-                id: product.id,
-                name: product.name,
-                description: product.description,
-                active: product.active,
-                organizationId: product.metadata.organizationId,
-                categoryId: Number(product.metadata.categoryId),
-                priceId: product.default_price as string
-            });
+            const dbProduct = (
+                await db
+                    .insert(productsTable)
+                    .values({
+                        id: product.id,
+                        name: product.name,
+                        description: product.description,
+                        active: product.active,
+                        organizationId: product.metadata.organizationId,
+                        categoryId: Number(product.metadata.categoryId),
+                        priceId: product.default_price as string
+                    })
+                    .returning()
+            )[0];
+
+            const images = product.images.map((src, i) => ({ productId: dbProduct.id, sequence: i, src }));
+            await db.insert(imagesTable).values(images);
             await client.end();
             break;
         }

@@ -76,8 +76,17 @@ export const stripeSearchResultSchema = z.object({
 
 export type StripeProductSearchResult = z.infer<typeof stripeSearchResultSchema>;
 
+export const productSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    unitAmount: z.number(),
+    currency: z.string(),
+    images: z.array(z.string())
+});
+
 export const cartItemSchema = z.object({
-    product: stripeProductSchema,
+    product: productSchema,
     quantity: z.number()
 });
 

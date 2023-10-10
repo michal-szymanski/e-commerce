@@ -4,11 +4,10 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { z } from 'zod';
-import { CartItem, cartItemSchema, Order, orderLineSchema, orderSchema, stripeProductSchema } from '@/types';
+import { CartItem, cartItemSchema, Order, orderSchema } from '@/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
-import { getCartOrders } from '@/sql-service';
-import stripe from '@/lib/stripe';
+import { getCartItems, getCartOrders } from '@/sql-service';
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     const { userId } = getAuth(req);
@@ -24,24 +23,10 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 
     const parsedOrders = z.array(orderSchema).length(1).safeParse(orders);
 
-    const cartItems: CartItem[] = [];
+    let cartItems: CartItem[] = [];
 
     if (parsedOrders.success) {
-        const orderLines = await db
-            .select()
-            .from(orderLinesTable)
-            .where(eq(orderLinesTable.orderId, parsedOrders.data[0].id))
-            .orderBy(orderLinesTable.productId);
-
-        const parsedOrderLines = z.array(orderLineSchema).parse(orderLines);
-
-        for (let ol of parsedOrderLines) {
-            const product = await stripe.products.retrieve(ol.productId, {
-                expand: ['default_price']
-            });
-
-            cartItems.push({ product: stripeProductSchema.parse(product), quantity: Number(ol.quantity) });
-        }
+        cartItems = await getCartItems(db, parsedOrders.data[0].id);
     }
 
     await client.end();

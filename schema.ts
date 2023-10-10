@@ -1,4 +1,4 @@
-import { bigint, boolean, integer, numeric, pgEnum, pgTable, primaryKey, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, boolean, integer, numeric, pgEnum, pgTable, primaryKey, serial, smallint, text, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const categoriesTable = pgTable('categories', {
@@ -79,7 +79,7 @@ export const productsTable = pgTable('products', {
         .references(() => categoriesTable.id)
 });
 
-export const productsRelations = relations(productsTable, ({ one }) => ({
+export const productsRelations = relations(productsTable, ({ one, many }) => ({
     category: one(categoriesTable, {
         fields: [productsTable.categoryId],
         references: [categoriesTable.id]
@@ -87,7 +87,9 @@ export const productsRelations = relations(productsTable, ({ one }) => ({
     price: one(pricesTable, {
         fields: [productsTable.priceId],
         references: [pricesTable.id]
-    })
+    }),
+    images: many(imagesTable),
+    orderLines: many(orderLinesTable)
 }));
 
 export const pricesTable = pgTable('prices', {
@@ -99,4 +101,20 @@ export const pricesTable = pgTable('prices', {
 
 export const pricesRelations = relations(pricesTable, ({ one }) => ({
     product: one(productsTable)
+}));
+
+export const imagesTable = pgTable('images', {
+    id: serial('id').primaryKey(),
+    productId: text('product_id')
+        .notNull()
+        .references(() => productsTable.id),
+    sequence: smallint('sequence').notNull(),
+    src: text('src').notNull()
+});
+
+export const imagesRelations = relations(imagesTable, ({ one }) => ({
+    product: one(productsTable, {
+        fields: [imagesTable.productId],
+        references: [productsTable.id]
+    })
 }));

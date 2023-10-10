@@ -20,8 +20,6 @@ import { getProductUrl, getTotalPrice } from '@/lib/utils';
 import Link from 'next/link';
 
 const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-    console.log({ products });
-
     const router = useRouter();
     const columns: ColumnDef<Stripe.Product>[] = [
         {
