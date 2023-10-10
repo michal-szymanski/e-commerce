@@ -39,7 +39,7 @@ const NewProductForm = ({ setPreviewData }: Props) => {
         setIsLoading(true);
 
         try {
-            await createProduct.mutateAsync({ name, description, price: Number(price) });
+            createProduct.mutate({ name, description, price: Number(price) });
             setIsSuccess(true);
         } catch (error) {
             console.error(error);

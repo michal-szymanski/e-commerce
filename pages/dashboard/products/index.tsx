@@ -1,6 +1,5 @@
-import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
-import stripe from '@/lib/stripe';
 import Stripe from 'stripe';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
@@ -18,9 +17,17 @@ import { useRouter } from 'next/router';
 import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { getProductUrl, getTotalPrice } from '@/lib/utils';
 import Link from 'next/link';
+import { useOrganizationProducts } from '@/hooks/queries';
+import { useOrganization, useUser } from '@clerk/nextjs';
+import { dehydrate, QueryClient } from '@tanstack/react-query';
+import stripe from '@/lib/stripe';
 
-const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Page = () => {
     const router = useRouter();
+    const { isSignedIn } = useUser();
+    const { organization } = useOrganization();
+    const { data } = useOrganizationProducts({ enabled: !!isSignedIn && !!organization });
+
     const columns: ColumnDef<Stripe.Product>[] = [
         {
             accessorKey: 'id',
@@ -79,7 +86,7 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
                     <CardHeader className="flex flex-row items-end justify-between">
                         <div>
                             <h2 className="text-xl font-semibold">Your products</h2>
-                            <CardDescription>Total: {products.length}</CardDescription>
+                            <CardDescription>Total: {data?.length ?? 0}</CardDescription>
                         </div>
                         <div>
                             <Button asChild>
@@ -93,7 +100,7 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <DataTable columns={columns} data={products} />
+                        <DataTable columns={columns} data={data ?? []} />
                     </CardContent>
                 </Card>
             </div>
@@ -103,7 +110,7 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
 
 export default Page;
 
-export const getServerSideProps: GetServerSideProps<{ products: Stripe.Product[] }> = async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
     const { userId, orgId } = getAuth(context.req);
 
     if (!userId || !orgId) {
@@ -115,9 +122,14 @@ export const getServerSideProps: GetServerSideProps<{ products: Stripe.Product[]
         };
     }
 
-    const { data: products } = await stripe.products.search({ query: `metadata["organizationId"]:"${orgId}"`, expand: ['data.default_price'] });
+    const queryClient = new QueryClient();
+
+    await queryClient.prefetchQuery(['organization-products'], async () => {
+        const { data: products } = await stripe.products.search({ query: `metadata["organizationId"]:"${orgId}"`, limit: 100, expand: ['data.default_price'] });
+        return products;
+    });
 
     return {
-        props: { products }
+        props: { dehydratedState: dehydrate(queryClient) }
     };
 };

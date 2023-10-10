@@ -29,10 +29,24 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(201).json(product);
 };
 
+const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
+    const { userId, orgId } = getAuth(req);
+
+    if (!userId || !orgId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { data: products } = await stripe.products.search({ query: `metadata["organizationId"]:"${orgId}"`, limit: 100, expand: ['data.default_price'] });
+
+    res.status(201).json(products);
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         if (req.method === 'POST') {
             await handlePOST(req, res);
+        } else if (req.method === 'GET') {
+            await handleGET(req, res);
         } else {
             res.status(405).end();
         }

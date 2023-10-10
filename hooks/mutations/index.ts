@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CartItem } from '@/types';
 import { z } from 'zod';
+import Stripe from 'stripe';
 
 export const useUpdateCart = () => {
     const queryClient = useQueryClient();
@@ -61,8 +62,10 @@ export const useCreateOrder = () => {
     });
 };
 
-export const useCreateProduct = () =>
-    useMutation({
+export const useCreateProduct = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
         mutationFn: async (data: { name: string; description: string; price: number }) => {
             const payload = JSON.stringify(data);
 
@@ -76,6 +79,10 @@ export const useCreateProduct = () =>
                 })
             ).json();
 
-            return response;
+            return response as Stripe.Product;
+        },
+        onSuccess: (product) => {
+            queryClient.setQueryData<Stripe.Product[]>(['organization-products'], (organizationProducts) => [product, ...(organizationProducts ?? [])]);
         }
     });
+};
