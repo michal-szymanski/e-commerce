@@ -11,7 +11,7 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const { name, description, price } = z.object({ name: z.string(), description: z.string(), price: z.number() }).parse(req.body);
-    const product = await stripe.products.create({
+    const { id } = await stripe.products.create({
         name,
         description,
         default_price_data: {
@@ -26,6 +26,11 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
             'https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'
         ]
     });
+
+    const product = await stripe.products.retrieve(id, {
+        expand: ['default_price']
+    });
+
     res.status(201).json(product);
 };
 

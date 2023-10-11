@@ -16,17 +16,23 @@ import {
 import { useRouter } from 'next/router';
 import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { getProductUrl, getTotalPrice } from '@/lib/utils';
-import Link from 'next/link';
 import { useOrganizationProducts } from '@/hooks/queries';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 import stripe from '@/lib/stripe';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import NewProductForm from '@/components/ui/custom/forms/new-product-form';
+import { useState } from 'react';
+import ProductPage from '@/components/ui/custom/product-page';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Page = () => {
     const router = useRouter();
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data } = useOrganizationProducts({ enabled: !!isSignedIn && !!organization });
+    const [{ name, price, description }, setPreviewData] = useState({ name: '', price: 0, description: '' });
+    const [open, setOpen] = useState(false);
 
     const columns: ColumnDef<Stripe.Product>[] = [
         {
@@ -81,7 +87,7 @@ const Page = () => {
     return (
         <div>
             <h1 className="pb-10 text-4xl font-bold">Products</h1>
-            <div className="container mx-auto py-10">
+            <div className="container relative mx-auto py-10">
                 <Card>
                     <CardHeader className="flex flex-row items-end justify-between">
                         <div>
@@ -89,20 +95,47 @@ const Page = () => {
                             <CardDescription>Total: {data?.length ?? 0}</CardDescription>
                         </div>
                         <div>
-                            <Button asChild>
-                                <Link href="/dashboard/products/add">
-                                    <span>
-                                        <PlusIcon className="h-4 w-4" />
-                                    </span>
-                                    <span className="pl-3">Add Product</span>
-                                </Link>
-                            </Button>
+                            <Sheet open={open} onOpenChange={setOpen}>
+                                <SheetTrigger asChild>
+                                    <Button>
+                                        <span>
+                                            <PlusIcon className="h-4 w-4" />
+                                        </span>
+                                        <span className="pl-3">Add Product</span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent onPointerDownOutside={(e) => e.preventDefault()}>
+                                    <SheetHeader className="pb-10">
+                                        <SheetTitle>Add new product</SheetTitle>
+                                        <SheetDescription>
+                                            Fill out the form to create a new product. You can see the preview of your new product to the left.
+                                        </SheetDescription>
+                                    </SheetHeader>
+                                    <NewProductForm setPreviewData={(value) => setPreviewData(value)} close={() => setOpen(false)} />
+                                </SheetContent>
+                            </Sheet>
                         </div>
                     </CardHeader>
                     <CardContent>
                         <DataTable columns={columns} data={data ?? []} />
                     </CardContent>
                 </Card>
+                <AnimatePresence>
+                    {open && (
+                        <motion.div className="absolute left-0 top-0 z-[51]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                            <h2 className="pb-10 text-4xl font-extrabold text-green-600">Preview</h2>
+                            <ProductPage
+                                isPreview
+                                name={name}
+                                price={price * 100}
+                                currency="pln"
+                                images={[
+                                    'https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'
+                                ]}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

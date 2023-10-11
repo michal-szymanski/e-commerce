@@ -59,8 +59,8 @@ const ProductPage = ({ isPreview, id, name, price, currency, images, onAddToCart
 
     return (
         <article>
-            <header>
-                <h2 className="text-2xl font-bold">{name}</h2>
+            <header className="min-h-[50px] w-[500px]">
+                <h2 className="break-words text-2xl font-bold">{name}</h2>
             </header>
             <div className="flex gap-10 py-10">
                 <div className="h-[500px] w-[500px]">{images.length > 0 && <Image src={images[0]} alt={name} width={500} height={500} />}</div>
