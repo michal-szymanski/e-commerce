@@ -10,10 +10,14 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { name, description, price } = z.object({ name: z.string(), description: z.string(), price: z.number() }).parse(req.body);
+    const { name, description, price, active } = z
+        .object({ name: z.string(), description: z.string(), price: z.number(), active: z.boolean() })
+        .parse(req.body);
+
     const { id } = await stripe.products.create({
         name,
         description,
+        active,
         default_price_data: {
             unit_amount: price,
             currency: 'pln'

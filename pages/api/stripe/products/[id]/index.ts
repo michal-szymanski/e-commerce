@@ -10,8 +10,14 @@ const handlePATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { name, description, unitAmount, priceId } = z
-        .object({ priceId: z.string().optional(), name: z.string().optional(), description: z.string().optional(), unitAmount: z.number().optional() })
+    const { name, description, unitAmount, priceId, active } = z
+        .object({
+            priceId: z.string().optional(),
+            name: z.string().optional(),
+            description: z.string().optional(),
+            unitAmount: z.number().optional(),
+            active: z.boolean().optional()
+        })
         .parse(req.body);
     const id = z.string().parse(req.query.id);
 
@@ -25,6 +31,7 @@ const handlePATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         const product = await stripe.products.update(id, {
             name,
             description,
+            active,
             default_price: price.id
         });
 
@@ -38,8 +45,11 @@ const handlePATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const product = await stripe.products.update(id, {
         name,
-        description
+        description,
+        active
     });
+
+    product.default_price = await stripe.prices.retrieve(product.default_price as string);
 
     return res.status(200).json(product);
 };

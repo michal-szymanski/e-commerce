@@ -9,11 +9,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCreateProduct, useUpdateProduct } from '@/hooks/mutations';
 import { Button } from '@/components/ui/button';
 import Stripe from 'stripe';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { InformationCircleIcon } from '@heroicons/react/20/solid';
 
 const formSchema = z.object({
     name: z.string().nonempty({ message: 'Name is required' }),
     description: z.string().nonempty({ message: 'Description is required' }),
-    unitAmount: z.string().nonempty({ message: 'Price is required' })
+    unitAmount: z.string().nonempty({ message: 'Price is required' }),
+    active: z.boolean().optional()
 });
 
 type Props = {
@@ -28,7 +33,8 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
         defaultValues: {
             name: initialData?.name ?? '',
             description: initialData?.description ?? '',
-            unitAmount: (initialData?.default_price as Stripe.Price | undefined)?.unit_amount?.toString() ?? ''
+            unitAmount: (initialData?.default_price as Stripe.Price | undefined)?.unit_amount?.toString() ?? '',
+            active: initialData?.active ?? false
         }
     });
 
@@ -37,7 +43,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
     const createProduct = useCreateProduct();
     const updateProduct = useUpdateProduct();
 
-    const onSubmit = async ({ name, description, unitAmount }: z.infer<typeof formSchema>) => {
+    const onSubmit = async ({ name, description, unitAmount, active }: z.infer<typeof formSchema>) => {
         setIsLoading(true);
 
         try {
@@ -45,18 +51,20 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                 const isPriceUpdated = (initialData.default_price as Stripe.Price).unit_amount !== Number(unitAmount);
                 const isNameUpdated = initialData.name !== name;
                 const isDescriptionUpdated = initialData.description !== description;
+                const isActiveUpdated = initialData.active !== active;
 
-                if (isPriceUpdated || isNameUpdated || isDescriptionUpdated) {
+                if (isPriceUpdated || isNameUpdated || isDescriptionUpdated || isActiveUpdated) {
                     updateProduct.mutate({
                         productId: initialData.id,
                         priceId: isPriceUpdated ? (initialData.default_price as Stripe.Price).id : undefined,
                         name: isNameUpdated ? name : undefined,
                         description: isDescriptionUpdated ? description : undefined,
-                        unitAmount: isPriceUpdated ? Number(unitAmount) : undefined
+                        unitAmount: isPriceUpdated ? Number(unitAmount) : undefined,
+                        active: isActiveUpdated ? active : undefined
                     });
                 }
             } else {
-                createProduct.mutate({ name, description, price: Number(unitAmount) });
+                createProduct.mutate({ name, description, price: Number(unitAmount), active: active ?? false });
             }
             setIsSuccess(true);
         } catch (error) {
@@ -104,6 +112,33 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
+                            <div className="h-5">
+                                <FormMessage />
+                            </div>
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="active"
+                    render={({ field }) => (
+                        <FormItem>
+                            <div className="flex items-center gap-3">
+                                <FormLabel>Active</FormLabel>
+                                <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </FormControl>
+                                <TooltipProvider delayDuration={0}>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <InformationCircleIcon className="h-5 w-5" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Inactive products will not be visible to customers and cannot be bought</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                             <div className="h-5">
                                 <FormMessage />
                             </div>
