@@ -130,7 +130,8 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                                 </FormControl>
                                 <TooltipProvider delayDuration={0}>
                                     <Tooltip>
-                                        <TooltipTrigger>
+                                        <TooltipTrigger type="button">
+                                            <span className="sr-only">Information icon about active and inactive products</span>
                                             <InformationCircleIcon className="h-5 w-5" />
                                         </TooltipTrigger>
                                         <TooltipContent>
