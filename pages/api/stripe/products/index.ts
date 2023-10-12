@@ -14,7 +14,7 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
         .object({ name: z.string(), description: z.string(), price: z.number(), active: z.boolean() })
         .parse(req.body);
 
-    const { id } = await stripe.products.create({
+    const product = await stripe.products.create({
         name,
         description,
         active,
@@ -31,9 +31,7 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
         ]
     });
 
-    const product = await stripe.products.retrieve(id, {
-        expand: ['default_price']
-    });
+    product.default_price = await stripe.prices.retrieve(product.default_price as string);
 
     res.status(201).json(product);
 };
