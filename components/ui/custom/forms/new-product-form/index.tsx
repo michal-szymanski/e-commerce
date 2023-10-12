@@ -6,39 +6,52 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { Textarea } from '@/components/ui/textarea';
-import { useCreateProduct } from '@/hooks/mutations';
+import { useCreateProduct, useUpdateProduct } from '@/hooks/mutations';
 import { Button } from '@/components/ui/button';
+import Stripe from 'stripe';
 
 const formSchema = z.object({
     name: z.string().nonempty({ message: 'Name is required' }),
     description: z.string().nonempty({ message: 'Description is required' }),
-    price: z.string().nonempty({ message: 'Price is required' })
+    unitAmount: z.string().nonempty({ message: 'Price is required' })
 });
 
 type Props = {
-    setPreviewData: (previewData: { name: string; price: number; description: string }) => void;
+    setPreviewData: (previewData: { name: string; description: string; unitAmount: number }) => void;
     close: () => void;
+    initialData?: Stripe.Product;
 };
 
-const NewProductForm = ({ setPreviewData, close }: Props) => {
+const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: '',
-            description: '',
-            price: ''
+            name: initialData?.name ?? '',
+            description: initialData?.description ?? '',
+            unitAmount: (initialData?.default_price as Stripe.Price | undefined)?.unit_amount?.toString() ?? ''
         }
     });
 
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const createProduct = useCreateProduct();
+    const updateProduct = useUpdateProduct();
 
-    const onSubmit = async ({ name, description, price }: z.infer<typeof formSchema>) => {
+    const onSubmit = async ({ name, description, unitAmount }: z.infer<typeof formSchema>) => {
         setIsLoading(true);
 
         try {
-            createProduct.mutate({ name, description, price: Number(price) });
+            if (initialData) {
+                updateProduct.mutate({
+                    productId: initialData.id,
+                    priceId: (initialData.default_price as Stripe.Price).id,
+                    name,
+                    description,
+                    unitAmount: Number(unitAmount)
+                });
+            } else {
+                createProduct.mutate({ name, description, price: Number(unitAmount) });
+            }
             setIsSuccess(true);
         } catch (error) {
             console.error(error);
@@ -48,11 +61,11 @@ const NewProductForm = ({ setPreviewData, close }: Props) => {
     };
 
     useEffect(() => {
-        const subscription = form.watch(({ name, description, price }) => {
+        const subscription = form.watch(({ name, description, unitAmount }) => {
             setPreviewData({
                 name: name ?? '',
                 description: description ?? '',
-                price: Number(price ?? 0)
+                unitAmount: Number(unitAmount ?? 0)
             });
         });
         return () => subscription.unsubscribe();
@@ -78,7 +91,7 @@ const NewProductForm = ({ setPreviewData, close }: Props) => {
                 />
                 <FormField
                     control={form.control}
-                    name="price"
+                    name="unitAmount"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Price</FormLabel>

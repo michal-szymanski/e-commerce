@@ -107,7 +107,7 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
                     categoryId: Number(product.metadata.categoryId),
                     priceId: product.default_price as string
                 })
-                .where(eq(pricesTable.id, product.id));
+                .where(eq(productsTable.id, product.id));
             await client.end();
             break;
         }

@@ -22,7 +22,7 @@ import { dehydrate, QueryClient } from '@tanstack/react-query';
 import stripe from '@/lib/stripe';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import NewProductForm from '@/components/ui/custom/forms/new-product-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProductPage from '@/components/ui/custom/product-page';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -31,8 +31,9 @@ const Page = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data } = useOrganizationProducts({ enabled: !!isSignedIn && !!organization });
-    const [{ name, price, description }, setPreviewData] = useState({ name: '', price: 0, description: '' });
+    const [{ name, description, unitAmount }, setPreviewData] = useState({ name: '', description: '', unitAmount: 0 });
     const [open, setOpen] = useState(false);
+    const [initialData, setInitialData] = useState<Stripe.Product>();
 
     const columns: ColumnDef<Stripe.Product>[] = [
         {
@@ -51,12 +52,14 @@ const Page = () => {
             id: 'unit_amount',
             accessorKey: 'default_price.unit_amount',
             header: () => <div className="text-right">Price</div>,
-            cell: ({ row }) => <div className="text-right font-medium">{getTotalPrice(row.getValue('unit_amount'), 1)} PLN</div>
+            cell: ({ row: { original: product } }) => (
+                <div className="text-right font-medium">{getTotalPrice((product.default_price as Stripe.Price).unit_amount ?? 0, 1)} PLN</div>
+            )
         },
         {
             id: 'actions',
             enableHiding: false,
-            cell: ({ row }) => {
+            cell: ({ row: { original: product } }) => {
                 return (
                     <div className="text-center">
                         <DropdownMenu>
@@ -68,12 +71,22 @@ const Page = () => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => router.push(`/dashboard/products/${row.getValue('id')}`)}>Edit</DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setInitialData(product);
+                                        setPreviewData({
+                                            name: product.name,
+                                            description: product.description ?? '',
+                                            unitAmount: (product.default_price as Stripe.Price).unit_amount ?? 0
+                                        });
+                                        setOpen(true);
+                                    }}
+                                >
+                                    Edit
+                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                {Boolean(row.getValue('active')) && (
-                                    <DropdownMenuItem onClick={() => router.push(getProductUrl(row.getValue('id'), row.getValue('name')))}>
-                                        View product page
-                                    </DropdownMenuItem>
+                                {product.active && (
+                                    <DropdownMenuItem onClick={() => router.push(getProductUrl(product.id, product.name))}>View product page</DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem>View orders with this product</DropdownMenuItem>
                             </DropdownMenuContent>
@@ -83,6 +96,12 @@ const Page = () => {
             }
         }
     ];
+
+    useEffect(() => {
+        if (!open) {
+            setInitialData(undefined);
+        }
+    }, [open]);
 
     return (
         <div>
@@ -106,12 +125,18 @@ const Page = () => {
                                 </SheetTrigger>
                                 <SheetContent onPointerDownOutside={(e) => e.preventDefault()}>
                                     <SheetHeader className="pb-10">
-                                        <SheetTitle>Add new product</SheetTitle>
+                                        <SheetTitle>{initialData ? 'Edit product' : 'Add new product'}</SheetTitle>
                                         <SheetDescription>
                                             Fill out the form to create a new product. You can see the preview of your new product to the left.
                                         </SheetDescription>
                                     </SheetHeader>
-                                    <NewProductForm setPreviewData={(value) => setPreviewData(value)} close={() => setOpen(false)} />
+                                    <NewProductForm
+                                        setPreviewData={(value) => setPreviewData(value)}
+                                        close={() => {
+                                            setOpen(false);
+                                        }}
+                                        initialData={initialData}
+                                    />
                                 </SheetContent>
                             </Sheet>
                         </div>
@@ -127,7 +152,7 @@ const Page = () => {
                             <ProductPage
                                 isPreview
                                 name={name}
-                                price={price * 100}
+                                price={unitAmount * 100}
                                 currency="pln"
                                 images={[
                                     'https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'

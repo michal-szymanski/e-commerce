@@ -86,3 +86,38 @@ export const useCreateProduct = () => {
         }
     });
 };
+
+export const useUpdateProduct = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ productId, ...rest }: { productId: string; priceId: string; name: string; description: string; unitAmount: number }) => {
+            const payload = JSON.stringify(rest);
+
+            const response = await (
+                await fetch(`/api/stripe/products/${productId}`, {
+                    method: 'PUT',
+                    body: payload,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ).json();
+
+            return response as Stripe.Product;
+        },
+        onSuccess: (product) => {
+            queryClient.setQueryData<Stripe.Product[]>(['organization-products'], (organizationProducts) =>
+                !organizationProducts
+                    ? [product]
+                    : organizationProducts.map((p) => {
+                          if (p.id === product.id) {
+                              return product;
+                          }
+
+                          return p;
+                      })
+            );
+        }
+    });
+};
