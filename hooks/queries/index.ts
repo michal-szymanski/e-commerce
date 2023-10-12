@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { cartItemSchema, stripeProductSchema } from '@/types';
+import { cartItemSchema, searchProductSchema } from '@/types';
 import { z } from 'zod';
 import Stripe from 'stripe';
 
-export const useProducts = ({ name, enabled }: { name: string; enabled: boolean }) =>
+export const useSearchProducts = ({ name, enabled }: { name: string; enabled: boolean }) =>
     useQuery({
         queryKey: ['products', { name }],
         queryFn: async () => {
             const response = await (await fetch(`/api/products?name=${name}`)).json();
 
-            return z.array(stripeProductSchema).parse(response);
+            return z.array(searchProductSchema).parse(response);
         },
         keepPreviousData: false,
         enabled

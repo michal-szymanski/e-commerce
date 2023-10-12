@@ -116,3 +116,8 @@ export const stripeOrderLineSchema = z.object({
 });
 
 export type StripeOrderLine = z.infer<typeof stripeOrderLineSchema>;
+
+export const searchProductSchema = z.object({
+    id: z.string(),
+    name: z.string()
+});

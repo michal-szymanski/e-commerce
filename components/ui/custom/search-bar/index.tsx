@@ -1,6 +1,6 @@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { ElementRef, HTMLAttributes, KeyboardEvent, useEffect, useMemo, useState } from 'react';
-import { useProducts } from '@/hooks/queries';
+import { useSearchProducts } from '@/hooks/queries';
 import { debounce } from '@/lib/utils';
 import { useRouter } from 'next/router';
 
@@ -18,8 +18,10 @@ const SearchBar = ({ initialSearch, className }: Props) => {
     const router = useRouter();
     const [value, setValue] = useState('');
     const [debouncedValue, setDebouncedValue] = useState('');
-    const { data: products } = useProducts({ name: debouncedValue, enabled: !!debouncedValue });
     const [isVisible, setIsVisible] = useState(false);
+    const isSearchEnabled = debouncedValue.length > 2;
+    const { data: products } = useSearchProducts({ name: debouncedValue, enabled: isSearchEnabled });
+    const isSearchResult = !!products?.length;
 
     useEffect(() => {
         if (router.route === '/products/[id]/[name]') return;
@@ -59,15 +61,13 @@ const SearchBar = ({ initialSearch, className }: Props) => {
         }
     };
 
-    const isSearchResult = !!products?.length;
-
     return (
         <Command className={className} shouldFilter={false}>
             <CommandInput placeholder="What are you looking for?" value={value} onValueChange={setValue} onKeyDown={handleKeyDown} {...passwordManagersProps} />
 
             {isVisible && (
                 <CommandList>
-                    {!isSearchResult && <CommandEmpty>No results found.</CommandEmpty>}
+                    {!isSearchResult && isSearchEnabled && <CommandEmpty>No results found.</CommandEmpty>}
                     {isSearchResult && (
                         <CommandGroup>
                             {products.map((p) => (

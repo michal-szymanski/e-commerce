@@ -54,7 +54,7 @@ export const getServerSideProps: GetServerSideProps<{
     const page = parsedPage.success ? parsedPage.data : '';
 
     const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client, { logger: true });
+    const db = drizzle(client);
 
     const where: SQL[] = [eq(productsTable.active, true)];
 
