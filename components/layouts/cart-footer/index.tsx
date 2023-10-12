@@ -17,7 +17,7 @@ const CartFooter = () => {
     const renderButton = () => {
         if (router.asPath === '/cart') {
             return (
-                <form action="/api/checkout-session" method="POST">
+                <form action="/api/stripe/checkout-session" method="POST">
                     <Button className="w-40" type="submit">
                         Checkout
                     </Button>
