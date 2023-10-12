@@ -91,12 +91,12 @@ export const useUpdateProduct = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ productId, ...rest }: { productId: string; priceId: string; name: string; description: string; unitAmount: number }) => {
+        mutationFn: async ({ productId, ...rest }: { productId: string; priceId?: string; name?: string; description?: string; unitAmount?: number }) => {
             const payload = JSON.stringify(rest);
 
             const response = await (
                 await fetch(`/api/stripe/products/${productId}`, {
-                    method: 'PUT',
+                    method: 'PATCH',
                     body: payload,
                     headers: {
                         'Content-Type': 'application/json'

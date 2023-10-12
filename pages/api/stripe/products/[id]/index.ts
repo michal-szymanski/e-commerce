@@ -3,7 +3,7 @@ import { getAuth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import stripe from '@/lib/stripe';
 
-const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
+const handlePATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     const { userId, orgId } = getAuth(req);
 
     if (!userId || !orgId) {
@@ -11,35 +11,43 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const { name, description, unitAmount, priceId } = z
-        .object({ priceId: z.string(), name: z.string(), description: z.string(), unitAmount: z.number() })
+        .object({ priceId: z.string().optional(), name: z.string().optional(), description: z.string().optional(), unitAmount: z.number().optional() })
         .parse(req.body);
     const id = z.string().parse(req.query.id);
 
-    const price = await stripe.prices.create({
-        currency: 'pln',
-        unit_amount: unitAmount,
-        product: id
-    });
+    if (priceId && unitAmount) {
+        const price = await stripe.prices.create({
+            currency: 'pln',
+            unit_amount: unitAmount,
+            product: id
+        });
+
+        const product = await stripe.products.update(id, {
+            name,
+            description,
+            default_price: price.id
+        });
+
+        await stripe.prices.update(priceId, {
+            active: false
+        });
+
+        product.default_price = price;
+        return res.status(200).json(product);
+    }
 
     const product = await stripe.products.update(id, {
         name,
-        description,
-        default_price: price.id
+        description
     });
-
-    await stripe.prices.update(priceId, {
-        active: false
-    });
-
-    product.default_price = price;
 
     return res.status(200).json(product);
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
-        if (req.method === 'PUT') {
-            await handlePUT(req, res);
+        if (req.method === 'PATCH') {
+            await handlePATCH(req, res);
         } else {
             res.status(405).end();
         }

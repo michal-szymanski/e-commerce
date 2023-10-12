@@ -42,13 +42,19 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
 
         try {
             if (initialData) {
-                updateProduct.mutate({
-                    productId: initialData.id,
-                    priceId: (initialData.default_price as Stripe.Price).id,
-                    name,
-                    description,
-                    unitAmount: Number(unitAmount)
-                });
+                const isPriceUpdated = (initialData.default_price as Stripe.Price).unit_amount !== Number(unitAmount);
+                const isNameUpdated = initialData.name !== name;
+                const isDescriptionUpdated = initialData.description !== description;
+
+                if (isPriceUpdated || isNameUpdated || isDescriptionUpdated) {
+                    updateProduct.mutate({
+                        productId: initialData.id,
+                        priceId: isPriceUpdated ? (initialData.default_price as Stripe.Price).id : undefined,
+                        name: isNameUpdated ? name : undefined,
+                        description: isDescriptionUpdated ? description : undefined,
+                        unitAmount: isPriceUpdated ? Number(unitAmount) : undefined
+                    });
+                }
             } else {
                 createProduct.mutate({ name, description, price: Number(unitAmount) });
             }
