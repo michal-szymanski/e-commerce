@@ -90,7 +90,7 @@ const UserDropdown = () => {
                         <span className="pl-2">{m.organization.name}</span>
                     </DropdownMenuItem>
                 ))}
-                {isPersonalAccount && (
+                {isPersonalAccount && !user.organizationMemberships.length && (
                     <DropdownMenuItem onClick={() => router.push('/create-organization')} className="cursor-pointer">
                         <PlusSmallIcon className="h-5 w-5" />
                         <span className="pl-2">Create Organization</span>
