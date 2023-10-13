@@ -66,7 +66,7 @@ export const useCreateProduct = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (data: { name: string; description: string; price: number; active: boolean }) => {
+        mutationFn: async (data: { name: string; description: string; unitAmount: number; active: boolean }) => {
             const payload = JSON.stringify(data);
 
             const response = await (

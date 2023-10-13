@@ -50,7 +50,13 @@ const CartItem = ({ cartItem: { product, quantity } }: Props) => {
                     <span>
                         <XMarkIcon className="h-4 w-4" />
                     </span>
-                    <QuantityCounter initialQuantity={quantity} handlePlus={handlePlus} handleMinus={handleMinus} handleBlur={handleBlur} />
+                    <QuantityCounter
+                        initialQuantity={quantity}
+                        handlePlus={handlePlus}
+                        handleMinus={handleMinus}
+                        handleBlur={handleBlur}
+                        allowDecimal={false}
+                    />
                     <span className="font-bold">
                         {getTotalPrice(product.unitAmount, quantity).toFixed(2)} {product.currency.toUpperCase()}
                     </span>

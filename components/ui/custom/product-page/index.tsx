@@ -53,7 +53,7 @@ const ProductPage = ({ isPreview, id, name, price, currency, images, onAddToCart
     const renderQuantityCounter = () => (
         <div className="flex items-center gap-5 pb-5">
             <span className="text-lg font-semibold">Quantity:</span>
-            <QuantityCounter initialQuantity={quantity} handlePlus={handlePlus} handleMinus={handleMinus} handleBlur={handleBlur} />
+            <QuantityCounter initialQuantity={quantity} handlePlus={handlePlus} handleMinus={handleMinus} handleBlur={handleBlur} allowDecimal={false} />
         </div>
     );
 

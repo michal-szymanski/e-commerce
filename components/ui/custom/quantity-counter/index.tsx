@@ -12,9 +12,10 @@ type Props = {
     handlePlus: () => void;
     handleMinus: () => void;
     handleBlur: (value: number) => void;
+    allowDecimal: boolean;
 };
 
-const QuantityCounter = ({ initialQuantity, handlePlus, handleMinus, handleBlur }: Props) => {
+const QuantityCounter = ({ initialQuantity, handlePlus, handleMinus, handleBlur, allowDecimal }: Props) => {
     const formSchema = z.object({
         quantity: z.string()
     });
@@ -52,6 +53,9 @@ const QuantityCounter = ({ initialQuantity, handlePlus, handleMinus, handleBlur 
                                             try {
                                                 const { value } = e.target;
                                                 if (value) {
+                                                    if (!allowDecimal) {
+                                                        z.array(z.string()).length(1).parse(value.split('.'));
+                                                    }
                                                     z.coerce.number().min(1).parse(value);
                                                 }
                                                 field.onChange(e);

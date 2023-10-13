@@ -22,9 +22,16 @@ const formSchema = z.object({
     unitAmount: z
         .string()
         .nonempty({ message: 'Unit amount is required' })
-        .refine((val) => z.coerce.number().max(stripeMaxUnitAmount).safeParse(val).success, {
-            message: `Unit amount cannot be higher than ${stripeMaxUnitAmount}`
-        }),
+        .refine(
+            (val) =>
+                z.coerce
+                    .number()
+                    .max(stripeMaxUnitAmount / 100)
+                    .safeParse(val).success,
+            {
+                message: `Unit amount cannot be higher than ${stripeMaxUnitAmount / 100}`
+            }
+        ),
     active: z.boolean().optional()
 });
 
@@ -71,7 +78,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                     });
                 }
             } else {
-                createProduct.mutate({ name, description, price: Number(unitAmount), active: active ?? false });
+                createProduct.mutate({ name, description, unitAmount: Number(unitAmount) * 100, active: active ?? false });
             }
             setIsSuccess(true);
         } catch (error) {

@@ -127,7 +127,8 @@ const Page = () => {
                                     <SheetHeader className="pb-10">
                                         <SheetTitle>{initialData ? 'Edit product' : 'Add new product'}</SheetTitle>
                                         <SheetDescription>
-                                            Fill out the form to create a new product. You can see the preview of your new product to the left.
+                                            Fill out the form to {initialData ? 'edit the' : 'create a new'} product. You can see the preview of your product to
+                                            the left.
                                         </SheetDescription>
                                     </SheetHeader>
                                     <NewProductForm
