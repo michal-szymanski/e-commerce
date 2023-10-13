@@ -74,6 +74,14 @@ export const getServerSideProps: GetServerSideProps<{
         .innerJoin(pricesTable, eq(productsTable.priceId, pricesTable.id))
         .where(and(...where));
 
+    if (!products.length) {
+        return {
+            props: {
+                products: []
+            }
+        };
+    }
+
     const media = await db
         .select({ productId: imagesTable.productId, src: imagesTable.src, sequence: imagesTable.sequence })
         .from(imagesTable)
