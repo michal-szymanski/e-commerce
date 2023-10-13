@@ -14,10 +14,17 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
 
+const stripeMaxUnitAmount = 99999999;
+
 const formSchema = z.object({
     name: z.string().nonempty({ message: 'Name is required' }),
     description: z.string().nonempty({ message: 'Description is required' }),
-    unitAmount: z.string().nonempty({ message: 'Price is required' }),
+    unitAmount: z
+        .string()
+        .nonempty({ message: 'Unit amount is required' })
+        .refine((val) => z.coerce.number().max(stripeMaxUnitAmount).safeParse(val).success, {
+            message: `Unit amount cannot be higher than ${stripeMaxUnitAmount}`
+        }),
     active: z.boolean().optional()
 });
 
@@ -108,9 +115,22 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                     name="unitAmount"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Price</FormLabel>
+                            <FormLabel>Unit amount</FormLabel>
                             <FormControl>
-                                <Input {...field} />
+                                <Input
+                                    {...field}
+                                    onChange={(e) => {
+                                        try {
+                                            const { value } = e.target;
+                                            if (value) {
+                                                z.coerce.number().min(1).parse(value);
+                                            }
+                                            field.onChange(e);
+                                        } catch {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
                             </FormControl>
                             <div className="h-5">
                                 <FormMessage />

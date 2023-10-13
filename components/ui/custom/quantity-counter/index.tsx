@@ -32,17 +32,6 @@ const QuantityCounter = ({ initialQuantity, handlePlus, handleMinus, handleBlur 
         form.setValue('quantity', z.coerce.string().parse(initialQuantity));
     }, [initialQuantity, form]);
 
-    const transformInputToNumber = (event: React.ChangeEvent<HTMLInputElement>) => {
-        try {
-            const number = z.coerce.number().min(1).parse(event.target.value);
-            return number > 0 ? z.coerce.string().parse(number) : '';
-        } catch {
-            const values = form.getValues();
-            const name = event.target.name;
-            return values[name as keyof typeof values];
-        }
-    };
-
     return (
         <div className="flex items-center gap-2">
             <Button variant="ghost" className="h-min rounded-full p-2" onClick={handleMinus} disabled={currentQuantity === 1}>
@@ -59,8 +48,23 @@ const QuantityCounter = ({ initialQuantity, handlePlus, handleMinus, handleBlur 
                                     <Input
                                         {...field}
                                         className="w-16 text-center"
-                                        onChange={(e) => field.onChange(transformInputToNumber(e))}
-                                        onBlur={(e) => handleBlur(z.coerce.number().parse(e.target.value))}
+                                        onChange={(e) => {
+                                            try {
+                                                const { value } = e.target;
+                                                if (value) {
+                                                    z.coerce.number().min(1).parse(value);
+                                                }
+                                                field.onChange(e);
+                                            } catch {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        onBlur={(e) => {
+                                            const value = e.target.value || '1';
+                                            form.setValue(field.name, value);
+                                            handleBlur(z.coerce.number().parse(value));
+                                            field.onBlur();
+                                        }}
                                     />
                                 </FormControl>
                                 <FormMessage />
