@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { clerkClient, getAuth } from '@clerk/nextjs/server';
 import { Button } from '@/components/ui/button';
 import Confetti from 'react-confetti';
-import { useEffect, useState } from 'react';
+import { ElementRef, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,16 +19,19 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 const Page = ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
     const [confettiIds, setConfettiIds] = useState<string[]>([uuidv4()]);
+    const ref = useRef<ElementRef<'div'>>(null);
 
     useEffect(() => {
-        const eventHandler = () => {
-            setDimensions({ width: window.innerWidth, height: innerHeight });
+        const setConfettiDimensions = () => {
+            if (!ref.current?.parentElement) return;
+            const { offsetWidth: width, offsetHeight: height } = ref.current?.parentElement;
+            setDimensions({ width, height });
         };
 
-        eventHandler();
+        setConfettiDimensions();
 
-        window.addEventListener('resize', eventHandler);
-        return () => window.removeEventListener('resize', eventHandler);
+        window.addEventListener('resize', setConfettiDimensions);
+        return () => window.removeEventListener('resize', setConfettiDimensions);
     }, []);
 
     return (
@@ -49,7 +52,7 @@ const Page = ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServ
                     }}
                 />
             ))}
-            <div className="container grid h-[60%] place-items-center">
+            <div className="container grid h-[60%] place-items-center" ref={ref}>
                 <Card className="border-green-300 bg-green-100 text-green-950">
                     <CardHeader>
                         <CardTitle>Thank you{firstName ? `, ${firstName}` : ''}!</CardTitle>
