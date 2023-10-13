@@ -3,7 +3,7 @@ import { imagesTable, orderHistoriesTable, orderLinesTable, ordersTable, pricesT
 import { and, eq, inArray, isNull, lt, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { alias } from 'drizzle-orm/pg-core';
-import { cartItemSchema, orderLineSchema, OrderLineWithProduct, stripeProductSchema } from '@/types';
+import { CartItem, cartItemSchema, orderLineSchema, OrderLineWithProduct, stripeProductSchema } from '@/types';
 import stripe from '@/lib/stripe';
 
 // export const getProducts = async (search: string, limit: number, offset: number) => {
@@ -90,19 +90,24 @@ export const getCartItems = async (db: PostgresJsDatabase, orderId: number) => {
         .where(eq(orderLinesTable.orderId, orderId))
         .orderBy(orderLinesTable.productId);
 
-    const ids = productsWithQuantities.map((p) => p.product.id);
-    const images = await db.select().from(imagesTable).where(inArray(imagesTable.productId, ids));
+    let cartItems: CartItem[] = [];
 
-    const cartItems = productsWithQuantities.map(({ quantity, product }) => ({
-        product: {
-            ...product,
-            images: images
-                .filter((i) => product.id === i.productId)
-                .sort((a, b) => a.sequence - b.sequence)
-                .map((img) => img.src)
-        },
-        quantity: Number(quantity)
-    }));
+    if (productsWithQuantities.length) {
+        const ids = productsWithQuantities.map((p) => p.product.id);
+
+        const images = await db.select().from(imagesTable).where(inArray(imagesTable.productId, ids));
+
+        cartItems = productsWithQuantities.map(({ quantity, product }) => ({
+            product: {
+                ...product,
+                images: images
+                    .filter((i) => product.id === i.productId)
+                    .sort((a, b) => a.sequence - b.sequence)
+                    .map((img) => img.src)
+            },
+            quantity: Number(quantity)
+        }));
+    }
 
     return z.array(cartItemSchema).parse(cartItems);
 };
