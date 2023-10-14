@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "next dev",
         "build": "next build",
+        "build:analyze": "ANALYZE=true next build",
         "start": "next start",
         "lint": "next lint",
         "format": "prettier . --write",
@@ -19,6 +20,7 @@
         "@clerk/nextjs": "^4.23.5",
         "@heroicons/react": "^2.0.18",
         "@hookform/resolvers": "^3.3.1",
+        "@next/bundle-analyzer": "^13.5.4",
         "@nextui-org/react": "^2.1.13",
         "@radix-ui/react-alert-dialog": "^1.0.4",
         "@radix-ui/react-aspect-ratio": "^1.0.3",
