@@ -50,8 +50,7 @@ const Page = () => {
         },
         {
             id: 'unit_amount',
-            accessorKey: 'default_price.unit_amount',
-            header: () => <div className="text-right">Price</div>,
+            header: () => <div className="text-right">Unit amount</div>,
             cell: ({ row: { original: product } }) => (
                 <div className="text-right font-medium">{getTotalPrice((product.default_price as Stripe.Price).unit_amount ?? 0, 1)} PLN</div>
             )
@@ -153,7 +152,7 @@ const Page = () => {
                             <ProductPage
                                 isPreview
                                 name={name}
-                                price={unitAmount * 100}
+                                price={unitAmount}
                                 currency="pln"
                                 images={[
                                     'https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'

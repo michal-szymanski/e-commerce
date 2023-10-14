@@ -6,61 +6,84 @@ import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, desc, eq, inArray, isNotNull, not, sql } from 'drizzle-orm';
-import { OrderStatus, orderStatusSchema, StripeOrderLine, stripeOrderLineSchema } from '@/types';
+import { OrderStatus, orderStatusSchema } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
-import Link from 'next/link';
 import { getProductUrl, getTotalPrice } from '@/lib/utils';
 import stripe from '@/lib/stripe';
 import { alias } from 'drizzle-orm/pg-core';
 import Head from 'next/head';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
+import Stripe from 'stripe';
+import Link from 'next/link';
 
-export default function Page({ order, orderLines }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    const columns: ColumnDef<StripeOrderLine>[] = [
+export default function Page({ order, lineItems }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+    const columns: ColumnDef<Stripe.LineItem>[] = [
         {
-            id: 'price.product',
-            accessorKey: 'price.product'
+            id: 'name',
+            header: () => <div className="text-left">Name</div>,
+            cell: ({ row: { original: lineItem } }) => {
+                const product = lineItem?.price?.product as Stripe.Product;
+                return <div className="text-left">{product.name}</div>;
+            }
         },
         {
-            accessorKey: 'description',
-            header: 'Name'
-        },
-        {
-            id: 'price.unit_amount',
-            accessorKey: 'price.unit_amount',
+            id: 'unit_amount',
             header: () => <div className="text-right">Unit Price</div>,
-            cell: ({ row }) => <div className="text-right">{getTotalPrice(row.getValue('price.unit_amount'), 1)}</div>
+            cell: ({ row: { original: lineItem } }) => (
+                <div className="text-right">
+                    {getTotalPrice(lineItem.amount_total, 1)} {lineItem.currency.toUpperCase()}
+                </div>
+            )
         },
         {
-            accessorKey: 'quantity',
+            id: 'quantity',
             header: () => <div className="text-right">Quantity</div>,
-            cell: ({ row }) => <div className="text-right">{z.coerce.number().parse(row.getValue('quantity'))}</div>
+            cell: ({ row: { original: lineItem } }) => <div className="text-right">{lineItem.quantity}</div>
         },
         {
             id: 'amount_total',
-            accessorKey: 'amount_total',
             header: () => <div className="text-right">Total Price</div>,
-            cell: ({ row }) => <div className="text-right font-medium">{getTotalPrice(row.getValue('amount_total'), 1)}</div>
-        },
-        {
-            accessorKey: 'actions',
-            header: () => <div className="text-center">Actions</div>,
-            cell: ({ row }) => (
-                <div className="text-center">
-                    <Button variant="link" asChild>
-                        <Link href={getProductUrl(row.getValue('price.product'), row.getValue('description'))}>Product Page</Link>
-                    </Button>
+            cell: ({ row: { original: lineItem } }) => (
+                <div className="text-right font-medium">
+                    {getTotalPrice(lineItem.amount_total, 1)} {lineItem.currency.toUpperCase()}
                 </div>
             )
+        },
+        {
+            id: 'actions',
+            enableHiding: false,
+            cell: ({ row: { original: lineItem } }) => {
+                const product = lineItem?.price?.product as Stripe.Product;
+                return (
+                    <div className="text-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <EllipsisHorizontalIcon className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem>
+                                    <Link href={getProductUrl(product.id, product.name)}>View product page</Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                );
+            }
         }
     ];
 
     const formattedOrder = { ...order, date: dayjs(order.date as string).format('DD/MM/YYYY HH:mm') };
-    const totalPrice = orderLines.reduce((acc, curr) => acc + getTotalPrice(curr.amount_total, 1), 0);
+    const totalPrice = lineItems.reduce((acc, curr) => Number(acc + getTotalPrice(curr.amount_total, 1)), 0).toFixed(2);
 
     return (
         <>
@@ -76,7 +99,10 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
                         </CardHeader>
                         <CardContent>
                             <div className="text-lg">
-                                Total Price: <span className="font-semibold">{totalPrice}</span>
+                                Total Price:{' '}
+                                <span className="font-semibold">
+                                    {totalPrice} {lineItems[0].currency.toUpperCase()}
+                                </span>
                             </div>
                         </CardContent>
                         <CardFooter>
@@ -84,7 +110,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
                         </CardFooter>
                     </Card>
                 </header>
-                <DataTable columns={columns} data={orderLines} hiddenColumns={['price.product']} />
+                <DataTable columns={columns} data={lineItems} />
             </div>
         </>
     );
@@ -92,7 +118,7 @@ export default function Page({ order, orderLines }: InferGetServerSidePropsType<
 
 export const getServerSideProps: GetServerSideProps<{
     order: { id: number; date: string; status: OrderStatus };
-    orderLines: StripeOrderLine[];
+    lineItems: Stripe.LineItem[];
 }> = async (context) => {
     const { userId } = getAuth(context.req);
 
@@ -158,7 +184,7 @@ export const getServerSideProps: GetServerSideProps<{
     }
 
     const checkoutSession = await stripe.checkout.sessions.retrieve(z.string().parse(orders[0].checkoutSessionId), {
-        expand: ['line_items']
+        expand: ['line_items.data.price.product']
     });
 
     const parsedOrder = z
@@ -169,7 +195,5 @@ export const getServerSideProps: GetServerSideProps<{
         })
         .parse({ ...orders[0], date: dayjs(orders[0].date as string).toISOString() });
 
-    const parsedOrderLines = z.array(stripeOrderLineSchema).parse(checkoutSession.line_items?.data);
-
-    return { props: { order: parsedOrder, orderLines: parsedOrderLines } };
+    return { props: { order: parsedOrder, lineItems: checkoutSession.line_items?.data ?? [] } };
 };

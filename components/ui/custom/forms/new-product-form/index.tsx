@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
+import { getTotalPrice } from '@/lib/utils';
 
 const stripeMaxUnitAmount = 99999999;
 
@@ -42,12 +43,13 @@ type Props = {
 };
 
 const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
+    const initialDefaultPrice = initialData?.default_price as Stripe.Price;
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: initialData?.name ?? '',
             description: initialData?.description ?? '',
-            unitAmount: (initialData?.default_price as Stripe.Price | undefined)?.unit_amount?.toString() ?? '',
+            unitAmount: initialDefaultPrice?.unit_amount ? getTotalPrice(initialDefaultPrice.unit_amount, 1) : '',
             active: initialData?.active ?? false
         }
     });
@@ -62,7 +64,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
 
         try {
             if (initialData) {
-                const isPriceUpdated = (initialData.default_price as Stripe.Price).unit_amount !== Number(unitAmount);
+                const isPriceUpdated = initialDefaultPrice?.unit_amount !== Number(unitAmount);
                 const isNameUpdated = initialData.name !== name;
                 const isDescriptionUpdated = initialData.description !== description;
                 const isActiveUpdated = initialData.active !== active;
@@ -70,7 +72,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                 if (isPriceUpdated || isNameUpdated || isDescriptionUpdated || isActiveUpdated) {
                     updateProduct.mutate({
                         productId: initialData.id,
-                        priceId: isPriceUpdated ? (initialData.default_price as Stripe.Price).id : undefined,
+                        priceId: isPriceUpdated ? initialDefaultPrice?.id : undefined,
                         name: isNameUpdated ? name : undefined,
                         description: isDescriptionUpdated ? description : undefined,
                         unitAmount: isPriceUpdated ? Number(unitAmount) : undefined,
@@ -93,7 +95,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
             setPreviewData({
                 name: name ?? '',
                 description: description ?? '',
-                unitAmount: Number(unitAmount ?? 0)
+                unitAmount: Number(unitAmount ?? 0) * 100
             });
         });
         return () => subscription.unsubscribe();
@@ -158,7 +160,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                                 <TooltipProvider delayDuration={0}>
                                     <Tooltip>
                                         <TooltipTrigger type="button">
-                                            <span className="sr-only">Information icon about active and inactive products</span>
+                                            <span className="sr-only">Info icon</span>
                                             <InformationCircleIcon className="h-5 w-5" />
                                         </TooltipTrigger>
                                         <TooltipContent>

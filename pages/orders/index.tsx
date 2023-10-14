@@ -10,13 +10,15 @@ import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, desc, eq, inArray, not, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
-import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
-import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import stripe from '@/lib/stripe';
 import { alias } from 'drizzle-orm/pg-core';
 import Head from 'next/head';
 import { getTotalPrice } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
+import Link from 'next/link';
+import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
@@ -27,42 +29,54 @@ const orderWithTotalPriceSchema = z.object({
 });
 
 export default function Page({ orders }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    const router = useRouter();
-
     const columns: ColumnDef<z.infer<typeof orderWithTotalPriceSchema>>[] = [
         {
-            accessorKey: 'id',
-            header: 'Id'
+            id: 'id',
+            header: () => <div className="text-left">Id</div>,
+            cell: ({ row: { original: order } }) => <div className="text-left">{order.id}</div>
         },
         {
-            accessorKey: 'date',
-            header: 'Date'
+            id: 'date',
+            header: () => <div className="text-left">Date</div>,
+            cell: ({ row: { original: order } }) => <div className="text-left">{order.date}</div>
         },
         {
-            accessorKey: 'status',
-            header: 'Status',
-            cell: ({ row }) => <OrderStatusBadge status={row.getValue('status')} />
-        },
-        {
-            accessorKey: 'totalPrice',
-            header: () => <div className="text-right">Total Price</div>,
-            cell: ({ row }) => <div className="text-right font-medium">{row.getValue('totalPrice')}</div>
-        },
-        {
-            accessorKey: 'actions',
-            header: () => <div className="text-center">Actions</div>,
-            cell: ({ row }) => (
+            id: 'status',
+            header: () => <div className="text-center">Status</div>,
+            cell: ({ row: { original: order } }) => (
                 <div className="text-center">
-                    <Button
-                        variant="link"
-                        onClick={async () => {
-                            await router.push(`/orders/${row.getValue('id')}`);
-                        }}
-                    >
-                        Details
-                    </Button>
+                    <OrderStatusBadge status={order.status} />
                 </div>
             )
+        },
+        {
+            id: 'totalPrice',
+            header: () => <div className="text-right">Total price</div>,
+            cell: ({ row: { original: order } }) => <div className="text-right font-medium">{order.totalPrice}</div>
+        },
+        {
+            id: 'actions',
+            enableHiding: false,
+            cell: ({ row: { original: order } }) => {
+                return (
+                    <div className="text-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <EllipsisHorizontalIcon className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem>
+                                    <Link href={`/orders/${order.id}`}>View order details</Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                );
+            }
         }
     ];
 
@@ -145,7 +159,7 @@ export const getServerSideProps: GetServerSideProps<{
             ...o,
             date: dayjs(o.date as string).toISOString(),
             checkoutSessionId: session.id,
-            totalPrice: (session.line_items?.data.reduce((acc, curr) => acc + getTotalPrice(curr.amount_total, 1), 0) ?? 0).toFixed(2)
+            totalPrice: (session.line_items?.data.reduce((acc, curr) => acc + Number(getTotalPrice(curr.amount_total, 1)), 0) ?? 0).toFixed(2)
         };
     });
 

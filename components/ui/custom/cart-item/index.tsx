@@ -58,7 +58,7 @@ const CartItem = ({ cartItem: { product, quantity } }: Props) => {
                         allowDecimal={false}
                     />
                     <span className="font-bold">
-                        {getTotalPrice(product.unitAmount, quantity).toFixed(2)} {product.currency.toUpperCase()}
+                        {getTotalPrice(product.unitAmount, quantity)} {product.currency.toUpperCase()}
                     </span>
                     <Button variant="ghost" className="text-red-500 hover:bg-red-500 hover:text-white" onClick={handleRemove}>
                         Remove
