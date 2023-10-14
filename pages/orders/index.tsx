@@ -25,7 +25,8 @@ const orderWithTotalPriceSchema = z.object({
     date: z.string(),
     status: orderHistorySchema.shape.status,
     totalPrice: z.string(),
-    checkoutSessionId: z.string()
+    checkoutSessionId: z.string(),
+    currency: z.string()
 });
 
 export default function Page({ orders }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -52,7 +53,11 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         {
             id: 'totalPrice',
             header: () => <div className="text-right">Total price</div>,
-            cell: ({ row: { original: order } }) => <div className="text-right font-medium">{order.totalPrice}</div>
+            cell: ({ row: { original: order } }) => (
+                <div className="text-right font-medium">
+                    {order.totalPrice} {order.currency.toUpperCase()}
+                </div>
+            )
         },
         {
             id: 'actions',
@@ -159,7 +164,8 @@ export const getServerSideProps: GetServerSideProps<{
             ...o,
             date: dayjs(o.date as string).toISOString(),
             checkoutSessionId: session.id,
-            totalPrice: (session.line_items?.data.reduce((acc, curr) => acc + Number(getTotalPrice(curr.amount_total, 1)), 0) ?? 0).toFixed(2)
+            totalPrice: (session.line_items?.data.reduce((acc, curr) => acc + Number(getTotalPrice(curr.amount_total, 1)), 0) ?? 0).toFixed(2),
+            currency: session.line_items?.data[0]?.currency ?? ''
         };
     });
 
