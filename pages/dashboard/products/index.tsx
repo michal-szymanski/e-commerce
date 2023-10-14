@@ -52,7 +52,7 @@ const Page = () => {
             id: 'unit_amount',
             header: () => <div className="text-right">Unit amount</div>,
             cell: ({ row: { original: product } }) => (
-                <div className="text-right font-medium">{getTotalPrice((product.default_price as Stripe.Price).unit_amount ?? 0, 1)} PLN</div>
+                <div className="text-right font-medium">{getTotalPrice((product.default_price as Stripe.Price)?.unit_amount ?? 0, 1)} PLN</div>
             )
         },
         {

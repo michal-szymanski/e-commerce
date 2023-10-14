@@ -79,7 +79,8 @@ export const getCartItems = async (db: PostgresJsDatabase, orderId: number) => {
                 name: productsTable.name,
                 description: productsTable.description,
                 unitAmount: pricesTable.unitAmount,
-                currency: pricesTable.currency
+                currency: pricesTable.currency,
+                organizationId: productsTable.organizationId
             },
             quantity: orderLinesTable.quantity
         })

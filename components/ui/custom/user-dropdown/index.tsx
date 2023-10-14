@@ -22,6 +22,12 @@ const UserDropdown = () => {
     const queryClient = useQueryClient();
     const router = useRouter();
 
+    const removeAllQueries = () => {
+        queryClient.removeQueries(['order']);
+        queryClient.removeQueries(['organization-products']);
+        queryClient.removeQueries(['products']);
+    };
+
     if (!user) return null;
 
     const isPersonalAccount = !organization;
@@ -76,7 +82,7 @@ const UserDropdown = () => {
                         key={m.id}
                         onClick={() => {
                             setActive({ organization: m.organization });
-                            queryClient.removeQueries(['order']);
+                            removeAllQueries();
                         }}
                         className={cn('cursor-pointer', {
                             'text-muted-foreground': organization?.id !== m.organization.id
@@ -97,7 +103,13 @@ const UserDropdown = () => {
                     </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
+                <DropdownMenuItem
+                    onClick={() => {
+                        signOut();
+                        removeAllQueries();
+                    }}
+                    className="cursor-pointer"
+                >
                     <ArrowRightOnRectangleIcon className="h-5 w-5" />
                     <span className="pl-2">Sign Out</span>
                 </DropdownMenuItem>

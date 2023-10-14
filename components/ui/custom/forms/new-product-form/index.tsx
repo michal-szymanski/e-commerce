@@ -80,7 +80,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                     });
                 }
             } else {
-                createProduct.mutate({ name, description, unitAmount: Number(unitAmount) * 100, active: active ?? false });
+                createProduct.mutate({ name, description, unitAmount: Number((Number(unitAmount) * 100).toFixed(2)), active: active ?? false });
             }
             setIsSuccess(true);
         } catch (error) {

@@ -54,7 +54,10 @@ export const stripeProductSchema = z.object({
     features: z.array(z.any()),
     images: z.array(z.string()),
     livemode: z.boolean(),
-    metadata: z.object({}),
+    metadata: z.object({
+        organizationId: z.string(),
+        categoryId: z.string()
+    }),
     name: z.string(),
     package_dimensions: z.null(),
     shippable: z.null(),
@@ -82,7 +85,8 @@ export const productSchema = z.object({
     description: z.string().nullable(),
     unitAmount: z.number(),
     currency: z.string(),
-    images: z.array(z.string())
+    images: z.array(z.string()),
+    organizationId: z.string()
 });
 
 export const cartItemSchema = z.object({
