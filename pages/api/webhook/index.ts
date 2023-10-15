@@ -2,11 +2,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { imagesTable, orderHistoriesTable, orderLinesTable, pricesTable, productsTable } from '@/schema';
+import { cartItemsTable, imagesTable, orderHistoriesTable, pricesTable, productsTable } from '@/schema';
 import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
+import { z } from 'zod';
 
-type CheckoutSession = Stripe.Checkout.Session & { orderId: string };
+type CheckoutSession = Stripe.Checkout.Session & { orderIds: string; userId: string };
 type Product = Stripe.Product & { metadata: { organizationId: string; categoryId: string } };
 
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -18,15 +19,14 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
             if (!checkoutSession.metadata) break;
 
-            const { orderId } = checkoutSession.metadata;
+            const orderIds = z.array(z.number()).parse(JSON.parse(checkoutSession.metadata.orderIds));
+            const userId = z.string().parse(checkoutSession.metadata.userId);
+
             const client = postgres(env.CONNECTION_STRING);
             const db = drizzle(client);
-            await db.insert(orderHistoriesTable).values({
-                orderId: Number(orderId),
-                status: 'In Progress',
-                date: new Date().toISOString()
-            });
-            await db.delete(orderLinesTable).where(eq(orderLinesTable.orderId, Number(orderId)));
+            const now = new Date().toISOString();
+            await db.insert(orderHistoriesTable).values(orderIds.map((orderId) => ({ orderId, status: 'New', date: now }) as const));
+            await db.delete(cartItemsTable).where(eq(cartItemsTable.userId, userId));
             await client.end();
             break;
         }

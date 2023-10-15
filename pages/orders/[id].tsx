@@ -5,7 +5,7 @@ import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, ordersTable } from '@/schema';
-import { and, desc, eq, inArray, isNotNull, not, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
 import { OrderStatus, orderStatusSchema } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
@@ -136,8 +136,6 @@ export const getServerSideProps: GetServerSideProps<{
 
     const orderId = z.coerce.number().parse(context.query.id);
 
-    const excludedStatuses: OrderStatus[] = ['New'];
-
     const firstHistory = alias(orderHistoriesTable, 'oh1');
     const lastHistory = alias(orderHistoriesTable, 'oh2');
 
@@ -146,7 +144,8 @@ export const getServerSideProps: GetServerSideProps<{
             id: ordersTable.id,
             date: firstHistory.date,
             status: lastHistory.status,
-            checkoutSessionId: ordersTable.checkoutSessionId
+            checkoutSessionId: ordersTable.checkoutSessionId,
+            organizationId: ordersTable.organizationId
         })
         .from(ordersTable)
         .leftJoin(firstHistory, eq(firstHistory.orderId, ordersTable.id))
@@ -169,7 +168,6 @@ export const getServerSideProps: GetServerSideProps<{
                         .from(orderHistoriesTable)
                         .where(eq(orderHistoriesTable.orderId, ordersTable.id))
                 ),
-                not(inArray(lastHistory.status, excludedStatuses)),
                 isNotNull(ordersTable.checkoutSessionId)
             )
         )
@@ -195,5 +193,12 @@ export const getServerSideProps: GetServerSideProps<{
         })
         .parse({ ...orders[0], date: dayjs(orders[0].date as string).toISOString() });
 
-    return { props: { order: parsedOrder, lineItems: checkoutSession.line_items?.data ?? [] } };
+    return {
+        props: {
+            order: parsedOrder,
+            lineItems:
+                checkoutSession.line_items?.data.filter((li) => (li.price?.product as Stripe.Product).metadata?.organizationId === orders[0].organizationId) ??
+                []
+        }
+    };
 };

@@ -12,11 +12,11 @@ import { v4 as uuidv4 } from 'uuid';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { ordersTable } from '@/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { orderSchema } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-const Page = ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Page = ({ orderIds, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
     const [confettiIds, setConfettiIds] = useState<string[]>([uuidv4()]);
     const ref = useRef<ElementRef<'div'>>(null);
@@ -59,13 +59,16 @@ const Page = ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServ
                     </CardHeader>
                     <CardContent>
                         <p className="text-lg">
-                            Your order number{' '}
-                            {
-                                <Link href={`/orders/${orderId}`} className="font-bold underline">
-                                    {orderId}
-                                </Link>
-                            }{' '}
-                            has been created.
+                            Your {orderIds.length > 0 ? 'orders' : 'order'} number{' '}
+                            {orderIds.map((orderId, index) => (
+                                <span key={orderId}>
+                                    <Link href={`/orders/${orderId}`} className="font-bold underline">
+                                        {orderId}
+                                    </Link>
+                                    {index === orderIds.length - 1 ? ' ' : ', '}
+                                </span>
+                            ))}{' '}
+                            {orderIds.length > 0 ? 'have' : 'has'} been created.
                         </p>
                         <p className="text-lg">
                             You should receive an order confirmation email shortly. If the email {`hasn't`} arrived within few minutes, please check your spam
@@ -102,7 +105,7 @@ const Page = ({ orderId, firstName }: InferGetServerSidePropsType<typeof getServ
     );
 };
 
-export const getServerSideProps: GetServerSideProps<{ orderId: number; firstName: string | null }> = async (context) => {
+export const getServerSideProps: GetServerSideProps<{ orderIds: number[]; firstName: string | null }> = async (context) => {
     const { userId } = getAuth(context.req);
 
     if (!userId) {
@@ -115,16 +118,20 @@ export const getServerSideProps: GetServerSideProps<{ orderId: number; firstName
     }
 
     const { firstName } = await clerkClient.users.getUser(userId);
+
     const sessionId = z.string().parse(context.query.sessionId);
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const orderId = z.coerce.number().parse(session.metadata?.orderId);
+    const orderIds = z.array(z.number()).parse(JSON.parse(session.metadata?.orderIds as string));
+
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
-    const orders = await db.select().from(ordersTable).where(eq(ordersTable.id, orderId));
+    const orders = await db
+        .select()
+        .from(ordersTable)
+        .where(and(inArray(ordersTable.id, orderIds), eq(ordersTable.userId, userId)));
     await client.end();
-    const order = z.array(orderSchema).length(1).parse(orders)[0];
 
-    if (order.userId !== userId) {
+    if (!orders.length) {
         return {
             redirect: {
                 destination: '/sign-in',
@@ -135,7 +142,10 @@ export const getServerSideProps: GetServerSideProps<{ orderId: number; firstName
 
     return {
         props: {
-            orderId,
+            orderIds: z
+                .array(orderSchema)
+                .parse(orders)
+                .map((o) => o.id),
             firstName
         }
     };

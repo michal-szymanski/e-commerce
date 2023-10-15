@@ -1,4 +1,4 @@
-import { categoriesTable, orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
+import { cartItemsTable, categoriesTable, orderHistoriesTable, ordersTable } from '@/schema';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -10,8 +10,8 @@ export const orderSchema = createSelectSchema(ordersTable);
 export const newOrderSchema = createInsertSchema(ordersTable);
 export type Order = z.infer<typeof orderSchema>;
 
-export const orderLineSchema = createSelectSchema(orderLinesTable);
-export const newOrderLineSchema = createInsertSchema(orderLinesTable);
+export const orderLineSchema = createSelectSchema(cartItemsTable);
+export const newOrderLineSchema = createInsertSchema(cartItemsTable);
 export type OrderLine = z.infer<typeof orderLineSchema>;
 
 export const orderHistorySchema = createSelectSchema(orderHistoriesTable);
@@ -86,7 +86,8 @@ export const productSchema = z.object({
     unitAmount: z.number(),
     currency: z.string(),
     images: z.array(z.string()),
-    organizationId: z.string()
+    organizationId: z.string(),
+    priceId: z.string()
 });
 
 export const cartItemSchema = z.object({

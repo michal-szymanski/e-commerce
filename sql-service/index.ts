@@ -1,77 +1,10 @@
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { imagesTable, orderHistoriesTable, orderLinesTable, ordersTable, pricesTable, productsTable } from '@/schema';
-import { and, eq, inArray, isNull, lt, or } from 'drizzle-orm';
+import { cartItemsTable, imagesTable, pricesTable, productsTable } from '@/schema';
+import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
-import { alias } from 'drizzle-orm/pg-core';
-import { CartItem, cartItemSchema, orderLineSchema, OrderLineWithProduct, stripeProductSchema } from '@/types';
-import stripe from '@/lib/stripe';
+import { CartItem, cartItemSchema } from '@/types';
 
-// export const getProducts = async (search: string, limit: number, offset: number) => {
-//     const client = postgres(env.CONNECTION_STRING);
-//     const db = drizzle(client);
-//
-//     const products = await db
-//         .select({
-//             id: productsTable.id,
-//             name: productsTable.name,
-//             description: productsTable.description,
-//             categoryId: productsTable.categoryId,
-//             price: productsTable.price,
-//             src: mediaTable.src,
-//             mimeType: mediaTable.mimeType
-//         })
-//         .from(productsTable)
-//         .where(ilike(productsTable.name, `%${search}%`))
-//         .orderBy(productsTable.name)
-//         .limit(limit)
-//         .offset(offset)
-//         .leftJoin(mediaTable, eq(productsTable.id, mediaTable.productId));
-//
-//     await client.end();
-//
-//     return z.array(productWithMediaSchema).parse(products);
-// };
-
-// export const getProduct = async (id: number) => {
-//     const client = postgres(env.CONNECTION_STRING);
-//     const db = drizzle(client);
-//
-//     const products = await db
-//         .select({
-//             id: productsTable.id,
-//             name: productsTable.name,
-//             description: productsTable.description,
-//             categoryId: productsTable.categoryId,
-//             price: productsTable.price,
-//             src: mediaTable.src,
-//             mimeType: mediaTable.mimeType
-//         })
-//         .from(productsTable)
-//         .where(eq(productsTable.id, id))
-//         .leftJoin(mediaTable, eq(productsTable.id, mediaTable.productId));
-//
-//     await client.end();
-//
-//     return z.array(productWithMediaSchema).length(1).parse(products)[0];
-// };
-
-export const getCartOrders = async (db: PostgresJsDatabase, userId: string) => {
-    const h1 = alias(orderHistoriesTable, 'h1');
-    const h2 = alias(orderHistoriesTable, 'h2');
-
-    return await db
-        .select({
-            id: ordersTable.id,
-            userId: ordersTable.userId,
-            checkoutSessionId: ordersTable.checkoutSessionId
-        })
-        .from(ordersTable)
-        .leftJoin(h1, eq(ordersTable.id, h1.orderId))
-        .leftJoin(h2, and(eq(ordersTable.id, h2.orderId), or(lt(h1.date, h2.date), and(eq(h1.date, h2.date), lt(h1.id, h2.id)))))
-        .where(and(eq(ordersTable.userId, userId), eq(h1.status, 'New'), isNull(h2.id)));
-};
-
-export const getCartItems = async (db: PostgresJsDatabase, orderId: number) => {
+export const getCartItems = async (db: PostgresJsDatabase, userId: string) => {
     const productsWithQuantities = await db
         .select({
             product: {
@@ -80,16 +13,17 @@ export const getCartItems = async (db: PostgresJsDatabase, orderId: number) => {
                 description: productsTable.description,
                 unitAmount: pricesTable.unitAmount,
                 currency: pricesTable.currency,
-                organizationId: productsTable.organizationId
+                organizationId: productsTable.organizationId,
+                priceId: productsTable.priceId
             },
-            quantity: orderLinesTable.quantity
+            quantity: cartItemsTable.quantity
         })
-        .from(orderLinesTable)
-        .innerJoin(productsTable, eq(productsTable.id, orderLinesTable.productId))
+        .from(cartItemsTable)
+        .innerJoin(productsTable, eq(productsTable.id, cartItemsTable.productId))
         .innerJoin(pricesTable, eq(pricesTable.id, productsTable.priceId))
         .innerJoin(imagesTable, eq(imagesTable.productId, productsTable.id))
-        .where(eq(orderLinesTable.orderId, orderId))
-        .orderBy(orderLinesTable.productId);
+        .where(eq(cartItemsTable.userId, userId))
+        .orderBy(cartItemsTable.productId);
 
     let cartItems: CartItem[] = [];
 
@@ -111,31 +45,4 @@ export const getCartItems = async (db: PostgresJsDatabase, orderId: number) => {
     }
 
     return z.array(cartItemSchema).parse(cartItems);
-};
-
-export const getOrderLinesWithProducts = async (db: PostgresJsDatabase, orderId: number) => {
-    const cartItems: OrderLineWithProduct[] = [];
-
-    const orderLines = await db.select().from(orderLinesTable).where(eq(orderLinesTable.orderId, orderId));
-
-    const parsedOrderLines = z.array(orderLineSchema).parse(orderLines);
-
-    for (let ol of parsedOrderLines) {
-        const product = stripeProductSchema.parse(
-            await stripe.products.retrieve(ol.productId, {
-                expand: ['default_price']
-            })
-        );
-        const price = product.default_price.unit_amount;
-
-        cartItems.push({
-            productId: product.id,
-            productName: product.name,
-            productPrice: price,
-            quantity: Number(ol.quantity),
-            totalPrice: Number(ol.quantity) * price
-        });
-    }
-
-    return cartItems;
 };

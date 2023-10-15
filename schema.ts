@@ -1,4 +1,4 @@
-import { bigint, boolean, integer, numeric, pgEnum, pgTable, primaryKey, serial, smallint, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, boolean, integer, numeric, pgEnum, pgTable, serial, smallint, text, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const categoriesTable = pgTable('categories', {
@@ -13,6 +13,7 @@ export const categoriesRelations = relations(categoriesTable, ({ many }) => ({
 export const ordersTable = pgTable('orders', {
     id: serial('id').primaryKey(),
     userId: text('user_id').notNull(),
+    organizationId: text('organization_id').notNull(),
     checkoutSessionId: text('checkout_session_id')
 });
 
@@ -20,29 +21,18 @@ export const ordersRelations = relations(ordersTable, ({ many }) => ({
     orderHistories: many(orderHistoriesTable)
 }));
 
-export const orderLinesTable = pgTable(
-    'order_lines',
-    {
-        orderId: integer('order_id')
-            .notNull()
-            .references(() => ordersTable.id),
-        productId: text('product_id')
-            .notNull()
-            .references(() => productsTable.id),
-        quantity: numeric('quantity', { precision: 11, scale: 3 }).notNull()
-    },
-    (t) => ({
-        pk: primaryKey(t.orderId, t.productId)
-    })
-);
+export const cartItemsTable = pgTable('cart_items', {
+    id: serial('id').primaryKey(),
+    productId: text('product_id')
+        .notNull()
+        .references(() => productsTable.id),
+    quantity: numeric('quantity', { precision: 11, scale: 3 }).notNull(),
+    userId: text('user_id').notNull()
+});
 
-export const orderLinesRelations = relations(orderLinesTable, ({ one }) => ({
-    order: one(ordersTable, {
-        fields: [orderLinesTable.orderId],
-        references: [ordersTable.id]
-    }),
+export const cartItemsRelations = relations(cartItemsTable, ({ one }) => ({
     product: one(productsTable, {
-        fields: [orderLinesTable.productId],
+        fields: [cartItemsTable.productId],
         references: [productsTable.id]
     })
 }));
@@ -89,7 +79,7 @@ export const productsRelations = relations(productsTable, ({ one, many }) => ({
         references: [pricesTable.id]
     }),
     images: many(imagesTable),
-    orderLines: many(orderLinesTable)
+    cartItems: many(cartItemsTable)
 }));
 
 export const pricesTable = pgTable('prices', {

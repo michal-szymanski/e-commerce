@@ -47,7 +47,8 @@ export const getServerSideProps: GetServerSideProps<{ product: z.infer<typeof pr
                     description: productsTable.description,
                     unitAmount: pricesTable.unitAmount,
                     currency: pricesTable.currency,
-                    organizationId: productsTable.organizationId
+                    organizationId: productsTable.organizationId,
+                    priceId: productsTable.priceId
                 })
                 .from(productsTable)
                 .innerJoin(pricesTable, eq(productsTable.priceId, pricesTable.id))
@@ -76,7 +77,7 @@ export const getServerSideProps: GetServerSideProps<{ product: z.infer<typeof pr
             description,
             images,
             active,
-            default_price: { unit_amount: unitAmount, currency },
+            default_price: { unit_amount: unitAmount, currency, id: priceId },
             metadata: { organizationId }
         } = stripeProductSchema.parse(
             await stripe.products.retrieve(parsedId, {
@@ -92,7 +93,7 @@ export const getServerSideProps: GetServerSideProps<{ product: z.infer<typeof pr
 
         return {
             props: {
-                product: { id, name, description, unitAmount, currency, images, organizationId }
+                product: { id, name, description, unitAmount, currency, images, organizationId, priceId }
             }
         };
     } catch (e) {

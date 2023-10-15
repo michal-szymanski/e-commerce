@@ -1,13 +1,13 @@
 import { DataTable } from '@/components/ui/data-table';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { orderHistorySchema, OrderStatus } from '@/types';
+import { orderHistorySchema } from '@/types';
 import { ColumnDef } from '@tanstack/react-table';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
 import { orderHistoriesTable, ordersTable } from '@/schema';
-import { and, desc, eq, inArray, not, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import dayjs from 'dayjs';
 import { Button } from '@/components/ui/button';
@@ -19,13 +19,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
+import Stripe from 'stripe';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
     date: z.string(),
     status: orderHistorySchema.shape.status,
     totalPrice: z.string(),
-    checkoutSessionId: z.string(),
     currency: z.string()
 });
 
@@ -116,8 +116,6 @@ export const getServerSideProps: GetServerSideProps<{
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
-    const excludedStatuses: OrderStatus[] = ['New'];
-
     const firstHistory = alias(orderHistoriesTable, 'oh1');
     const lastHistory = alias(orderHistoriesTable, 'oh2');
 
@@ -126,7 +124,8 @@ export const getServerSideProps: GetServerSideProps<{
             id: ordersTable.id,
             date: firstHistory.date,
             status: lastHistory.status,
-            checkoutSessionId: ordersTable.checkoutSessionId
+            checkoutSessionId: ordersTable.checkoutSessionId,
+            organizationId: ordersTable.organizationId
         })
         .from(ordersTable)
         .leftJoin(firstHistory, eq(firstHistory.orderId, ordersTable.id))
@@ -148,7 +147,7 @@ export const getServerSideProps: GetServerSideProps<{
                         .from(orderHistoriesTable)
                         .where(eq(orderHistoriesTable.orderId, ordersTable.id))
                 ),
-                not(inArray(lastHistory.status, excludedStatuses))
+                isNotNull(ordersTable.checkoutSessionId)
             )
         )
         .orderBy(desc(ordersTable.id));
@@ -157,14 +156,17 @@ export const getServerSideProps: GetServerSideProps<{
 
     const ordersWithTotals = orders.map(async (o) => {
         const session = await stripe.checkout.sessions.retrieve(z.string().parse(o.checkoutSessionId), {
-            expand: ['line_items']
+            expand: ['line_items.data.price.product']
         });
 
         return {
             ...o,
             date: dayjs(o.date as string).toISOString(),
-            checkoutSessionId: session.id,
-            totalPrice: (session.line_items?.data.reduce((acc, curr) => acc + Number(getTotalPrice(curr.amount_total, 1)), 0) ?? 0).toFixed(2),
+            totalPrice: (
+                session.line_items?.data
+                    .filter((li) => (li.price?.product as Stripe.Product).metadata?.organizationId === o.organizationId)
+                    .reduce((acc, curr) => acc + Number(getTotalPrice(curr.amount_total, 1)), 0) ?? 0
+            ).toFixed(2),
             currency: session.line_items?.data[0]?.currency ?? ''
         };
     });

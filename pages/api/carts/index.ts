@@ -1,13 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { orderHistoriesTable, orderLinesTable, ordersTable } from '@/schema';
+import { cartItemsTable } from '@/schema';
 import postgres from 'postgres';
 import { env } from '@/env.mjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { z } from 'zod';
-import { CartItem, cartItemSchema, Order, orderSchema } from '@/types';
+import { cartItemSchema } from '@/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
-import { getCartItems, getCartOrders } from '@/sql-service';
+import { getCartItems } from '@/sql-service';
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     const { userId } = getAuth(req);
@@ -19,15 +19,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
-    const orders = await getCartOrders(db, userId);
-
-    const parsedOrders = z.array(orderSchema).length(1).safeParse(orders);
-
-    let cartItems: CartItem[] = [];
-
-    if (parsedOrders.success) {
-        cartItems = await getCartItems(db, parsedOrders.data[0].id);
-    }
+    const cartItems = await getCartItems(db, userId);
 
     await client.end();
 
@@ -46,41 +38,25 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
 
-    let order: Order;
-
-    const orders = await getCartOrders(db, userId);
-
-    if (!orders.length) {
-        order = (await db.insert(ordersTable).values({ userId }).returning())[0];
-
-        await db.insert(orderHistoriesTable).values({
-            orderId: order.id,
-            status: 'New',
-            date: new Date().toISOString()
-        });
-    } else {
-        order = orders[0];
-    }
-
     for (let cartItem of cart) {
-        const orderLines = await db
+        const cartItems = await db
             .select()
-            .from(orderLinesTable)
-            .where(and(eq(orderLinesTable.orderId, order.id), eq(orderLinesTable.productId, cartItem.product.id)));
+            .from(cartItemsTable)
+            .where(and(eq(cartItemsTable.userId, userId), eq(cartItemsTable.productId, cartItem.product.id)));
 
-        if (orderLines.length) {
-            if (Number(orderLines[0].quantity) !== cartItem.quantity) {
+        if (cartItems.length) {
+            if (Number(cartItems[0].quantity) !== cartItem.quantity) {
                 if (cartItem.quantity > 0) {
                     await db
-                        .update(orderLinesTable)
+                        .update(cartItemsTable)
                         .set({ quantity: String(cartItem.quantity) })
-                        .where(and(eq(orderLinesTable.orderId, order.id), eq(orderLinesTable.productId, cartItem.product.id)));
+                        .where(and(eq(cartItemsTable.userId, userId), eq(cartItemsTable.productId, cartItem.product.id)));
                 } else {
-                    await db.delete(orderLinesTable).where(and(eq(orderLinesTable.orderId, order.id), eq(orderLinesTable.productId, cartItem.product.id)));
+                    await db.delete(cartItemsTable).where(and(eq(cartItemsTable.userId, userId), eq(cartItemsTable.productId, cartItem.product.id)));
                 }
             }
         } else {
-            await db.insert(orderLinesTable).values({ orderId: order.id, quantity: String(cartItem.quantity), productId: cartItem.product.id });
+            await db.insert(cartItemsTable).values({ quantity: String(cartItem.quantity), productId: cartItem.product.id, userId });
         }
     }
 

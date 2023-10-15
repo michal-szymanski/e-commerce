@@ -3,13 +3,11 @@ import Head from 'next/head';
 import { env } from '@/env.mjs';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { orderSchema } from '@/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { organizations as organizationsAPI } from '@clerk/nextjs/api';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { getCartItems, getCartOrders } from '@/sql-service';
-import { z } from 'zod';
+import { getCartItems } from '@/sql-service';
 import { dehydrate, DehydratedState, QueryClient } from '@tanstack/react-query';
 import CartItem from '@/components/ui/custom/cart-item';
 
@@ -59,9 +57,8 @@ export const getServerSideProps: GetServerSideProps<{ dehydratedState: Dehydrate
 
     const client = postgres(env.CONNECTION_STRING);
     const db = drizzle(client);
-    const orders = await getCartOrders(db, userId);
-    const parsedOrders = z.array(orderSchema).length(1).safeParse(orders);
-    const cartItems = parsedOrders.success ? await getCartItems(db, parsedOrders.data[0].id) : [];
+
+    const cartItems = await getCartItems(db, userId);
     await client.end();
 
     const organizationIds = [...new Set(cartItems.map((ci) => ci.product.organizationId))];
