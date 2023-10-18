@@ -1,18 +1,8 @@
-import { cartItemsTable, categoriesTable, orderHistoriesTable, ordersTable } from '@/schema';
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { orderHistoriesTable, ordersTable } from '@/schema';
+import { createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
-export const categorySchema = createSelectSchema(categoriesTable);
-export const newCategorySchema = createInsertSchema(categoriesTable);
-export type Category = z.infer<typeof categorySchema>;
-
 export const orderSchema = createSelectSchema(ordersTable);
-export const newOrderSchema = createInsertSchema(ordersTable);
-export type Order = z.infer<typeof orderSchema>;
-
-export const orderLineSchema = createSelectSchema(cartItemsTable);
-export const newOrderLineSchema = createInsertSchema(cartItemsTable);
-export type OrderLine = z.infer<typeof orderLineSchema>;
 
 export const orderHistorySchema = createSelectSchema(orderHistoriesTable);
 export type OrderHistory = z.infer<typeof orderHistorySchema>;
@@ -42,8 +32,6 @@ export const stripePriceSchema = z.object({
     unit_amount_decimal: z.string()
 });
 
-export type StripePrice = z.infer<typeof stripePriceSchema>;
-
 export const stripeProductSchema = z.object({
     id: z.string(),
     object: z.literal('product'),
@@ -68,17 +56,6 @@ export const stripeProductSchema = z.object({
     url: z.null()
 });
 
-export type StripeProduct = z.infer<typeof stripeProductSchema>;
-export const stripeSearchResultSchema = z.object({
-    object: z.literal('search_result'),
-    data: z.array(stripeProductSchema),
-    has_more: z.boolean(),
-    next_page: z.string().nullable(),
-    url: z.literal('/v1/products/search')
-});
-
-export type StripeProductSearchResult = z.infer<typeof stripeSearchResultSchema>;
-
 export const productSchema = z.object({
     id: z.string(),
     name: z.string(),
@@ -96,31 +73,6 @@ export const cartItemSchema = z.object({
 });
 
 export type CartItem = z.infer<typeof cartItemSchema>;
-
-export const orderLineWithProductSchema = z.object({
-    productId: z.string(),
-    productName: z.string(),
-    productPrice: z.number(),
-    quantity: z.number(),
-    totalPrice: z.number()
-});
-
-export type OrderLineWithProduct = z.infer<typeof orderLineWithProductSchema>;
-
-export const stripeOrderLineSchema = z.object({
-    id: z.string(),
-    object: z.literal('item'),
-    amount_discount: z.number(),
-    amount_subtotal: z.number(),
-    amount_tax: z.number(),
-    amount_total: z.number(),
-    currency: z.string(),
-    description: z.string(),
-    price: stripePriceSchema,
-    quantity: z.number()
-});
-
-export type StripeOrderLine = z.infer<typeof stripeOrderLineSchema>;
 
 export const searchProductSchema = z.object({
     id: z.string(),
