@@ -21,7 +21,6 @@
         "@heroicons/react": "^2.0.18",
         "@hookform/resolvers": "^3.3.2",
         "@next/bundle-analyzer": "^13.5.4",
-        "@nextui-org/react": "^2.1.13",
         "@radix-ui/react-alert-dialog": "^1.0.5",
         "@radix-ui/react-aspect-ratio": "^1.0.3",
         "@radix-ui/react-avatar": "^1.0.4",

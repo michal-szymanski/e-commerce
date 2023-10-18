@@ -18,11 +18,11 @@ import { getTotalPrice } from '@/lib/utils';
 const stripeMaxUnitAmount = 99999999;
 
 const formSchema = z.object({
-    name: z.string().nonempty({ message: 'Name is required' }),
-    description: z.string().nonempty({ message: 'Description is required' }),
+    name: z.string().min(1, { message: 'Name is required' }),
+    description: z.string().min(1, { message: 'Description is required' }),
     unitAmount: z
         .string()
-        .nonempty({ message: 'Unit amount is required' })
+        .min(1, { message: 'Unit amount is required' })
         .refine(
             (val) =>
                 z.coerce
@@ -86,8 +86,6 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
         } catch (error) {
             console.error(error);
         }
-
-        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -191,15 +189,10 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                     )}
                 />
                 <div className="grid grid-cols-2 gap-5 py-5">
-                    <Button type="button" variant="secondary" onClick={close}>
+                    <Button type="button" variant="secondary" onClick={close} disabled={isLoading || isSuccess}>
                         Cancel
                     </Button>
-                    <SubmitButton
-                        key={form.formState.submitCount}
-                        isLoading={isLoading}
-                        isSuccess={isSuccess}
-                        onAnimationComplete={() => setTimeout(close, 1000)}
-                    />
+                    <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onAnimationComplete={() => setTimeout(close, 1000)} />
                 </div>
             </form>
         </Form>

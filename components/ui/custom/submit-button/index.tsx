@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { CheckIcon } from '@heroicons/react/20/solid';
-import { Spinner } from '@nextui-org/react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 type Props = {
     isLoading: boolean;
@@ -11,34 +12,57 @@ type Props = {
 };
 
 const SubmitButton = ({ isLoading, isSuccess, onAnimationComplete }: Props) => {
+    const [isSpinner, setIsSpinner] = useState(false);
+    const [isSpinnerComplete, setIsSpinnerComplete] = useState(false);
+
+    useEffect(() => {
+        if (!isLoading) return;
+        setIsSpinner(true);
+    }, [isLoading]);
+
+    useEffect(() => {
+        if (!isSpinner) return;
+        const id = setTimeout(() => {
+            setIsSpinnerComplete(true);
+        }, 2000);
+        return () => {
+            clearTimeout(id);
+        };
+    }, [isSpinner]);
+
     const renderContent = () => {
-        if (isSuccess)
+        if (isSuccess && isSpinnerComplete)
             return (
-                <motion.div
-                    key="success"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onAnimationComplete={onAnimationComplete}
-                    className="flex h-full w-full items-center justify-center"
-                >
+                <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onAnimationComplete={onAnimationComplete}>
                     <CheckIcon className="h-5 w-5 text-white" />
                 </motion.div>
             );
-        if (isLoading)
+        if (isSpinner)
             return (
                 <motion.div
                     key="spinner"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex h-full w-full items-center justify-center"
+                    variants={{
+                        hidden: { opacity: 0 },
+                        visible: { opacity: 1 },
+                        spin: {
+                            rotate: 360,
+                            transition: {
+                                duration: 0.5,
+                                repeat: Infinity,
+                                ease: 'linear'
+                            }
+                        }
+                    }}
+                    initial="hidden"
+                    animate={['visible', 'spin']}
+                    exit="hidden"
                 >
-                    <Spinner size="sm" classNames={{ base: 'opacity-100', circle1: 'border-b-[white]', circle2: 'border-b-[white]' }} />
+                    <Loader2 />
                 </motion.div>
             );
 
         return (
-            <motion.div key="submit" initial={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex h-full w-full items-center justify-center">
+            <motion.div key="submit" initial={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 Submit
             </motion.div>
         );
@@ -47,10 +71,10 @@ const SubmitButton = ({ isLoading, isSuccess, onAnimationComplete }: Props) => {
     return (
         <Button
             type="submit"
-            className={cn('w-full', {
-                'bg-green-400 hover:bg-green-400': isSuccess
+            className={cn('w-full disabled:opacity-100', {
+                'bg-green-500 hover:bg-green-500': isSuccess && isSpinnerComplete
             })}
-            disabled={isLoading || isSuccess}
+            disabled={isSpinner || isSuccess}
         >
             <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
         </Button>
