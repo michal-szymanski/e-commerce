@@ -1,9 +1,7 @@
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
 import { getAuth } from '@clerk/nextjs/server';
-import postgres from 'postgres';
 import { env } from '@/env.mjs';
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
 import { OrderStatus, orderStatusSchema } from '@/types';
@@ -21,6 +19,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
 import Stripe from 'stripe';
 import Link from 'next/link';
+import db from '@/lib/drizzle';
 
 export default function Page({ order, lineItems }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const columns: ColumnDef<Stripe.LineItem>[] = [
@@ -131,9 +130,6 @@ export const getServerSideProps: GetServerSideProps<{
         };
     }
 
-    const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client);
-
     const orderId = z.coerce.number().parse(context.query.id);
 
     const firstHistory = alias(orderHistoriesTable, 'oh1');
@@ -172,8 +168,6 @@ export const getServerSideProps: GetServerSideProps<{
             )
         )
         .orderBy(desc(ordersTable.id));
-
-    await client.end();
 
     if (!orders.length) {
         return {

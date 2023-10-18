@@ -2,9 +2,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { orderHistorySchema } from '@/types';
 import { ColumnDef } from '@tanstack/react-table';
-import postgres from 'postgres';
 import { env } from '@/env.mjs';
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { getAuth } from '@clerk/nextjs/server';
 import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
@@ -20,6 +18,7 @@ import { EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import Stripe from 'stripe';
+import db from '@/lib/drizzle';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
@@ -113,9 +112,6 @@ export const getServerSideProps: GetServerSideProps<{
         };
     }
 
-    const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client);
-
     const firstHistory = alias(orderHistoriesTable, 'oh1');
     const lastHistory = alias(orderHistoriesTable, 'oh2');
 
@@ -151,8 +147,6 @@ export const getServerSideProps: GetServerSideProps<{
             )
         )
         .orderBy(desc(ordersTable.id));
-
-    await client.end();
 
     const ordersWithTotals = orders.map(async (o) => {
         const session = await stripe.checkout.sessions.retrieve(z.string().parse(o.checkoutSessionId), {

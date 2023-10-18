@@ -9,12 +9,11 @@ import { ElementRef, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
 import { v4 as uuidv4 } from 'uuid';
-import postgres from 'postgres';
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { ordersTable } from '@/schema';
 import { and, eq, inArray } from 'drizzle-orm';
 import { orderSchema } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import db from '@/lib/drizzle';
 
 const Page = ({ orderIds, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
@@ -123,13 +122,10 @@ export const getServerSideProps: GetServerSideProps<{ orderIds: number[]; firstN
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     const orderIds = z.array(z.number()).parse(JSON.parse(session.metadata?.orderIds as string));
 
-    const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client);
     const orders = await db
         .select()
         .from(ordersTable)
         .where(and(inArray(ordersTable.id, orderIds), eq(ordersTable.userId, userId)));
-    await client.end();
 
     if (!orders.length) {
         return {

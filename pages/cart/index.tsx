@@ -5,11 +5,10 @@ import { useOrganization, useUser } from '@clerk/nextjs';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import { organizations as organizationsAPI } from '@clerk/nextjs/api';
-import postgres from 'postgres';
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { getCartItems } from '@/sql-service';
 import { dehydrate, DehydratedState, QueryClient } from '@tanstack/react-query';
 import CartItem from '@/components/ui/custom/cart-item';
+import db from '@/lib/drizzle';
 
 const Page = ({ organizations }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const { isSignedIn } = useUser();
@@ -55,11 +54,7 @@ export const getServerSideProps: GetServerSideProps<{ dehydratedState: Dehydrate
         };
     }
 
-    const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client);
-
     const cartItems = await getCartItems(db, userId);
-    await client.end();
 
     const organizationIds = [...new Set(cartItems.map((ci) => ci.product.organizationId))];
 

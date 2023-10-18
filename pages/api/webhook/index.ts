@@ -1,11 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import postgres from 'postgres';
-import { env } from '@/env.mjs';
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { cartItemsTable, imagesTable, orderHistoriesTable, pricesTable, productsTable } from '@/schema';
 import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { z } from 'zod';
+import db from '@/lib/drizzle';
 
 type CheckoutSession = Stripe.Checkout.Session & { orderIds: string; userId: string };
 type Product = Stripe.Product & { metadata: { organizationId: string; categoryId: string } };
@@ -21,32 +19,26 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
             const orderIds = z.array(z.number()).parse(JSON.parse(checkoutSession.metadata.orderIds));
             const userId = z.string().parse(checkoutSession.metadata.userId);
-
-            const client = postgres(env.CONNECTION_STRING);
-            const db = drizzle(client);
             const now = new Date().toISOString();
+
             await db.insert(orderHistoriesTable).values(orderIds.map((orderId) => ({ orderId, status: 'New', date: now }) as const));
             await db.delete(cartItemsTable).where(eq(cartItemsTable.userId, userId));
-            await client.end();
             break;
         }
         case 'price.created': {
             const price = event.data.object as Stripe.Price;
-            const client = postgres(env.CONNECTION_STRING);
-            const db = drizzle(client);
+
             await db.insert(pricesTable).values({
                 id: price.id,
                 unitAmount: price.unit_amount as number,
                 currency: price.currency,
                 active: price.active
             });
-            await client.end();
             break;
         }
         case 'price.updated': {
             const price = event.data.object as Stripe.Price;
-            const client = postgres(env.CONNECTION_STRING);
-            const db = drizzle(client);
+
             await db
                 .update(pricesTable)
                 .set({
@@ -55,15 +47,12 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
                     active: price.active
                 })
                 .where(eq(pricesTable.id, price.id));
-            await client.end();
             break;
         }
         case 'price.deleted': {
             const price = event.data.object as Stripe.Price;
-            const client = postgres(env.CONNECTION_STRING);
-            const db = drizzle(client);
+
             await db.delete(pricesTable).where(eq(pricesTable.id, price.id));
-            await client.end();
             break;
         }
         case 'product.created': {
@@ -71,8 +60,6 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
             if (!product.metadata) break;
 
-            const client = postgres(env.CONNECTION_STRING);
-            const db = drizzle(client);
             const dbProduct = (
                 await db
                     .insert(productsTable)
@@ -90,13 +77,11 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
             const images = product.images.map((src, i) => ({ productId: dbProduct.id, sequence: i, src }));
             await db.insert(imagesTable).values(images);
-            await client.end();
             break;
         }
         case 'product.updated': {
             const product = event.data.object as Stripe.Product;
-            const client = postgres(env.CONNECTION_STRING);
-            const db = drizzle(client);
+
             await db
                 .update(productsTable)
                 .set({
@@ -108,15 +93,12 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
                     priceId: product.default_price as string
                 })
                 .where(eq(productsTable.id, product.id));
-            await client.end();
             break;
         }
         case 'product.deleted': {
             const product = event.data.object as Stripe.Product;
-            const client = postgres(env.CONNECTION_STRING);
-            const db = drizzle(client);
+
             await db.delete(productsTable).where(eq(productsTable.id, product.id));
-            await client.end();
             break;
         }
     }

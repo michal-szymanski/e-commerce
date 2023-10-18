@@ -1,12 +1,10 @@
 import stripe from '@/lib/stripe';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
-import postgres from 'postgres';
-import { env } from '@/env.mjs';
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { getCartItems } from '@/sql-service';
 import { orderHistoriesTable, ordersTable } from '@/schema';
 import { inArray } from 'drizzle-orm';
+import db from '@/lib/drizzle';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
@@ -16,9 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!userId) {
                 return res.status(401).end();
             }
-
-            const client = postgres(env.CONNECTION_STRING);
-            const db = drizzle(client);
 
             const cartItems = await getCartItems(db, userId);
 
@@ -54,8 +49,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             });
 
             await db.update(ordersTable).set({ checkoutSessionId: session.id }).where(inArray(ordersTable.id, orderIds));
-
-            await client.end();
 
             if (session.url) {
                 return res.redirect(303, session.url);

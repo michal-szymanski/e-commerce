@@ -6,10 +6,9 @@ import Link from 'next/link';
 import { getProductUrl } from '@/lib/utils';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
-import postgres from 'postgres';
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { imagesTable, pricesTable, productsTable } from '@/schema';
 import { and, eq, ilike, inArray, SQL } from 'drizzle-orm';
+import db from '@/lib/drizzle';
 
 const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
@@ -53,9 +52,6 @@ export const getServerSideProps: GetServerSideProps<{
     const limit = parsedLimit.success ? parsedLimit.data : 10;
     const page = parsedPage.success ? parsedPage.data : '';
 
-    const client = postgres(env.CONNECTION_STRING);
-    const db = drizzle(client);
-
     const where: SQL[] = [eq(productsTable.active, true)];
 
     if (name) {
@@ -91,8 +87,6 @@ export const getServerSideProps: GetServerSideProps<{
                 products.map((p) => p.id)
             )
         );
-
-    await client.end();
 
     return {
         props: {

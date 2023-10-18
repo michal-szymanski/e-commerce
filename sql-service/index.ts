@@ -1,10 +1,10 @@
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { cartItemsTable, imagesTable, pricesTable, productsTable } from '@/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { CartItem, cartItemSchema } from '@/types';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-export const getCartItems = async (db: PostgresJsDatabase, userId: string) => {
+export const getCartItems = async (db: NodePgDatabase, userId: string) => {
     const productsWithQuantities = await db
         .select({
             product: {

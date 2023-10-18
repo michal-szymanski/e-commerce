@@ -6,10 +6,9 @@ import { env } from '@/env.mjs';
 import Head from 'next/head';
 import ProductPage from '@/components/ui/custom/product-page';
 import { useUpdateCart } from '@/hooks/mutations';
-import postgres from 'postgres';
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { imagesTable, pricesTable, productsTable } from '@/schema';
 import { and, asc, eq } from 'drizzle-orm';
+import db from '@/lib/drizzle';
 
 const Page = ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const updateCart = useUpdateCart();
@@ -37,8 +36,7 @@ const Page = ({ product }: InferGetServerSidePropsType<typeof getServerSideProps
 export const getServerSideProps: GetServerSideProps<{ product: z.infer<typeof productSchema> }> = async (context) => {
     try {
         const parsedId = z.string().parse(context.query.id);
-        const client = postgres(env.CONNECTION_STRING);
-        const db = drizzle(client);
+
         let product = (
             await db
                 .select({
@@ -60,16 +58,12 @@ export const getServerSideProps: GetServerSideProps<{ product: z.infer<typeof pr
         if (product) {
             media = await db.select({ src: imagesTable.src }).from(imagesTable).where(eq(imagesTable.productId, product.id)).orderBy(asc(imagesTable.sequence));
 
-            await client.end();
-
             return {
                 props: {
                     product: { ...product, images: media.map((m) => m.src) }
                 }
             };
         }
-
-        await client.end();
 
         const {
             id,
