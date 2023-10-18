@@ -53,8 +53,6 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
                 setSummaryErrors([{ id: uuidv4(), message: 'There was an error while submitting the form. Please try again.' }]);
             }
         }
-
-        setIsLoading(false);
     };
 
     if (!isClerkLoaded) return null;
@@ -100,12 +98,7 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
                                     <Link href="/sign-in">Sign in</Link>
                                 </Button>
                             </CardDescription>
-                            <SubmitButton
-                                key={form.formState.submitCount}
-                                isLoading={isLoading}
-                                isSuccess={isSuccess}
-                                onAnimationComplete={() => setTimeout(nextStep, 1000)}
-                            />
+                            <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onAnimationComplete={() => setTimeout(nextStep, 1000)} />
                         </CardFooter>
                     </Card>
                 </form>

@@ -50,8 +50,6 @@ const CreateOrganizationForm = () => {
                 setSummaryErrors([{ id: uuidv4(), message: 'There was an error while submitting the form. Please try again.' }]);
             }
         }
-
-        setIsLoading(false);
     };
 
     if (!isClerkLoaded) return null;
@@ -92,7 +90,6 @@ const CreateOrganizationForm = () => {
                         </CardContent>
                         <CardFooter className="flex flex-col items-start gap-2">
                             <SubmitButton
-                                key={form.formState.submitCount}
                                 isLoading={isLoading}
                                 isSuccess={!!submitData}
                                 onAnimationComplete={() =>
