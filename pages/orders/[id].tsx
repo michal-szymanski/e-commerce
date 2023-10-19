@@ -20,6 +20,8 @@ import { EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
 import Stripe from 'stripe';
 import Link from 'next/link';
 import db from '@/lib/drizzle';
+import { ReactNode } from 'react';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 export default function Page({ order, lineItems }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const columns: ColumnDef<Stripe.LineItem>[] = [
@@ -114,6 +116,10 @@ export default function Page({ order, lineItems }: InferGetServerSidePropsType<t
         </>
     );
 }
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
+};
 
 export const getServerSideProps: GetServerSideProps<{
     order: { id: number; date: string; status: OrderStatus };

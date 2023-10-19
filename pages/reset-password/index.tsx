@@ -2,10 +2,11 @@ import { env } from '@/env.mjs';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import InitResetPasswordForm from '@/components/ui/custom/forms/init-reset-password-form';
 import CompleteResetPasswordForm from '@/components/ui/custom/forms/complete-reset-password-form';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = () => {
     const [step, setStep] = useState(0);
@@ -44,6 +45,10 @@ const Page = () => {
             </div>
         </>
     );
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
 };
 
 export const getServerSideProps: GetServerSideProps<{}> = async (context) => {

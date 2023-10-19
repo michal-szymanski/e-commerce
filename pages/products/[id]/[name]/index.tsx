@@ -9,6 +9,8 @@ import { useUpdateCart } from '@/hooks/mutations';
 import { imagesTable, pricesTable, productsTable } from '@/schema';
 import { and, asc, eq } from 'drizzle-orm';
 import db from '@/lib/drizzle';
+import { ReactNode } from 'react';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const updateCart = useUpdateCart();
@@ -31,6 +33,10 @@ const Page = ({ product }: InferGetServerSidePropsType<typeof getServerSideProps
             </div>
         </>
     );
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
 };
 
 export const getServerSideProps: GetServerSideProps<{ product: z.infer<typeof productSchema> }> = async (context) => {

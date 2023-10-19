@@ -9,6 +9,8 @@ import Head from 'next/head';
 import { imagesTable, pricesTable, productsTable } from '@/schema';
 import { and, eq, ilike, inArray, SQL } from 'drizzle-orm';
 import db from '@/lib/drizzle';
+import { ReactNode } from 'react';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
@@ -99,6 +101,10 @@ export const getServerSideProps: GetServerSideProps<{
             }))
         }
     };
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
 };
 
 export default Page;

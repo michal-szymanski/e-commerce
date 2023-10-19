@@ -3,6 +3,8 @@ import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import SignInForm from '@/components/ui/custom/forms/sign-in-form';
+import { ReactNode } from 'react';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = () => {
     return (
@@ -17,6 +19,10 @@ const Page = () => {
             </div>
         </>
     );
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
 };
 
 export const getServerSideProps: GetServerSideProps<{}> = async (context) => {

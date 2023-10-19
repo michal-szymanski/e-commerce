@@ -1,6 +1,8 @@
 import { UserProfile } from '@clerk/nextjs';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
+import { ReactNode } from 'react';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = () => (
     <>
@@ -18,5 +20,9 @@ const Page = () => (
         />
     </>
 );
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
+};
 
 export default Page;

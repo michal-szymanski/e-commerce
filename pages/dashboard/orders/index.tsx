@@ -1,5 +1,7 @@
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
+import { ReactNode } from 'react';
+import DashboardLayout from '@/components/layouts/dashboard-layout';
 
 const Page = () => {
     return (
@@ -7,6 +9,10 @@ const Page = () => {
             <h1 className="pb-10 text-4xl font-bold">Orders</h1>
         </div>
     );
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DashboardLayout>{page}</DashboardLayout>;
 };
 
 export default Page;

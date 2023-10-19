@@ -19,6 +19,8 @@ import Link from 'next/link';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import Stripe from 'stripe';
 import db from '@/lib/drizzle';
+import { ReactNode } from 'react';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const orderWithTotalPriceSchema = z.object({
     id: z.number(),
@@ -97,6 +99,10 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         </>
     );
 }
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
+};
 
 export const getServerSideProps: GetServerSideProps<{
     orders: z.infer<typeof orderWithTotalPriceSchema>[];

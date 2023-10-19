@@ -22,9 +22,10 @@ import { dehydrate, QueryClient } from '@tanstack/react-query';
 import stripe from '@/lib/stripe';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import NewProductForm from '@/components/ui/custom/forms/new-product-form';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import ProductPage from '@/components/ui/custom/product-page';
 import { AnimatePresence, motion } from 'framer-motion';
+import DashboardLayout from '@/components/layouts/dashboard-layout';
 
 const Page = () => {
     const router = useRouter();
@@ -164,6 +165,10 @@ const Page = () => {
             </div>
         </div>
     );
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DashboardLayout>{page}</DashboardLayout>;
 };
 
 export default Page;

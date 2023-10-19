@@ -1,12 +1,13 @@
 import { env } from '@/env.mjs';
 import Head from 'next/head';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import CodeVerificationForm from '@/components/ui/custom/forms/code-verification-form';
 import SignUpForm from '@/components/ui/custom/forms/sign-up-form';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = () => {
     const [step, setStep] = useState(0);
@@ -46,6 +47,10 @@ const Page = () => {
             </div>
         </>
     );
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
 };
 
 export const getServerSideProps: GetServerSideProps<{}> = async (context) => {

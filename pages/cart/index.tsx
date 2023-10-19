@@ -9,6 +9,8 @@ import { getCartItems } from '@/sql-service';
 import { dehydrate, DehydratedState, QueryClient } from '@tanstack/react-query';
 import CartItem from '@/components/ui/custom/cart-item';
 import db from '@/lib/drizzle';
+import { ReactNode } from 'react';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = ({ organizations }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const { isSignedIn } = useUser();
@@ -38,6 +40,10 @@ const Page = ({ organizations }: InferGetServerSidePropsType<typeof getServerSid
             </div>
         </>
     );
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
 };
 
 export default Page;

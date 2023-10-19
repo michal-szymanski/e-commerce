@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { clerkClient, getAuth } from '@clerk/nextjs/server';
 import { Button } from '@/components/ui/button';
 import Confetti from 'react-confetti';
-import { ElementRef, useEffect, useRef, useState } from 'react';
+import { ElementRef, ReactNode, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +14,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { orderSchema } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import db from '@/lib/drizzle';
+import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = ({ orderIds, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
@@ -102,6 +103,10 @@ const Page = ({ orderIds, firstName }: InferGetServerSidePropsType<typeof getSer
             </div>
         </>
     );
+};
+
+Page.getLayout = (page: ReactNode) => {
+    return <DefaultLayout>{page}</DefaultLayout>;
 };
 
 export const getServerSideProps: GetServerSideProps<{ orderIds: number[]; firstName: string | null }> = async (context) => {

@@ -1,24 +1,31 @@
 import '@/styles/globals.css';
-import type { AppProps } from 'next/app';
 import { Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import Layout from '@/components/layouts/layout';
+import { NextComponentType, NextPageContext } from 'next';
+import { AppProps } from 'next/app';
 
-export default function App({ Component, pageProps }: AppProps) {
+type NextLayoutComponentType<P = {}> = NextComponentType<NextPageContext, any, P> & {
+    getLayout?: (page: ReactNode) => ReactNode;
+};
+
+type AppLayoutProps = AppProps & {
+    Component: NextLayoutComponentType;
+};
+
+export default function App({ Component, pageProps }: AppLayoutProps) {
     const [queryClient] = useState(() => new QueryClient());
+    const getLayout = Component.getLayout || ((page) => page);
 
     return (
         <ClerkProvider {...pageProps}>
             <Provider store={store}>
                 <QueryClientProvider client={queryClient}>
                     <Hydrate state={pageProps.dehydratedState}>
-                        <Layout>
-                            <Component {...pageProps} />
-                        </Layout>
+                        {getLayout(<Component {...pageProps} />)}
                         <ReactQueryDevtools initialIsOpen={false} />
                     </Hydrate>
                 </QueryClientProvider>
