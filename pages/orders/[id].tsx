@@ -4,7 +4,7 @@ import { getAuth } from '@clerk/nextjs/server';
 import { env } from '@/env.mjs';
 import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
-import { OrderStatus, orderStatusSchema } from '@/types';
+import { idSchema, orderStatusSchema } from '@/types';
 import dayjs from 'dayjs';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
@@ -122,7 +122,7 @@ Page.getLayout = (page: ReactNode) => {
 };
 
 export const getServerSideProps: GetServerSideProps<{
-    order: { id: number; date: string; status: OrderStatus };
+    order: { id: number; date: string; status: z.infer<typeof orderStatusSchema> };
     lineItems: Stripe.LineItem[];
 }> = async (context) => {
     const { userId } = getAuth(context.req);
@@ -187,7 +187,7 @@ export const getServerSideProps: GetServerSideProps<{
 
     const parsedOrder = z
         .object({
-            id: z.number(),
+            id: idSchema,
             date: z.string(),
             status: orderStatusSchema
         })

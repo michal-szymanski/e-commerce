@@ -1,8 +1,9 @@
-import { OrderStatus } from '@/types';
+import { orderStatusSchema } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { z } from 'zod';
 
 type Props = {
-    status: OrderStatus;
+    status: z.infer<typeof orderStatusSchema>;
 };
 
 const OrderStatusBadge = ({ status }: Props) => {

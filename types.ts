@@ -1,14 +1,22 @@
-import { orderHistoriesTable, ordersTable } from '@/schema';
-import { createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
-export const orderSchema = createSelectSchema(ordersTable);
+export const idSchema = z.number().min(1);
 
-export const orderHistorySchema = createSelectSchema(orderHistoriesTable);
-export type OrderHistory = z.infer<typeof orderHistorySchema>;
+export const orderSchema = z.object({
+    id: idSchema,
+    userId: z.string(),
+    organizationId: z.string(),
+    checkoutSessionId: z.string().optional()
+});
 
-export const orderStatusSchema = orderHistorySchema.shape.status;
-export type OrderStatus = z.infer<typeof orderStatusSchema>;
+export const orderStatusSchema = z.enum(['Pending', 'New', 'In Progress', 'Completed', 'Cancelled']);
+
+export const orderHistorySchema = z.object({
+    id: idSchema,
+    orderId: idSchema,
+    status: orderStatusSchema,
+    date: z.string()
+});
 
 export const stripePriceSchema = z.object({
     id: z.string(),

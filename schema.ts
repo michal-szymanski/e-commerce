@@ -37,7 +37,7 @@ export const cartItemsRelations = relations(cartItemsTable, ({ one }) => ({
     })
 }));
 
-export const orderStatusEnum = pgEnum('order_status', ['New', 'Pending', 'In Progress', 'Completed', 'Cancelled']);
+export const orderStatusEnum = pgEnum('order_status', ['Pending', 'New', 'In Progress', 'Completed', 'Cancelled']);
 
 export const orderHistoriesTable = pgTable('order_histories', {
     id: serial('id').primaryKey(),

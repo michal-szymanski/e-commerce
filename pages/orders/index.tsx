@@ -1,6 +1,6 @@
 import { DataTable } from '@/components/ui/data-table';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-import { orderHistorySchema } from '@/types';
+import { idSchema, orderStatusSchema } from '@/types';
 import { ColumnDef } from '@tanstack/react-table';
 import { env } from '@/env.mjs';
 import { getAuth } from '@clerk/nextjs/server';
@@ -23,9 +23,9 @@ import { ReactNode } from 'react';
 import DefaultLayout from '@/components/layouts/default-layout';
 
 const orderWithTotalPriceSchema = z.object({
-    id: z.number(),
+    id: idSchema,
     date: z.string(),
-    status: orderHistorySchema.shape.status,
+    status: orderStatusSchema,
     totalPrice: z.string(),
     currency: z.string()
 });
