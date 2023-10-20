@@ -2,7 +2,7 @@ import { cartItemSchema } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { XMarkIcon } from '@heroicons/react/20/solid';
-import { getProductUrl, getTotalPrice } from '@/lib/utils';
+import { getProductPageUrl, getTotalPrice } from '@/lib/utils';
 import QuantityCounter from '@/components/ui/custom/quantity-counter';
 import { useUpdateCart } from '@/hooks/mutations';
 import Link from 'next/link';
@@ -39,7 +39,7 @@ const CartItem = ({ cartItem: { product, quantity } }: Props) => {
             <CardHeader>
                 <CardTitle>
                     <Button variant="link" className="p-0 text-2xl" asChild>
-                        <Link href={getProductUrl(product.id, product.name)}>{product.name}</Link>
+                        <Link href={getProductPageUrl(product.id, product.name)}>{product.name}</Link>
                     </Button>
                 </CardTitle>
             </CardHeader>

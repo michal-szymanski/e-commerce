@@ -1,4 +1,4 @@
-import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next';
 import { z } from 'zod';
 import { productSchema, stripeProductSchema } from '@/types';
 import stripe from '@/lib/stripe';
@@ -11,8 +11,9 @@ import { and, asc, eq } from 'drizzle-orm';
 import db from '@/lib/drizzle';
 import { ReactNode } from 'react';
 import DefaultLayout from '@/components/layouts/default-layout';
+import { getProductPageParams } from '@/lib/utils';
 
-const Page = ({ product }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Page = ({ product }: InferGetStaticPropsType<typeof getStaticProps>) => {
     const updateCart = useUpdateCart();
 
     return (
@@ -39,9 +40,20 @@ Page.getLayout = (page: ReactNode) => {
     return <DefaultLayout>{page}</DefaultLayout>;
 };
 
-export const getServerSideProps: GetServerSideProps<{ product: z.infer<typeof productSchema> }> = async (context) => {
+export const getStaticPaths = (async () => {
+    const paths = (await db.select({ id: productsTable.id, name: productsTable.name }).from(productsTable).where(eq(productsTable.active, true))).map(
+        ({ id, name }) => ({ params: getProductPageParams(id, name) })
+    );
+
+    return {
+        paths,
+        fallback: false
+    };
+}) satisfies GetStaticPaths;
+
+export const getStaticProps: GetStaticProps<{ product: z.infer<typeof productSchema> }> = async ({ params }) => {
     try {
-        const parsedId = z.string().parse(context.query.id);
+        const parsedId = z.string().parse(params?.id);
 
         let product = (
             await db

@@ -11,7 +11,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
-import { getProductUrl, getTotalPrice } from '@/lib/utils';
+import { getProductPageUrl, getTotalPrice } from '@/lib/utils';
 import stripe from '@/lib/stripe';
 import { alias } from 'drizzle-orm/pg-core';
 import Head from 'next/head';
@@ -73,7 +73,7 @@ export default function Page({ order, lineItems }: InferGetServerSidePropsType<t
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem>
-                                    <Link href={getProductUrl(product.id, product.name)}>View product page</Link>
+                                    <Link href={getProductPageUrl(product.id, product.name)}>View product page</Link>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

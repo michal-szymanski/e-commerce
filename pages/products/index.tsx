@@ -3,7 +3,7 @@ import ProductTile from '@/components/ui/custom/product-tile';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
 import Link from 'next/link';
-import { getProductUrl } from '@/lib/utils';
+import { getProductPageUrl } from '@/lib/utils';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
 import { imagesTable, pricesTable, productsTable } from '@/schema';
@@ -19,7 +19,7 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
         }
 
         return products.map((product) => (
-            <Link key={product.id} href={getProductUrl(product.id, product.name)}>
+            <Link key={product.id} href={getProductPageUrl(product.id, product.name)}>
                 <ProductTile product={product} />
             </Link>
         ));

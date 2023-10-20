@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/router';
 import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/react/20/solid';
-import { getProductUrl, getTotalPrice } from '@/lib/utils';
+import { getProductPageUrl, getTotalPrice } from '@/lib/utils';
 import { useOrganizationProducts } from '@/hooks/queries';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
@@ -86,7 +86,9 @@ const Page = () => {
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 {product.active && (
-                                    <DropdownMenuItem onClick={() => router.push(getProductUrl(product.id, product.name))}>View product page</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => router.push(getProductPageUrl(product.id, product.name))}>
+                                        View product page
+                                    </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem>View orders with this product</DropdownMenuItem>
                             </DropdownMenuContent>

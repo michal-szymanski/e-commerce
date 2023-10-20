@@ -17,4 +17,9 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(fu
 
 export const getTotalPrice = (price: number, quantity: number) => ((price * quantity) / 100).toFixed(2);
 
-export const getProductUrl = (id: string, name: string) => `/products/${id}/${name.replace(/\s/g, '-')}`;
+export const getProductPageParams = (id: string, name: string) => ({ id, name: name.replace(/\s/g, '-') });
+
+export const getProductPageUrl = (id: string, name: string) => {
+    const params = getProductPageParams(id, name);
+    return `/products/${params.id}/${params.name}`;
+};
