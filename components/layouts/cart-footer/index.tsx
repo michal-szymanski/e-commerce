@@ -18,7 +18,7 @@ const CartFooter = () => {
         if (router.asPath === '/cart') {
             return (
                 <form action="/api/stripe/checkout-session" method="POST">
-                    <Button className="w-40" type="submit">
+                    <Button type="submit" className="w-40">
                         Checkout
                     </Button>
                 </form>
@@ -26,7 +26,7 @@ const CartFooter = () => {
         }
 
         return (
-            <Button className="w-40" onClick={() => router.push('/cart')}>
+            <Button type="button" className="w-40" onClick={() => router.push('/cart')}>
                 Go to cart
             </Button>
         );

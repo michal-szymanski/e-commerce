@@ -151,8 +151,9 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                                     ))}
                                 </SelectContent>
                             </Select>
-
-                            <FormMessage />
+                            <div className="h-5">
+                                <FormMessage />
+                            </div>
                         </FormItem>
                     )}
                 />

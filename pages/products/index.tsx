@@ -2,8 +2,6 @@ import Sidebar from '@/components/layouts/sidebar';
 import ProductTile from '@/components/ui/custom/product-tile';
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
-import Link from 'next/link';
-import { getProductPageUrl } from '@/lib/utils';
 import { env } from '@/env.mjs';
 import Head from 'next/head';
 import { imagesTable, pricesTable, productsTable } from '@/schema';
@@ -18,11 +16,7 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
             return <div>No items</div>;
         }
 
-        return products.map((product) => (
-            <Link key={product.id} href={getProductPageUrl(product.id, product.name)}>
-                <ProductTile product={product} />
-            </Link>
-        ));
+        return products.map((product) => <ProductTile key={product.id} product={product} />);
     };
 
     return (
@@ -30,13 +24,13 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
             <Head>
                 <title>{`Products | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
-            <div className="grid grid-cols-sidebar grid-rows-1">
+            <div className="container grid grid-cols-sidebar grid-rows-1">
                 <Sidebar />
-                <div className="border-l pr-20">
+                <div className=" border-l p-10">
                     {/*<div className="mb-5 flex justify-end pr-5">*/}
                     {/*    <Pagination nextPage={searchResult.next_page ?? ''} />*/}
                     {/*</div>*/}
-                    <div className="grid place-items-end gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">{renderProducts()}</div>
+                    <div className="flex flex-col gap-5">{renderProducts()}</div>
                 </div>
             </div>
         </>
