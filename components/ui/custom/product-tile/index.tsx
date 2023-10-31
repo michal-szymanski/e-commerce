@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { getProductPageUrl, getTotalPrice } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/router';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCartIcon } from '@heroicons/react/20/solid';
 import { useUpdateCart } from '@/hooks/mutations';
 import PersonalAccount from '@/components/utils/personal-account';
@@ -12,6 +12,7 @@ import AddToCartDialog from '@/components/ui/custom/add-to-cart-dialog';
 import { setIsDialogOpen } from '@/store/slices/ui';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import Rating from '@/components/ui/custom/rating';
 
 type Props = {
     product: {
@@ -58,7 +59,7 @@ const ProductTile = ({ product }: Props) => {
                     <Image src={product.images[0]} alt={product.name} width={150} height={150} />
                     <div className="flex flex-col gap-3">
                         <CardTitle>{product.name}</CardTitle>
-                        <CardDescription>{/*<Rating value={3} count={99} />*/}</CardDescription>
+                        <Rating value={3} count={99} />
                     </div>
                 </CardHeader>
                 <CardFooter className="flex flex-col items-end justify-end">
