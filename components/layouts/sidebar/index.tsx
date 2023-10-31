@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 
 const formSchema = z.object({
@@ -34,9 +34,9 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="h-full px-6">
+        <aside className="h-full">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="h-full px-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="h-full">
                     <h2 className="mb-5 text-lg font-semibold tracking-tight">Price</h2>
                     <div className="flex gap-2">
                         <FormField
@@ -64,11 +64,11 @@ const Sidebar = () => {
                             )}
                         />
                     </div>
-                    <div className="mt-10 flex justify-end gap-5">
-                        <Button type="button" variant="secondary" onClick={() => form.reset()}>
+                    <div className="flex justify-end gap-5 pt-10">
+                        <Button type="button" variant="secondary" onClick={() => form.reset()} className="flex-1">
                             Reset
                         </Button>
-                        <Button type="submit" variant="default">
+                        <Button type="submit" variant="default" className="flex-1">
                             Filter
                         </Button>
                     </div>

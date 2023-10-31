@@ -9,6 +9,9 @@ import { and, eq, ilike, inArray, SQL } from 'drizzle-orm';
 import db from '@/lib/drizzle';
 import { ReactNode } from 'react';
 import DefaultLayout from '@/components/layouts/default-layout';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/ui/button';
 
 const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const renderProducts = () => {
@@ -24,9 +27,25 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
             <Head>
                 <title>{`Products | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
-            <div className="container grid grid-cols-sidebar grid-rows-1">
-                <Sidebar />
-                <div className=" border-l p-10">
+            <div className="container flex flex-col gap-5 lg:flex-row">
+                <div className="hidden border-r pr-10 lg:block lg:w-80">
+                    <Sidebar />
+                </div>
+                <div className="self-end lg:hidden">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button type="button" variant="secondary" className="flex gap-5">
+                                <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                                <span>Filters</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left">
+                            <SheetTitle className="pb-10">Filters</SheetTitle>
+                            <Sidebar />
+                        </SheetContent>
+                    </Sheet>
+                </div>
+                <div className="flex-1 lg:p-10">
                     {/*<div className="mb-5 flex justify-end pr-5">*/}
                     {/*    <Pagination nextPage={searchResult.next_page ?? ''} />*/}
                     {/*</div>*/}

@@ -22,10 +22,7 @@ const ProductTile = ({ product }: Props) => {
     };
 
     return (
-        <Card
-            className="flex min-w-[25rem] cursor-pointer flex-col justify-between transition-shadow hover:shadow-product-tile lg:flex-row"
-            onClick={handleTileClick}
-        >
+        <Card className="flex cursor-pointer flex-col justify-between transition-shadow hover:shadow-product-tile md:flex-row" onClick={handleTileClick}>
             <CardHeader className="flex flex-row gap-5">
                 <Image src={product.images[0]} alt={product.name} width={150} height={150} />
                 <div className="flex flex-col gap-3">
@@ -39,7 +36,7 @@ const ProductTile = ({ product }: Props) => {
                 <span className="size py-3 text-xl font-bold">
                     {getTotalPrice(product.unitAmount, 1)} {product.currency.toUpperCase()}
                 </span>
-                <Button type="button" className="flex w-full gap-5 lg:w-40" onClick={handleAddToCart}>
+                <Button type="button" className="flex w-full gap-5 md:w-40" onClick={handleAddToCart}>
                     <ShoppingCartIcon className="h-5 w-5" />
                     <span>Add to cart</span>
                 </Button>
