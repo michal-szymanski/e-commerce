@@ -5,7 +5,7 @@ module.exports = {
     theme: {
         container: {
             center: true,
-            padding: '2rem',
+            padding: '1rem',
             screens: {
                 '2xl': '1400px'
             }
@@ -67,7 +67,7 @@ module.exports = {
             },
             gridTemplateColumns: {
                 sidebar: '300px 1fr',
-                dashboard: 'minmax(50px, 250px) 1fr',
+                dashboard: 'minmax(5rem, 250px) 1fr',
                 'add-product-preview': '400px 1fr'
             },
             gridTemplateRows: {

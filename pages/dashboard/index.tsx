@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/layouts/dashboard-layout';
 
 const Page = () => {
     return (
-        <div>
+        <div className="container relative mx-auto py-10">
             <h1 className="pb-10 text-4xl font-bold">Overview</h1>
         </div>
     );

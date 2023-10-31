@@ -117,65 +117,63 @@ const Page = () => {
     }, [open]);
 
     return (
-        <div>
+        <div className="container relative mx-auto py-10">
             <h1 className="pb-10 text-4xl font-bold">Products</h1>
-            <div className="container relative mx-auto py-10">
-                <Card>
-                    <CardHeader className="flex flex-row items-end justify-between">
-                        <div>
-                            <h2 className="text-xl font-semibold">Your products</h2>
-                            <CardDescription>Total: {data?.length ?? 0}</CardDescription>
-                        </div>
-                        <div>
-                            <Sheet open={open} onOpenChange={setOpen}>
-                                <SheetTrigger asChild>
-                                    <Button>
-                                        <span>
-                                            <PlusIcon className="h-4 w-4" />
-                                        </span>
-                                        <span className="pl-3">Add Product</span>
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent onPointerDownOutside={(e) => e.preventDefault()}>
-                                    <SheetHeader className="pb-10">
-                                        <SheetTitle>{initialData ? 'Edit product' : 'Add new product'}</SheetTitle>
-                                        <SheetDescription>
-                                            Fill out the form to {initialData ? 'edit the' : 'create a new'} product. You can see the preview of your product to
-                                            the left.
-                                        </SheetDescription>
-                                    </SheetHeader>
-                                    <NewProductForm
-                                        setPreviewData={(value) => setPreviewData(value)}
-                                        close={() => {
-                                            setOpen(false);
-                                        }}
-                                        initialData={initialData}
-                                    />
-                                </SheetContent>
-                            </Sheet>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <DataTable columns={columns} data={data ?? []} />
-                    </CardContent>
-                </Card>
-                <AnimatePresence>
-                    {open && (
-                        <motion.div className="absolute left-0 top-0 z-[51]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                            <h2 className="pb-10 text-4xl font-extrabold text-green-600">Preview</h2>
-                            <ProductPage
-                                isPreview
-                                name={name}
-                                price={unitAmount}
-                                currency="pln"
-                                images={[
-                                    'https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'
-                                ]}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+            <Card>
+                <CardHeader className="flex flex-row items-end justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold">Your products</h2>
+                        <CardDescription>Total: {data?.length ?? 0}</CardDescription>
+                    </div>
+                    <div>
+                        <Sheet open={open} onOpenChange={setOpen}>
+                            <SheetTrigger asChild>
+                                <Button>
+                                    <span>
+                                        <PlusIcon className="h-4 w-4" />
+                                    </span>
+                                    <span className="pl-3">Add Product</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent onPointerDownOutside={(e) => e.preventDefault()}>
+                                <SheetHeader className="pb-10">
+                                    <SheetTitle>{initialData ? 'Edit product' : 'Add new product'}</SheetTitle>
+                                    <SheetDescription>
+                                        Fill out the form to {initialData ? 'edit the' : 'create a new'} product. You can see the preview of your product to the
+                                        left.
+                                    </SheetDescription>
+                                </SheetHeader>
+                                <NewProductForm
+                                    setPreviewData={(value) => setPreviewData(value)}
+                                    close={() => {
+                                        setOpen(false);
+                                    }}
+                                    initialData={initialData}
+                                />
+                            </SheetContent>
+                        </Sheet>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <DataTable columns={columns} data={data ?? []} />
+                </CardContent>
+            </Card>
+            <AnimatePresence>
+                {open && (
+                    <motion.div className="absolute left-0 top-0 z-[51]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <h2 className="pb-10 text-4xl font-extrabold text-green-600">Preview</h2>
+                        <ProductPage
+                            isPreview
+                            name={name}
+                            price={unitAmount}
+                            currency="pln"
+                            images={[
+                                'https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'
+                            ]}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
