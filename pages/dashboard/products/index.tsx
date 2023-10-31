@@ -16,7 +16,7 @@ import {
 import { useRouter } from 'next/router';
 import { EllipsisHorizontalIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { getProductPageUrl, getTotalPrice } from '@/lib/utils';
-import { useOrganizationProducts } from '@/hooks/queries';
+import { useCategories, useOrganizationProducts } from '@/hooks/queries';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 import stripe from '@/lib/stripe';
@@ -26,12 +26,17 @@ import { ReactNode, useEffect, useState } from 'react';
 import ProductPage from '@/components/ui/custom/product-page';
 import { AnimatePresence, motion } from 'framer-motion';
 import DashboardLayout from '@/components/layouts/dashboard-layout';
+import db from '@/lib/drizzle';
+import { categoriesTable } from '@/schema';
+import { categorySchema } from '@/types';
+import { z } from 'zod';
 
 const Page = () => {
     const router = useRouter();
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data } = useOrganizationProducts({ enabled: !!isSignedIn && !!organization });
+    const { data: categories } = useCategories();
     const [{ name, description, unitAmount }, setPreviewData] = useState({ name: '', description: '', unitAmount: 0 });
     const [open, setOpen] = useState(false);
     const [initialData, setInitialData] = useState<Stripe.Product>();
@@ -44,6 +49,11 @@ const Page = () => {
         {
             accessorKey: 'name',
             header: 'Name'
+        },
+        {
+            id: 'category',
+            header: 'Category',
+            cell: ({ row: { original: product } }) => categories?.find((c) => c.id === Number(product.metadata?.categoryId))?.name
         },
         {
             accessorKey: 'active',
@@ -102,6 +112,7 @@ const Page = () => {
     useEffect(() => {
         if (!open) {
             setInitialData(undefined);
+            setPreviewData({ name: '', description: '', unitAmount: 0 });
         }
     }, [open]);
 
@@ -191,7 +202,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     await queryClient.prefetchQuery(['organization-products'], async () => {
         const { data: products } = await stripe.products.search({ query: `metadata["organizationId"]:"${orgId}"`, limit: 100, expand: ['data.default_price'] });
-        return products;
+        return products.sort((a, b) => b.created - a.created);
+    });
+
+    await queryClient.prefetchQuery(['categories'], async () => {
+        const categories = await db.select().from(categoriesTable);
+        return z.array(categorySchema).parse(categories);
     });
 
     return {

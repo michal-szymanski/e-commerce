@@ -10,15 +10,17 @@ import { useCreateProduct, useUpdateProduct } from '@/hooks/mutations';
 import { Button } from '@/components/ui/button';
 import Stripe from 'stripe';
 import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
 import { getTotalPrice } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCategories } from '@/hooks/queries';
 
 const stripeMaxUnitAmount = 99999999;
 
 const formSchema = z.object({
     name: z.string().min(1, { message: 'Name is required' }),
+    category: z.string().min(1, { message: 'Category is required' }),
     description: z.string().min(1, { message: 'Description is required' }),
     unitAmount: z
         .string()
@@ -50,7 +52,8 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
             name: initialData?.name ?? '',
             description: initialData?.description ?? '',
             unitAmount: initialDefaultPrice?.unit_amount ? getTotalPrice(initialDefaultPrice.unit_amount, 1) : '',
-            active: initialData?.active ?? false
+            active: initialData?.active ?? false,
+            category: initialData?.metadata?.categoryId ?? ''
         }
     });
 
@@ -58,29 +61,40 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
     const [isSuccess, setIsSuccess] = useState(false);
     const createProduct = useCreateProduct();
     const updateProduct = useUpdateProduct();
+    const { data: categories } = useCategories();
 
-    const onSubmit = async ({ name, description, unitAmount, active }: z.infer<typeof formSchema>) => {
+    const onSubmit = async ({ name, description, unitAmount, active, category }: z.infer<typeof formSchema>) => {
         setIsLoading(true);
 
         try {
+            const newUnitAmount = Number(unitAmount) * 100;
+
             if (initialData) {
-                const isPriceUpdated = initialDefaultPrice?.unit_amount !== Number(unitAmount);
+                const isPriceUpdated = initialDefaultPrice?.unit_amount !== newUnitAmount;
                 const isNameUpdated = initialData.name !== name;
                 const isDescriptionUpdated = initialData.description !== description;
                 const isActiveUpdated = initialData.active !== active;
+                const isCategoryUpdated = initialData.metadata?.categoryId !== category;
 
-                if (isPriceUpdated || isNameUpdated || isDescriptionUpdated || isActiveUpdated) {
+                if (isPriceUpdated || isNameUpdated || isDescriptionUpdated || isActiveUpdated || isCategoryUpdated) {
                     updateProduct.mutate({
                         productId: initialData.id,
                         priceId: isPriceUpdated ? initialDefaultPrice?.id : undefined,
                         name: isNameUpdated ? name : undefined,
                         description: isDescriptionUpdated ? description : undefined,
-                        unitAmount: isPriceUpdated ? Number(unitAmount) : undefined,
-                        active: isActiveUpdated ? active : undefined
+                        unitAmount: isPriceUpdated ? newUnitAmount : undefined,
+                        active: isActiveUpdated ? active : undefined,
+                        categoryId: isCategoryUpdated ? Number(category) : undefined
                     });
                 }
             } else {
-                createProduct.mutate({ name, description, unitAmount: Number((Number(unitAmount) * 100).toFixed(2)), active: active ?? false });
+                createProduct.mutate({
+                    name,
+                    description,
+                    unitAmount: newUnitAmount,
+                    active: active ?? false,
+                    categoryId: Number(category)
+                });
             }
             setIsSuccess(true);
         } catch (error) {
@@ -114,6 +128,31 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                             <div className="h-5">
                                 <FormMessage />
                             </div>
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {categories?.map((c) => (
+                                        <SelectItem key={c.id} value={String(c.id)}>
+                                            {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <FormMessage />
                         </FormItem>
                     )}
                 />

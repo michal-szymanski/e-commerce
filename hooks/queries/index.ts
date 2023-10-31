@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { cartItemSchema, searchProductSchema } from '@/types';
+import { cartItemSchema, categorySchema, searchProductSchema } from '@/types';
 import { z } from 'zod';
 import Stripe from 'stripe';
 
@@ -46,7 +46,24 @@ export const useOrganizationProducts = ({ enabled }: { enabled: boolean }) =>
                 })
             ).json();
 
-            return response as Stripe.Product[];
+            return (response as Stripe.Product[]).sort((a, b) => b.created - a.created);
         },
         enabled
+    });
+
+export const useCategories = () =>
+    useQuery({
+        queryKey: ['categories'],
+        queryFn: async () => {
+            const response = await (
+                await fetch('/api/categories', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ).json();
+
+            return z.array(categorySchema).parse(response);
+        }
     });

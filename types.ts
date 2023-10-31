@@ -86,3 +86,8 @@ export const searchProductSchema = z.object({
     id: z.string(),
     name: z.string()
 });
+
+export const categorySchema = z.object({
+    id: idSchema,
+    name: z.string()
+});

@@ -10,16 +10,21 @@ const handlePATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { name, description, unitAmount, priceId, active } = z
+    const { name, description, unitAmount, priceId, active, categoryId } = z
         .object({
             priceId: z.string().optional(),
             name: z.string().optional(),
             description: z.string().optional(),
             unitAmount: z.number().optional(),
-            active: z.boolean().optional()
+            active: z.boolean().optional(),
+            categoryId: z.number().optional()
         })
         .parse(req.body);
     const id = z.string().parse(req.query.id);
+
+    const metadata = categoryId ? { categoryId } : undefined;
+
+    const common = { name, description, active, metadata };
 
     if (priceId && unitAmount) {
         const price = await stripe.prices.create({
@@ -29,10 +34,8 @@ const handlePATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         });
 
         const product = await stripe.products.update(id, {
-            name,
-            description,
-            active,
-            default_price: price.id
+            default_price: price.id,
+            ...common
         });
 
         await stripe.prices.update(priceId, {
@@ -44,9 +47,7 @@ const handlePATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const product = await stripe.products.update(id, {
-        name,
-        description,
-        active
+        ...common
     });
 
     product.default_price = await stripe.prices.retrieve(product.default_price as string);

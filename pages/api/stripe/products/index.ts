@@ -10,8 +10,8 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { name, description, unitAmount, active } = z
-        .object({ name: z.string(), description: z.string(), unitAmount: z.number(), active: z.boolean() })
+    const { name, description, unitAmount, active, categoryId } = z
+        .object({ name: z.string(), description: z.string(), unitAmount: z.number(), active: z.boolean(), categoryId: z.number() })
         .parse(req.body);
 
     const product = await stripe.products.create({
@@ -24,7 +24,7 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
         },
         metadata: {
             organizationId: orgId,
-            categoryId: 1
+            categoryId
         },
         images: [
             'https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2670&q=80'
