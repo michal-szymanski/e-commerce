@@ -60,9 +60,7 @@ export const productsTable = pgTable('products', {
     name: text('name').notNull(),
     description: text('description'),
     active: boolean('active').notNull(),
-    priceId: text('price_id')
-        .notNull()
-        .references(() => pricesTable.id),
+    priceId: text('price_id').notNull(),
     organizationId: text('organizationId').notNull(),
     categoryId: integer('categoryId')
         .notNull()
@@ -74,10 +72,6 @@ export const productsRelations = relations(productsTable, ({ one, many }) => ({
         fields: [productsTable.categoryId],
         references: [categoriesTable.id]
     }),
-    price: one(pricesTable, {
-        fields: [productsTable.priceId],
-        references: [pricesTable.id]
-    }),
     images: many(imagesTable),
     cartItems: many(cartItemsTable)
 }));
@@ -88,10 +82,6 @@ export const pricesTable = pgTable('prices', {
     currency: text('currency').notNull(),
     active: boolean('active').notNull()
 });
-
-export const pricesRelations = relations(pricesTable, ({ one }) => ({
-    product: one(productsTable)
-}));
 
 export const imagesTable = pgTable('images', {
     id: serial('id').primaryKey(),
