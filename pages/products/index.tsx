@@ -57,7 +57,16 @@ const Page = ({ products }: InferGetServerSidePropsType<typeof getServerSideProp
 };
 
 export const getServerSideProps: GetServerSideProps<{
-    products: { id: string; name: string; unitAmount: number; currency: string; images: string[] }[];
+    products: {
+        id: string;
+        name: string;
+        description: string | null;
+        unitAmount: number;
+        currency: string;
+        organizationId: string;
+        priceId: string;
+        images: string[];
+    }[];
 }> = async (context) => {
     const parsedName = z.string().safeParse(context.query.name);
     const parsedLimit = z.coerce.number().min(0).max(100).safeParse(context.query.limit);
@@ -79,7 +88,9 @@ export const getServerSideProps: GetServerSideProps<{
             name: productsTable.name,
             description: productsTable.description,
             unitAmount: pricesTable.unitAmount,
-            currency: pricesTable.currency
+            currency: pricesTable.currency,
+            organizationId: productsTable.organizationId,
+            priceId: pricesTable.id
         })
         .from(productsTable)
         .innerJoin(pricesTable, eq(productsTable.priceId, pricesTable.id))
