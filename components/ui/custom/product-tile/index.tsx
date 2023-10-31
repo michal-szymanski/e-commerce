@@ -8,6 +8,10 @@ import { useUpdateCart } from '@/hooks/mutations';
 import PersonalAccount from '@/components/utils/personal-account';
 import { useCart } from '@/hooks/queries';
 import { useOrganization, useUser } from '@clerk/nextjs';
+import AddToCartDialog from '@/components/ui/custom/add-to-cart-dialog';
+import { setIsDialogOpen } from '@/store/slices/ui';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 type Props = {
     product: {
@@ -28,6 +32,13 @@ const ProductTile = ({ product }: Props) => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data: cart } = useCart(!!isSignedIn && !organization);
+    const [open, setOpen] = useState(false);
+    const dispatch = useDispatch();
+
+    const handleOpenDialog = (isDialogOpen: boolean) => {
+        dispatch(setIsDialogOpen({ isDialogOpen }));
+        setOpen(isDialogOpen);
+    };
 
     const handleTileClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
         router.push(getProductPageUrl(product.id, product.name));
@@ -37,29 +48,33 @@ const ProductTile = ({ product }: Props) => {
         e.stopPropagation();
         const currentQuantity = cart?.find((c) => c.product.id === product.id)?.quantity ?? 0;
         updateCart.mutate([{ product, quantity: currentQuantity + 1 }]);
+        handleOpenDialog(true);
     };
 
     return (
-        <Card className="flex cursor-pointer flex-col justify-between transition-shadow hover:shadow-product-tile md:flex-row" onClick={handleTileClick}>
-            <CardHeader className="flex flex-row gap-5">
-                <Image src={product.images[0]} alt={product.name} width={150} height={150} />
-                <div className="flex flex-col gap-3">
-                    <CardTitle>{product.name}</CardTitle>
-                    <CardDescription>{/*<Rating value={3} count={99} />*/}</CardDescription>
-                </div>
-            </CardHeader>
-            <CardFooter className="flex flex-col items-end justify-end">
-                <span className="size py-3 text-xl font-bold">
-                    {getTotalPrice(product.unitAmount, 1)} {product.currency.toUpperCase()}
-                </span>
-                <PersonalAccount>
-                    <Button type="button" className="flex w-full gap-5 md:w-40" onClick={handleAddToCart}>
-                        <ShoppingCartIcon className="h-5 w-5" />
-                        <span>Add to cart</span>
-                    </Button>
-                </PersonalAccount>
-            </CardFooter>
-        </Card>
+        <>
+            <Card className="flex cursor-pointer flex-col justify-between transition-shadow hover:shadow-product-tile md:flex-row" onClick={handleTileClick}>
+                <CardHeader className="flex flex-row gap-5">
+                    <Image src={product.images[0]} alt={product.name} width={150} height={150} />
+                    <div className="flex flex-col gap-3">
+                        <CardTitle>{product.name}</CardTitle>
+                        <CardDescription>{/*<Rating value={3} count={99} />*/}</CardDescription>
+                    </div>
+                </CardHeader>
+                <CardFooter className="flex flex-col items-end justify-end">
+                    <span className="size py-3 text-xl font-bold">
+                        {getTotalPrice(product.unitAmount, 1)} {product.currency.toUpperCase()}
+                    </span>
+                    <PersonalAccount>
+                        <Button type="button" className="flex w-full gap-5 md:w-40" onClick={handleAddToCart}>
+                            <ShoppingCartIcon className="h-5 w-5" />
+                            <span>Add to cart</span>
+                        </Button>
+                    </PersonalAccount>
+                </CardFooter>
+            </Card>
+            <AddToCartDialog open={open} setOpen={handleOpenDialog} name={product.name} price={product.unitAmount} quantity={1} />
+        </>
     );
 };
 
