@@ -8,12 +8,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useClerk, useOrganization, useUser } from '@clerk/nextjs';
-import { ArrowRightOnRectangleIcon, Cog8ToothIcon, HomeIcon, PlusSmallIcon } from '@heroicons/react/24/outline';
+import { ArrowRightOnRectangleIcon, Cog8ToothIcon, HomeIcon, PlusSmallIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { ChartBarIcon } from '@heroicons/react/24/solid';
 import { useQueryClient } from '@tanstack/react-query';
+import BusinessAccount from '@/components/utils/business-account';
+import PersonalAccount from '@/components/utils/personal-account';
 
 const UserDropdown = () => {
     const { user } = useUser();
@@ -30,7 +32,6 @@ const UserDropdown = () => {
 
     if (!user) return null;
 
-    const isPersonalAccount = !organization;
     const isUserInDashboard = router.asPath.startsWith('/dashboard');
 
     return (
@@ -46,8 +47,8 @@ const UserDropdown = () => {
                     <div className="text-sm font-normal text-muted-foreground">{organization ? 'Business' : 'Personal'} Account</div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {!isPersonalAccount &&
-                    (isUserInDashboard ? (
+                <BusinessAccount>
+                    {isUserInDashboard ? (
                         <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/')}>
                             <HomeIcon className="h-5 w-5" />
                             <span className="pl-2">Home</span>
@@ -57,7 +58,14 @@ const UserDropdown = () => {
                             <ChartBarIcon className="h-5 w-5" />
                             <span className="pl-2">Dashboard</span>
                         </DropdownMenuItem>
-                    ))}
+                    )}
+                </BusinessAccount>
+                <PersonalAccount>
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/orders')}>
+                        <TruckIcon className="h-5 w-5" />
+                        <span className="pl-2">Orders</span>
+                    </DropdownMenuItem>
+                </PersonalAccount>
                 <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/user-profile')}>
                     <Cog8ToothIcon className="h-5 w-5" />
                     <span className="pl-2">Settings</span>
@@ -96,12 +104,14 @@ const UserDropdown = () => {
                         <span className="pl-2">{m.organization.name}</span>
                     </DropdownMenuItem>
                 ))}
-                {isPersonalAccount && !user.organizationMemberships.length && (
-                    <DropdownMenuItem onClick={() => router.push('/create-organization')} className="cursor-pointer">
-                        <PlusSmallIcon className="h-5 w-5" />
-                        <span className="pl-2">Create Organization</span>
-                    </DropdownMenuItem>
-                )}
+                <PersonalAccount>
+                    {!user.organizationMemberships.length && (
+                        <DropdownMenuItem onClick={() => router.push('/create-organization')} className="cursor-pointer">
+                            <PlusSmallIcon className="h-5 w-5" />
+                            <span className="pl-2">Create Organization</span>
+                        </DropdownMenuItem>
+                    )}
+                </PersonalAccount>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                     onClick={() => {

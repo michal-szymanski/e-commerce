@@ -8,28 +8,56 @@ import { useRouter } from 'next/router';
 import { z } from 'zod';
 import UserDropdown from '@/components/ui/custom/user-dropdown';
 import PersonalAccount from '@/components/utils/personal-account';
+import { Bars3Icon } from '@heroicons/react/24/outline';
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+
+const links: { text: string; href: string }[] = [
+    { text: 'Home', href: '/' },
+    { text: 'Products', href: '/products' }
+];
 
 const Navbar = () => {
     const router = useRouter();
     const querySearch = z.string().nonempty().safeParse(router.query.name);
 
     return (
-        <NavigationMenu className="fixed top-0 h-[70px] min-w-full justify-between bg-background/95 px-10 py-3 shadow-sm backdrop-blur">
+        <NavigationMenu className="fixed top-0 h-[120px] min-w-full items-start justify-between bg-background/95 px-2 py-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60 md:h-[70px] md:px-5">
             <NavigationMenuList>
-                <NavigationMenuItem>
+                <NavigationMenuItem className="hidden md:flex">
                     <Link href="/" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>Home</NavigationMenuLink>
                     </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem className="hidden md:flex">
                     <Link href="/products" legacyBehavior passHref>
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>Products</NavigationMenuLink>
                     </Link>
                 </NavigationMenuItem>
+                <NavigationMenuItem className="md:hidden">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button type="button" variant="outline">
+                                <Bars3Icon className="h-5 w-5" />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left">
+                            <SheetTitle>Menu</SheetTitle>
+                            <div className="flex flex-col gap-5 pt-10">
+                                {links.map(({ text, href }) => (
+                                    <SheetClose key={href} asChild>
+                                        <Button variant="secondary" asChild>
+                                            <Link href={href}>{text}</Link>
+                                        </Button>
+                                    </SheetClose>
+                                ))}
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </NavigationMenuItem>
             </NavigationMenuList>
-            <SearchBar
-                key={router.asPath}
-                initialSearch={querySearch.success ? querySearch.data : ''}
-                className="absolute left-1/2 top-[20%] h-auto w-[600px] -translate-x-1/2 rounded-lg border shadow-md"
-            />
+            <SearchBar key={router.asPath} initialSearch={querySearch.success ? querySearch.data : ''} />
+            {/*<div className="absolute bottom-2 left-1/2 h-auto w-[calc(100%_-_1.5rem)] -translate-x-1/2 rounded-lg border p-0 shadow-md md:top-[20%] md:w-72 lg:w-96"></div>*/}
             <NavigationMenuList>
                 <PersonalAccount>
                     <NavigationMenuItem>
@@ -41,11 +69,6 @@ const Navbar = () => {
                     </NavigationMenuItem>
                 </PersonalAccount>
                 <SignedIn>
-                    <NavigationMenuItem>
-                        <Link href="/orders" legacyBehavior passHref>
-                            <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'cursor-pointer')}>Orders</NavigationMenuLink>
-                        </Link>
-                    </NavigationMenuItem>
                     <NavigationMenuItem>
                         <UserDropdown />
                     </NavigationMenuItem>

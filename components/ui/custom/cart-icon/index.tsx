@@ -12,10 +12,10 @@ const CartCounter = () => {
 
     return (
         <div className="relative">
-            <ShoppingCartIcon className="h-7 w-7" />
+            <ShoppingCartIcon className="h-6 w-6 md:h-7 md:w-7" />
             <div
                 className={cn(
-                    'absolute right-[-5px] top-[-5px] flex h-5 w-5 items-center justify-center rounded-full bg-red-400 text-xs font-semibold text-white opacity-0',
+                    'absolute right-[-7px] top-[-7px] flex h-5 w-5 items-center justify-center rounded-full bg-red-400 text-xs font-semibold text-white opacity-0 md:right-[-5px] md:top-[-5px]',
                     {
                         'opacity-100': numberOfProducts
                     }

@@ -23,7 +23,7 @@ const DefaultLayout = ({ children }: Props) => {
             </Head>
             <Navbar />
             <main
-                className={cn('absolute bottom-0 left-0 right-0 top-[70px] overflow-y-auto pt-[100px]', {
+                className={cn('absolute bottom-0 left-0 right-0 top-[120px] overflow-y-auto pt-[100px] md:top-[70px]', {
                     'bottom-28': cart && cart.length > 0
                 })}
             >
