@@ -54,7 +54,12 @@ const ProductTile = ({ product }: Props) => {
 
     return (
         <>
-            <Card className="flex cursor-pointer flex-col justify-between transition-shadow hover:shadow-product-tile md:flex-row" onClick={handleTileClick}>
+            <Card
+                className="flex cursor-pointer flex-col justify-between transition-shadow hover:shadow-product-tile md:flex-row"
+                onClick={handleTileClick}
+                role="button"
+                tabIndex={0}
+            >
                 <CardHeader className="flex flex-row gap-5">
                     <Image src={product.images[0]} alt={product.name} width={150} height={150} />
                     <div className="flex flex-col gap-3">
