@@ -41,8 +41,13 @@ const ProductTile = ({ product }: Props) => {
         setOpen(isDialogOpen);
     };
 
-    const handleTileClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    const handleTileClick = () => {
         router.push(getProductPageUrl(product.id, product.name));
+    };
+
+    const handleTileKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key !== 'Enter') return;
+        handleTileClick();
     };
 
     const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -57,6 +62,7 @@ const ProductTile = ({ product }: Props) => {
             <Card
                 className="flex cursor-pointer flex-col justify-between transition-shadow hover:shadow-product-tile md:flex-row"
                 onClick={handleTileClick}
+                onKeyDown={handleTileKeyDown}
                 role="button"
                 tabIndex={0}
             >
