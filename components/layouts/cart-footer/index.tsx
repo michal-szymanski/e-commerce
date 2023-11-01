@@ -38,7 +38,7 @@ const CartFooter = () => {
                 'translate-y-0': cart?.length && !isDialogOpen && !organization
             })}
         >
-            <span className="text-2xl font-bold">
+            <span className="whitespace-nowrap text-2xl font-bold">
                 {totalPrice} {cart?.[0]?.product.currency.toUpperCase()}
             </span>
             {renderButton()}
