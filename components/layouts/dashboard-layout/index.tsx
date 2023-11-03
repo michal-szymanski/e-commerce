@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { ChartBarIcon, CubeIcon, ShoppingCartIcon, UsersIcon } from '@heroicons/react/20/solid';
 import { ReactNode } from 'react';
 import UserDropdown from '@/components/ui/custom/user-dropdown';
+import { Inter } from 'next/font/google';
 
 type SidebarMenuItem = { text: string; href: string; icon: ReactNode };
 
@@ -18,11 +19,13 @@ type Props = {
     children: ReactNode;
 };
 
+const inter = Inter({ subsets: ['latin'] });
+
 const DashboardLayout = ({ children }: Props) => {
     const router = useRouter();
 
     return (
-        <div className="flex h-full overflow-y-auto">
+        <div className={`flex h-full overflow-y-auto ${inter.className}`}>
             <aside className="flex flex-col gap-1 px-3 pt-80 md:w-64">
                 {items.map(({ text, href, icon }) => (
                     <Button key={text} variant={router.asPath === href ? 'secondary' : 'ghost'} className="w-full justify-center lg:justify-start" asChild>

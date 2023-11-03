@@ -6,10 +6,13 @@ import Head from 'next/head';
 import { useCart } from '@/hooks/queries';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
+import { Inter } from 'next/font/google';
 
 type Props = {
     children: ReactNode;
 };
+
+const inter = Inter({ subsets: ['latin'] });
 
 const DefaultLayout = ({ children }: Props) => {
     const { isSignedIn } = useUser();
@@ -23,7 +26,7 @@ const DefaultLayout = ({ children }: Props) => {
             </Head>
             <Navbar />
             <main
-                className={cn('absolute bottom-0 left-0 right-0 top-[120px] overflow-y-auto pt-[100px] md:top-[70px]', {
+                className={cn(`absolute bottom-0 left-0 right-0 top-[120px] overflow-y-auto pt-[100px] md:top-[70px] ${inter.className}`, {
                     'bottom-28': cart && cart.length > 0
                 })}
             >

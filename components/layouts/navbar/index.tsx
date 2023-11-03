@@ -22,7 +22,7 @@ const Navbar = () => {
     const querySearch = z.string().nonempty().safeParse(router.query.name);
 
     return (
-        <NavigationMenu className="fixed top-0 h-[120px] w-full min-w-full flex-wrap items-center justify-between bg-background/95 px-2 py-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60 md:h-[70px] md:px-5">
+        <NavigationMenu className="fixed top-0 h-[120px] w-full min-w-full flex-wrap items-center justify-between bg-background/95 px-4 py-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/60 md:h-[70px] md:px-5">
             <NavigationMenuList className="space-x-0">
                 <NavigationMenuItem className="hidden md:flex">
                     <Link href="/" legacyBehavior passHref>
