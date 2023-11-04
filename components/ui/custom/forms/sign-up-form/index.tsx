@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isClerkAPIResponseError, useSignUp } from '@clerk/nextjs';
+import { isClerkAPIResponseError, isKnownError, useSignUp } from '@clerk/nextjs';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,10 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import SubmitButton from '@/components/ui/custom/submit-button';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import SummaryErrors from '@/components/ui/custom/summary-errors';
-import { v4 as uuidv4 } from 'uuid';
+import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z
     .object({
@@ -55,11 +53,18 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const { signUp, isLoaded: isClerkLoaded } = useSignUp();
-    const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
+    const { toast } = useToast();
+
+    const clerkErrorFieldMap = new Map<string, keyof z.infer<typeof formSchema>>([
+        ['email_address', 'email'],
+        ['identifier', 'email'],
+        ['first_name', 'firstName'],
+        ['last_name', 'lastName'],
+        ['password', 'password']
+    ]);
 
     const onSubmit = async ({ email, password, firstName, lastName, organizationName }: z.infer<typeof formSchema>) => {
         if (!signUp) return;
-        setSummaryErrors([]);
         setIsLoading(true);
 
         try {
@@ -75,10 +80,26 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
             setIsSuccess(true);
             setOrganizationName(organizationName);
         } catch (error) {
-            if (isClerkAPIResponseError(error)) {
-                setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
+            if (isKnownError(error) && isClerkAPIResponseError(error)) {
+                for (let e of error.errors) {
+                    const field = clerkErrorFieldMap.get(e.meta?.paramName ?? '');
+
+                    if (field) {
+                        form.setError(field, { message: e.longMessage ?? e.message });
+                    } else {
+                        toast({
+                            variant: 'destructive',
+                            title: 'Heads up!',
+                            description: e.longMessage ?? e.message
+                        });
+                    }
+                }
             } else {
-                setSummaryErrors([{ id: uuidv4(), message: 'There was an error while submitting the form. Please try again.' }]);
+                toast({
+                    variant: 'destructive',
+                    title: 'Heads up!',
+                    description: 'There was an error while submitting the form. Please try again.'
+                });
             }
         }
     };
@@ -91,23 +112,6 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                         <CardTitle>Sign Up</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {accountType === 'business' && (
-                            <FormField
-                                control={form.control}
-                                name="organizationName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Organization name</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <div className="h-5">
-                                            <FormMessage />
-                                        </div>
-                                    </FormItem>
-                                )}
-                            />
-                        )}
                         <FormField
                             control={form.control}
                             name="firstName"
@@ -117,9 +121,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                                     <FormControl>
                                         <Input {...field} />
                                     </FormControl>
-                                    <div className="h-5">
-                                        <FormMessage />
-                                    </div>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -132,9 +134,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                                     <FormControl>
                                         <Input {...field} />
                                     </FormControl>
-                                    <div className="h-5">
-                                        <FormMessage />
-                                    </div>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -147,9 +147,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                                     <FormControl>
                                         <Input {...field} />
                                     </FormControl>
-                                    <div className="h-5">
-                                        <FormMessage />
-                                    </div>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -162,9 +160,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                                     <FormControl>
                                         <Input {...field} type="password" />
                                     </FormControl>
-                                    <div className="h-5">
-                                        <FormMessage />
-                                    </div>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -177,12 +173,25 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                                     <FormControl>
                                         <Input {...field} type="password" />
                                     </FormControl>
-                                    <div className="h-5">
-                                        <FormMessage />
-                                    </div>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
+                        {accountType === 'business' && (
+                            <FormField
+                                control={form.control}
+                                name="organizationName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Organization name</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         <FormField
                             control={form.control}
                             name="termsAccepted"
@@ -204,9 +213,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                                                 </Link>
                                             </FormLabel>
                                         </div>
-                                        <div className="h-5">
-                                            <FormMessage />
-                                        </div>
+                                        <FormMessage />
                                     </div>
                                 </FormItem>
                             )}
@@ -229,28 +236,17 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
     if (!isClerkLoaded) return null;
 
     return (
-        <div className="flex flex-col gap-5">
-            <div className="min-h-[100px]">
-                <AnimatePresence>
-                    {summaryErrors.length > 0 && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="summary-errors">
-                            <SummaryErrors errors={summaryErrors} />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-            <Tabs defaultValue="personal">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="personal">Personal</TabsTrigger>
-                    <TabsTrigger value="business">Business</TabsTrigger>
-                </TabsList>
-                {(['personal', 'business'] as const).map((accountType) => (
-                    <TabsContent key={accountType} value={accountType}>
-                        {renderForm(accountType)}
-                    </TabsContent>
-                ))}
-            </Tabs>
-        </div>
+        <Tabs defaultValue="personal">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="personal">Personal</TabsTrigger>
+                <TabsTrigger value="business">Business</TabsTrigger>
+            </TabsList>
+            {(['personal', 'business'] as const).map((accountType) => (
+                <TabsContent key={accountType} value={accountType}>
+                    {renderForm(accountType)}
+                </TabsContent>
+            ))}
+        </Tabs>
     );
 };
 

@@ -125,9 +125,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
-                            <div className="h-5">
-                                <FormMessage />
-                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -151,9 +149,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <div className="h-5">
-                                <FormMessage />
-                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -179,9 +175,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                                     }}
                                 />
                             </FormControl>
-                            <div className="h-5">
-                                <FormMessage />
-                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -207,9 +201,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                                     </Tooltip>
                                 </TooltipProvider>
                             </div>
-                            <div className="h-5">
-                                <FormMessage />
-                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -222,9 +214,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                             <FormControl>
                                 <Textarea placeholder="Describe your product" className="resize-none" {...field} />
                             </FormControl>
-                            <div className="h-5">
-                                <FormMessage />
-                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />

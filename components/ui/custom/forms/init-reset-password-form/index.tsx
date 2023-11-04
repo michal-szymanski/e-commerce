@@ -1,5 +1,3 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import SummaryErrors from '@/components/ui/custom/summary-errors';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,8 +8,8 @@ import { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isClerkAPIResponseError, useSignIn } from '@clerk/nextjs';
-import { v4 as uuidv4 } from 'uuid';
+import { isClerkAPIResponseError, isKnownError, useSignIn } from '@clerk/nextjs';
+import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z.object({
     email: z.string().nonempty({ message: 'Email is required' }).email()
@@ -32,11 +30,15 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const { isLoaded: isClerkLoaded, signIn } = useSignIn();
-    const [summaryErrors, setSummaryErrors] = useState<{ id: string; message: string }[]>([]);
+    const { toast } = useToast();
+
+    const clerkErrorFieldMap = new Map<string, keyof z.infer<typeof formSchema>>([
+        ['email_address', 'email'],
+        ['identifier', 'email']
+    ]);
 
     const onSubmit = async ({ email }: z.infer<typeof formSchema>) => {
         if (!signIn) return;
-        setSummaryErrors([]);
         setIsLoading(true);
 
         try {
@@ -47,10 +49,26 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
 
             setIsSuccess(true);
         } catch (error) {
-            if (isClerkAPIResponseError(error)) {
-                setSummaryErrors(error.errors.map((e) => ({ id: e.code, message: e.longMessage ?? e.message })));
+            if (isKnownError(error) && isClerkAPIResponseError(error)) {
+                for (let e of error.errors) {
+                    const field = clerkErrorFieldMap.get(e.meta?.paramName ?? '');
+
+                    if (field) {
+                        form.setError(field, { message: e.longMessage ?? e.message });
+                    } else {
+                        toast({
+                            variant: 'destructive',
+                            title: 'Heads up!',
+                            description: e.longMessage ?? e.message
+                        });
+                    }
+                }
             } else {
-                setSummaryErrors([{ id: uuidv4(), message: 'There was an error while submitting the form. Please try again.' }]);
+                toast({
+                    variant: 'destructive',
+                    title: 'Heads up!',
+                    description: 'There was an error while submitting the form. Please try again.'
+                });
             }
         }
     };
@@ -58,52 +76,39 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
     if (!isClerkLoaded) return null;
 
     return (
-        <div className="flex flex-col gap-5">
-            <div className="min-h-[100px]">
-                <AnimatePresence>
-                    {summaryErrors.length > 0 && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="summary-errors">
-                            <SummaryErrors errors={summaryErrors} />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Reset Password</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Email</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <div className="h-5">
-                                            <FormMessage />
-                                        </div>
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                        <CardFooter className="flex flex-col items-start gap-2">
-                            <CardDescription>
-                                Remember your password?
-                                <Button type="button" variant="link" asChild>
-                                    <Link href="/sign-in">Sign in</Link>
-                                </Button>
-                            </CardDescription>
-                            <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onAnimationComplete={() => setTimeout(nextStep, 1000)} />
-                        </CardFooter>
-                    </Card>
-                </form>
-            </Form>
-        </div>
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Reset Password</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                    <CardFooter className="flex flex-col items-start gap-2">
+                        <CardDescription>
+                            Remember your password?
+                            <Button type="button" variant="link" asChild>
+                                <Link href="/sign-in">Sign in</Link>
+                            </Button>
+                        </CardDescription>
+                        <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onAnimationComplete={() => setTimeout(nextStep, 1000)} />
+                    </CardFooter>
+                </Card>
+            </form>
+        </Form>
     );
 };
 

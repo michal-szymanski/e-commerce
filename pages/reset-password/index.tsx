@@ -16,8 +16,8 @@ const Page = () => {
             <Head>
                 <title>{`Reset Password | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
-            <div className="container flex w-[400px] flex-col items-center justify-end">
-                <div className="relative w-[400px]">
+            <div className="container flex flex-col items-center">
+                <div className="relative w-full max-w-[400px]">
                     <AnimatePresence>
                         {step === 0 && (
                             <motion.div

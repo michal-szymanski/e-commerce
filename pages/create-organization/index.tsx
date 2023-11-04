@@ -11,8 +11,8 @@ const Page = () => (
         <Head>
             <title>{`Create Organization | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
         </Head>
-        <div className="container flex w-[400px] flex-col items-center justify-end">
-            <div className="w-[400px]">
+        <div className="container flex flex-col items-center">
+            <div className="w-full max-w-[400px]">
                 <CreateOrganizationForm />
             </div>
         </div>

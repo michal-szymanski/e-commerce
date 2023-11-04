@@ -59,11 +59,41 @@ module.exports = {
                 'accordion-up': {
                     from: { height: 'var(--radix-accordion-content-height)' },
                     to: { height: 0 }
+                },
+                expand: {
+                    '0%': {
+                        'grid-template-rows': '0fr',
+                        opacity: 0
+                    },
+                    '50%': {
+                        'grid-template-rows': '1fr',
+                        opacity: 0
+                    },
+                    '100%': {
+                        'grid-template-rows': '1fr',
+                        opacity: 1
+                    }
+                },
+                collapse: {
+                    '0%': {
+                        'grid-template-rows': '1fr',
+                        opacity: 1
+                    },
+                    '50%': {
+                        'grid-template-rows': '1fr',
+                        opacity: 0
+                    },
+                    '100%': {
+                        'grid-template-rows': '0fr',
+                        opacity: 0
+                    }
                 }
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
-                'accordion-up': 'accordion-up 0.2s ease-out'
+                'accordion-up': 'accordion-up 0.2s ease-out',
+                expand: 'expand ease-in',
+                collapse: 'collapse ease-out'
             },
             gridTemplateColumns: {
                 sidebar: '300px 1fr',
@@ -74,6 +104,9 @@ module.exports = {
             },
             gridTemplateRows: {
                 'add-product-preview': '500px 1fr'
+            },
+            gridRow: {
+                'error-message': '1 / span 2'
             },
             boxShadow: {
                 'product-tile': 'rgba(0, 0, 0, 0.16) 0px 4px 8px 0px, rgba(0, 0, 0, 0.08) 0px 0px 2px 1px'

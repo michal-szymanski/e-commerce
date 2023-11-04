@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { Slot } from '@radix-ui/react-slot';
 import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider, useFormContext } from 'react-hook-form';
@@ -97,16 +98,25 @@ FormDescription.displayName = 'FormDescription';
 
 const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(({ className, children, ...props }, ref) => {
     const { error, formMessageId } = useFormField();
-    const body = error ? String(error?.message) : children;
+    const [errorMessage, setErrorMessage] = useState('');
 
-    if (!body) {
-        return null;
-    }
+    useEffect(() => {
+        if (!error?.message) return;
+        console.log('trigger');
+        setErrorMessage(error?.message);
+    }, [error?.message]);
 
     return (
-        <p ref={ref} id={formMessageId} className={cn('text-sm font-medium text-destructive', className)} {...props}>
-            {body}
-        </p>
+        <div
+            className={cn('grid duration-200 fill-mode-forwards', {
+                'animate-expand ': error,
+                'animate-collapse': !error
+            })}
+        >
+            <p ref={ref} id={formMessageId} className={cn('row-error-message overflow-hidden text-sm font-medium text-destructive', className)} {...props}>
+                {errorMessage ?? children}
+            </p>
+        </div>
     );
 });
 FormMessage.displayName = 'FormMessage';

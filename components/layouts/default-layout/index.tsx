@@ -7,6 +7,7 @@ import { useCart } from '@/hooks/queries';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import { Inter } from 'next/font/google';
+import { Toaster } from '@/components/ui/toaster';
 
 type Props = {
     children: ReactNode;
@@ -26,12 +27,13 @@ const DefaultLayout = ({ children }: Props) => {
             </Head>
             <Navbar />
             <main
-                className={cn(`absolute bottom-0 left-0 right-0 top-[120px] overflow-y-auto pt-[100px] md:top-[70px] ${inter.className}`, {
+                className={cn(`absolute bottom-0 left-0 right-0 top-[120px] overflow-y-auto md:top-[70px] md:pt-[100px] ${inter.className}`, {
                     'bottom-28': cart && cart.length > 0
                 })}
             >
                 {children}
             </main>
+            <Toaster />
             <CartFooter />
         </>
     );
