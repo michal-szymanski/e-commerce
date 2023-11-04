@@ -36,7 +36,7 @@ const UserDropdown = () => {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger className="rounded-full">
                 <Avatar className="cursor-pointer">
                     <AvatarImage src={user.imageUrl} />
                 </Avatar>

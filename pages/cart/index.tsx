@@ -22,12 +22,12 @@ const Page = ({ organizations }: InferGetServerSidePropsType<typeof getServerSid
             <Head>
                 <title>{`Cart | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
-            <div className="flex flex-col items-center gap-5 pb-36">
+            <div className="container flex flex-col items-center gap-5 pb-36">
                 {organizations.map((o) => {
                     const organizationCartItems = cart?.filter((cartItem) => cartItem.product.organizationId === o.id);
                     if (!organizationCartItems?.length) return null;
                     return (
-                        <div key={o.id}>
+                        <div key={o.id} className="w-full">
                             <h2 className="py-5 text-3xl font-bold">{o.name}</h2>
                             <div className="flex flex-col gap-3">
                                 {organizationCartItems.map((cartItem) => (

@@ -35,7 +35,7 @@ const CartItem = ({ cartItem: { product, quantity } }: Props) => {
     };
 
     return (
-        <Card className="w-[700px]">
+        <Card>
             <CardHeader>
                 <CardTitle>
                     <Button variant="link" className="p-0 text-2xl" asChild>
@@ -43,13 +43,15 @@ const CartItem = ({ cartItem: { product, quantity } }: Props) => {
                     </Button>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex items-center">
-                <Image src={product.images[0]} alt={product.name} width={50} height={50} />
-                <div className="flex h-full w-full items-center justify-between px-5">
-                    <span>{getTotalPrice(product.unitAmount, 1)}</span>
-                    <span>
-                        <XMarkIcon className="h-4 w-4" />
-                    </span>
+            <CardContent className="md:grid-cols-cart-item-md grid-cols-cart-item grid grid-flow-col place-items-center gap-5 text-sm md:gap-0">
+                <span className="md:row-span-2">
+                    <Image src={product.images[0]} alt={product.name} width={100} height={100} />
+                </span>
+                <span className="row-start-2 hidden md:block">{getTotalPrice(product.unitAmount, 1)}</span>
+                <span className="row-start-2 hidden md:block">
+                    <XMarkIcon className="h-4 w-4" />
+                </span>
+                <span className="row-start-2 md:col-span-1 md:justify-self-auto">
                     <QuantityCounter
                         initialQuantity={quantity}
                         handlePlus={handlePlus}
@@ -57,13 +59,15 @@ const CartItem = ({ cartItem: { product, quantity } }: Props) => {
                         handleBlur={handleBlur}
                         allowDecimal={false}
                     />
-                    <span className="font-bold">
-                        {getTotalPrice(product.unitAmount, quantity)} {product.currency.toUpperCase()}
-                    </span>
+                </span>
+                <span className="col-start-2 row-start-2 whitespace-nowrap font-bold md:col-start-5">
+                    {getTotalPrice(product.unitAmount, quantity)} {product.currency.toUpperCase()}
+                </span>
+                <span className="col-start-2 md:col-start-5">
                     <Button variant="ghost" className="text-red-500 hover:bg-red-500 hover:text-white" onClick={handleRemove}>
                         Remove
                     </Button>
-                </div>
+                </span>
             </CardContent>
         </Card>
     );

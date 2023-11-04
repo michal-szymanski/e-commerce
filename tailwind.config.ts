@@ -68,7 +68,9 @@ module.exports = {
             gridTemplateColumns: {
                 sidebar: '300px 1fr',
                 dashboard: 'minmax(5rem, 250px) 1fr',
-                'add-product-preview': '400px 1fr'
+                'add-product-preview': '400px 1fr',
+                'cart-item-md': '1fr 1fr auto minmax(200px, 1fr) minmax(250px, 1fr)',
+                'cart-item': '1fr minmax(150px, 1fr)'
             },
             gridTemplateRows: {
                 'add-product-preview': '500px 1fr'
