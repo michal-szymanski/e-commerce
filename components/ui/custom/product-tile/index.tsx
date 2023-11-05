@@ -29,10 +29,10 @@ type Props = {
 
 const ProductTile = ({ product }: Props) => {
     const router = useRouter();
-    const updateCart = useUpdateCart();
     const { isSignedIn } = useUser();
+    const updateCart = useUpdateCart(!!isSignedIn);
     const { organization } = useOrganization();
-    const { data: cart } = useCart(!!isSignedIn && !organization);
+    const { data: cart } = useCart(!organization, !!isSignedIn);
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
 

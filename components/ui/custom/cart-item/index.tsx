@@ -8,13 +8,15 @@ import { useUpdateCart } from '@/hooks/mutations';
 import Link from 'next/link';
 import Image from 'next/image';
 import { z } from 'zod';
+import { useUser } from '@clerk/nextjs';
 
 type Props = {
     cartItem: z.infer<typeof cartItemSchema>;
 };
 
 const CartItem = ({ cartItem: { product, quantity } }: Props) => {
-    const updateCart = useUpdateCart();
+    const { isSignedIn } = useUser();
+    const updateCart = useUpdateCart(!!isSignedIn);
 
     const handleMinus = () => {
         if (quantity === 1) return;
@@ -43,7 +45,7 @@ const CartItem = ({ cartItem: { product, quantity } }: Props) => {
                     </Button>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="md:grid-cols-cart-item-md grid-cols-cart-item grid grid-flow-col place-items-center gap-5 text-sm md:gap-0">
+            <CardContent className="grid grid-flow-col grid-cols-cart-item place-items-center gap-5 text-sm md:grid-cols-cart-item-md md:gap-0">
                 <span className="md:row-span-2">
                     <Image src={product.images[0]} alt={product.name} width={100} height={100} />
                 </span>

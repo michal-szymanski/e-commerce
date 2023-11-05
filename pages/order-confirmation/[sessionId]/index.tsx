@@ -10,18 +10,20 @@ import Head from 'next/head';
 import { env } from '@/env.mjs';
 import { v4 as uuidv4 } from 'uuid';
 import { ordersTable } from '@/schema';
-import { and, eq, inArray } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 import { orderSchema } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import db from '@/lib/drizzle';
 import DefaultLayout from '@/components/layouts/default-layout';
+import { saveCartToLocalStorage } from '@/services/local-storage-service';
 
-const Page = ({ orderIds, firstName }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Page = ({ orderIds, firstName, isSignedIn }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     const [{ width, height }, setDimensions] = useState({ width: 0, height: 0 });
     const [confettiIds, setConfettiIds] = useState<string[]>([uuidv4()]);
     const ref = useRef<ElementRef<'div'>>(null);
 
     useEffect(() => {
+        saveCartToLocalStorage([]);
         const setConfettiDimensions = () => {
             if (!ref.current?.parentElement) return;
             const { offsetWidth: width, offsetHeight: height } = ref.current?.parentElement;
@@ -58,18 +60,21 @@ const Page = ({ orderIds, firstName }: InferGetServerSidePropsType<typeof getSer
                         <CardTitle>Thank you{firstName ? `, ${firstName}` : ''}!</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg">
-                            Your {orderIds.length > 0 ? 'orders' : 'order'} number{' '}
-                            {orderIds.map((orderId, index) => (
-                                <span key={orderId}>
-                                    <Link href={`/orders/${orderId}`} className="font-bold underline">
-                                        {orderId}
-                                    </Link>
-                                    {index === orderIds.length - 1 ? ' ' : ', '}
-                                </span>
-                            ))}{' '}
-                            {orderIds.length > 0 ? 'have' : 'has'} been created.
-                        </p>
+                        {!isSignedIn && <p className="text-lg">Your order has been created.</p>}
+                        {isSignedIn && (
+                            <p className="text-lg">
+                                Your {orderIds.length > 0 ? 'orders' : 'order'} number{' '}
+                                {orderIds.map((orderId, index) => (
+                                    <span key={orderId}>
+                                        <Link href={`/orders/${orderId}`} className="font-bold underline">
+                                            {orderId}
+                                        </Link>
+                                        {index === orderIds.length - 1 ? ' ' : ', '}
+                                    </span>
+                                ))}{' '}
+                                {orderIds.length > 0 ? 'have' : 'has'} been created.
+                            </p>
+                        )}
                         <p className="text-lg">
                             You should receive an order confirmation email shortly. If the email {`hasn't`} arrived within few minutes, please check your spam
                             folder to see if the email was routed there.
@@ -109,30 +114,18 @@ Page.getLayout = (page: ReactNode) => {
     return <DefaultLayout>{page}</DefaultLayout>;
 };
 
-export const getServerSideProps: GetServerSideProps<{ orderIds: number[]; firstName: string | null }> = async (context) => {
+export const getServerSideProps: GetServerSideProps<{ orderIds: number[]; firstName: string | null; isSignedIn: boolean }> = async (context) => {
     const { userId } = getAuth(context.req);
 
-    if (!userId) {
-        return {
-            redirect: {
-                destination: '/sign-in',
-                permanent: false
-            }
-        };
-    }
-
-    const { firstName } = await clerkClient.users.getUser(userId);
+    const firstName = userId ? (await clerkClient.users.getUser(userId)).firstName : null;
 
     const sessionId = z.string().parse(context.query.sessionId);
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     const orderIds = z.array(z.number()).parse(JSON.parse(session.metadata?.orderIds as string));
 
-    const orders = await db
-        .select()
-        .from(ordersTable)
-        .where(and(inArray(ordersTable.id, orderIds), eq(ordersTable.userId, userId)));
+    const orders = z.array(orderSchema).parse(await db.select().from(ordersTable).where(inArray(ordersTable.id, orderIds)));
 
-    if (!orders.length) {
+    if (!orders.length || orders.some((o) => o.userId !== userId)) {
         return {
             redirect: {
                 destination: '/sign-in',
@@ -143,11 +136,9 @@ export const getServerSideProps: GetServerSideProps<{ orderIds: number[]; firstN
 
     return {
         props: {
-            orderIds: z
-                .array(orderSchema)
-                .parse(orders)
-                .map((o) => o.id),
-            firstName
+            orderIds: orders.map((o) => o.id),
+            firstName,
+            isSignedIn: !!userId
         }
     };
 };

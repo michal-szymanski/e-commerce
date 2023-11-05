@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { cartItemSchema } from '@/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
-import { getCartItems } from '@/sql-service';
+import { getCartItems } from '@/services/sql-service';
 import db from '@/lib/drizzle';
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {

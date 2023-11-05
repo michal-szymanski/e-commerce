@@ -1,21 +1,18 @@
 import stripe from '@/lib/stripe';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
-import { getCartItems } from '@/sql-service';
 import { orderHistoriesTable, ordersTable } from '@/schema';
 import { inArray } from 'drizzle-orm';
 import db from '@/lib/drizzle';
+import { z } from 'zod';
+import { cartItemSchema } from '@/types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
             const { userId } = getAuth(req);
 
-            if (!userId) {
-                return res.status(401).end();
-            }
-
-            const cartItems = await getCartItems(db, userId);
+            const cartItems = z.array(cartItemSchema).parse(req.body);
 
             if (!cartItems.length) {
                 return res.status(400).end();
@@ -51,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             await db.update(ordersTable).set({ checkoutSessionId: session.id }).where(inArray(ordersTable.id, orderIds));
 
             if (session.url) {
-                return res.redirect(303, session.url);
+                return res.status(201).json({ sessionUrl: session.url });
             }
 
             res.status(500).json({ error: 'Missing url for checkout session' });

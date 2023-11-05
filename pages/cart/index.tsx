@@ -1,21 +1,22 @@
-import { useCart } from '@/hooks/queries';
+import { useCart, useCartOrganizations } from '@/hooks/queries';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
 import { useOrganization, useUser } from '@clerk/nextjs';
-import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import { organizations as organizationsAPI } from '@clerk/nextjs/api';
-import { getCartItems } from '@/sql-service';
+import { getCartItems } from '@/services/sql-service';
 import { dehydrate, DehydratedState, QueryClient } from '@tanstack/react-query';
 import CartItem from '@/components/ui/custom/cart-item';
 import db from '@/lib/drizzle';
 import { ReactNode } from 'react';
 import DefaultLayout from '@/components/layouts/default-layout';
 
-const Page = ({ organizations }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Page = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
-    const { data: cart } = useCart(!!isSignedIn && !organization);
+    const { data: cart } = useCart(!organization, !!isSignedIn);
+    const { data: organizations } = useCartOrganizations(cart);
 
     return (
         <>
@@ -23,7 +24,7 @@ const Page = ({ organizations }: InferGetServerSidePropsType<typeof getServerSid
                 <title>{`Cart | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             <div className="container flex flex-col items-center gap-5 pb-36">
-                {organizations.map((o) => {
+                {organizations?.map((o) => {
                     const organizationCartItems = cart?.filter((cartItem) => cartItem.product.organizationId === o.id);
                     if (!organizationCartItems?.length) return null;
                     return (
@@ -48,15 +49,21 @@ Page.getLayout = (page: ReactNode) => {
 
 export default Page;
 
-export const getServerSideProps: GetServerSideProps<{ dehydratedState: DehydratedState; organizations: { id: string; name: string }[] }> = async (context) => {
+export const getServerSideProps: GetServerSideProps<{ dehydratedState?: DehydratedState }> = async (context) => {
     const { orgId, userId } = getAuth(context.req);
 
-    if (orgId || !userId) {
+    if (orgId) {
         return {
             redirect: {
                 destination: '/',
                 permanent: false
             }
+        };
+    }
+
+    if (!userId) {
+        return {
+            props: {}
         };
     }
 
@@ -72,6 +79,7 @@ export const getServerSideProps: GetServerSideProps<{ dehydratedState: Dehydrate
     }
 
     const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(['cart-organizations'], async () => organizations);
     await queryClient.prefetchQuery(['order'], async () => cartItems);
 
     return {

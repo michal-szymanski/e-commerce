@@ -4,7 +4,7 @@ export const idSchema = z.number().min(1);
 
 export const orderSchema = z.object({
     id: idSchema,
-    userId: z.string(),
+    userId: z.string().nullable(),
     organizationId: z.string(),
     checkoutSessionId: z.string().optional()
 });

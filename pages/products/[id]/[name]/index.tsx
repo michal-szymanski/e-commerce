@@ -12,9 +12,11 @@ import db from '@/lib/drizzle';
 import { ReactNode } from 'react';
 import DefaultLayout from '@/components/layouts/default-layout';
 import { getProductPageParams } from '@/lib/utils';
+import { useUser } from '@clerk/nextjs';
 
 const Page = ({ product }: InferGetStaticPropsType<typeof getStaticProps>) => {
-    const updateCart = useUpdateCart();
+    const { isSignedIn } = useUser();
+    const updateCart = useUpdateCart(!!isSignedIn);
 
     return (
         <>

@@ -12,7 +12,7 @@ export const categoriesRelations = relations(categoriesTable, ({ many }) => ({
 
 export const ordersTable = pgTable('orders', {
     id: serial('id').primaryKey(),
-    userId: text('user_id').notNull(),
+    userId: text('user_id'),
     organizationId: text('organization_id').notNull(),
     checkoutSessionId: text('checkout_session_id')
 });

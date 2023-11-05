@@ -10,6 +10,8 @@ export default authMiddleware({
         '/api/categories',
         '/api/webhook',
         '/api/organizations',
+        '/api/stripe/checkout-session',
+        '/order-confirmation/:sessionId',
         '/reset-password'
     ]
 });

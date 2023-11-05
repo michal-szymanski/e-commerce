@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { cartItemSchema, categorySchema, searchProductSchema } from '@/types';
+import { CartItem, cartItemSchema, categorySchema, searchProductSchema } from '@/types';
 import { z } from 'zod';
 import Stripe from 'stripe';
+import { getCartFromLocalStorage } from '@/services/local-storage-service';
 
 export const useSearchProducts = ({ name, enabled }: { name: string; enabled: boolean }) =>
     useQuery({
@@ -15,18 +16,20 @@ export const useSearchProducts = ({ name, enabled }: { name: string; enabled: bo
         enabled
     });
 
-export const useCart = (enabled: boolean) =>
+export const useCart = (enabled: boolean, isSignedIn: boolean) =>
     useQuery({
         queryKey: ['order'],
         queryFn: async () => {
-            const response = await (
-                await fetch('/api/carts', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-            ).json();
+            const response = isSignedIn
+                ? await (
+                      await fetch('/api/carts', {
+                          method: 'GET',
+                          headers: {
+                              'Content-Type': 'application/json'
+                          }
+                      })
+                  ).json()
+                : getCartFromLocalStorage();
 
             return z.array(cartItemSchema).parse(response);
         },
@@ -66,4 +69,30 @@ export const useCategories = () =>
 
             return z.array(categorySchema).parse(response);
         }
+    });
+
+export const useCartOrganizations = (cart?: CartItem[]) =>
+    useQuery({
+        queryKey: ['cart-organizations'],
+        queryFn: async () => {
+            const uniqueOrganizationIds = [...new Set(cart?.map((c) => c.product.organizationId) ?? [])];
+            const response = await (
+                await fetch(`/api/organizations?organizationIds=${uniqueOrganizationIds.join('&organizationIds=')}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ).json();
+
+            return z
+                .array(
+                    z.object({
+                        id: z.string(),
+                        name: z.string()
+                    })
+                )
+                .parse(response);
+        },
+        enabled: !!cart?.length
     });

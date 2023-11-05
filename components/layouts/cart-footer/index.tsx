@@ -5,23 +5,30 @@ import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useOrganization, useUser } from '@clerk/nextjs';
+import { useCreateCheckoutSession } from '@/hooks/mutations';
 
 const CartFooter = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
-    const { data: cart } = useCart(!!isSignedIn && !organization);
+    const { data: cart } = useCart(!organization, !!isSignedIn);
     const totalPrice = cart?.reduce((acc, curr) => acc + Number(getTotalPrice(curr.product.unitAmount, curr.quantity)), 0).toFixed(2);
     const router = useRouter();
     const isDialogOpen = useSelector((state: RootState) => state.ui.isDialogOpen);
+    const createCheckoutSession = useCreateCheckoutSession();
 
     const renderButton = () => {
         if (router.asPath === '/cart') {
             return (
-                <form action="/api/stripe/checkout-session" method="POST">
-                    <Button type="submit" className="w-40">
-                        Checkout
-                    </Button>
-                </form>
+                <Button
+                    type="button"
+                    className="w-40"
+                    onClick={() => {
+                        if (!cart?.length) return;
+                        createCheckoutSession.mutate(cart, { onSuccess: ({ sessionUrl }) => router.push(sessionUrl) });
+                    }}
+                >
+                    Checkout
+                </Button>
             );
         }
 

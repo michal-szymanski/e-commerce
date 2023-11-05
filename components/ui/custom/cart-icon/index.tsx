@@ -6,7 +6,7 @@ import { useOrganization, useUser } from '@clerk/nextjs';
 const CartCounter = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
-    const { data: cart } = useCart(!!isSignedIn && !organization);
+    const { data: cart } = useCart(!organization, !!isSignedIn);
 
     const numberOfProducts = cart?.reduce((acc, curr) => acc + Number(curr.quantity), 0);
 

@@ -1,35 +1,52 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CartItem } from '@/types';
 import Stripe from 'stripe';
+import { saveCartToLocalStorage } from '@/services/local-storage-service';
+import { z } from 'zod';
 
-export const useUpdateCart = () => {
+export const useUpdateCart = (isSignedIn: boolean) => {
     const queryClient = useQueryClient();
+    const mergeCart = (cart: CartItem[]) => {
+        const previousCart = queryClient.getQueryData(['order']) as CartItem[];
+
+        const newCart = [...previousCart.filter((pc) => !cart.some((c) => pc.product.id === c.product.id)), ...cart]
+            .filter((c) => c.quantity)
+            .sort((a, b) => (a.product.id > b.product.id ? 1 : -1));
+
+        return { newCart, previousCart };
+    };
 
     return useMutation({
         mutationFn: (cart: CartItem[]) => {
             const payload = JSON.stringify(cart);
+            if (isSignedIn) {
+                return fetch('/api/carts', {
+                    method: 'POST',
+                    body: payload,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
 
-            return fetch('/api/carts', {
-                method: 'POST',
-                body: payload,
-                headers: {
-                    'Content-Type': 'application/json'
+            return new Promise((resolve, reject) => {
+                try {
+                    const { newCart } = mergeCart(cart);
+                    saveCartToLocalStorage(newCart);
+                    resolve(newCart);
+                } catch (error) {
+                    reject(error);
                 }
             });
         },
         onMutate: async (cart) => {
             await queryClient.cancelQueries({ queryKey: ['order'] });
-            const previousCart = queryClient.getQueryData(['order']) as CartItem[];
-
-            const newCart = [...previousCart.filter((pc) => !cart.some((c) => pc.product.id === c.product.id)), ...cart]
-                .filter((c) => c.quantity)
-                .sort((a, b) => (a.product.id > b.product.id ? 1 : -1));
-
+            const { newCart, previousCart } = mergeCart(cart);
             queryClient.setQueryData(['order'], () => newCart);
 
             return { previousCart };
         },
-        onError: (err, cart, context) => {
+        onError: (_err, _cart, context) => {
             queryClient.setQueryData(['order'], context?.previousCart);
         },
         onSettled: async () => {
@@ -108,3 +125,22 @@ export const useUpdateProduct = () => {
         }
     });
 };
+
+export const useCreateCheckoutSession = () =>
+    useMutation({
+        mutationFn: async (cart: CartItem[]) => {
+            const payload = JSON.stringify(cart);
+
+            const response = await (
+                await fetch(`/api/stripe/checkout-session`, {
+                    method: 'POST',
+                    body: payload,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ).json();
+
+            return z.object({ sessionUrl: z.string() }).parse(response);
+        }
+    });

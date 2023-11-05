@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { useToast } from '@/components/ui/use-toast';
+import { saveCartToLocalStorage } from '@/services/local-storage-service';
 
 const formSchema = z.object({
     email: z.string().nonempty({ message: 'Email is required' }).email(),
@@ -134,6 +135,7 @@ const SignInForm = () => {
                             onAnimationComplete={() =>
                                 setTimeout(async () => {
                                     if (!submitData) return;
+                                    saveCartToLocalStorage([]);
                                     await router.push('/');
                                     await setActive(submitData);
                                 }, 1000)

@@ -25,7 +25,7 @@ type Props = {
 const ProductPage = ({ isPreview, id, name, price, currency, images, onAddToCart }: Props) => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
-    const { data: cart } = useCart(!!isSignedIn && !organization && !isPreview);
+    const { data: cart } = useCart(!organization, !!isSignedIn);
 
     const [quantity, setQuantity] = useState(1);
     const [open, setOpen] = useState(false);
