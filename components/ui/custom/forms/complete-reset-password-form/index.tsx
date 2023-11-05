@@ -13,9 +13,9 @@ import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z
     .object({
-        code: z.string().nonempty({ message: 'Code is required' }),
-        password: z.string().nonempty({ message: 'Password is required' }),
-        confirmPassword: z.string().nonempty({ message: 'Please confirm password' })
+        code: z.string().min(1, { message: 'Code is required' }),
+        password: z.string().min(1, { message: 'Password is required' }),
+        confirmPassword: z.string().min(1, { message: 'Please confirm password' })
     })
     .refine(({ password, confirmPassword }) => password === confirmPassword, {
         message: "Passwords don't match",

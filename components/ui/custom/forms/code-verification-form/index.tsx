@@ -12,7 +12,7 @@ import { SetActiveParams } from '@clerk/types';
 import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z.object({
-    code: z.string().nonempty({ message: 'Code is required' })
+    code: z.string().min(1, { message: 'Code is required' })
 });
 
 type Props = {

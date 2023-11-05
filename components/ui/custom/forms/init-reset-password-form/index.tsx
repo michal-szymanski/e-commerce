@@ -12,7 +12,7 @@ import { isClerkAPIResponseError, isKnownError, useSignIn } from '@clerk/nextjs'
 import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z.object({
-    email: z.string().nonempty({ message: 'Email is required' }).email()
+    email: z.string().min(1, { message: 'Email is required' }).email()
 });
 
 type Props = {

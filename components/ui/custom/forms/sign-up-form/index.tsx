@@ -15,12 +15,12 @@ import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z
     .object({
-        firstName: z.string().nonempty({ message: 'First name is required' }),
-        lastName: z.string().nonempty({ message: 'Last name is required' }),
-        email: z.string().nonempty({ message: 'Email is required' }).email(),
-        password: z.string().nonempty({ message: 'Password is required' }),
-        confirmPassword: z.string().nonempty({ message: 'Please confirm password' }),
-        organizationName: z.string().nonempty({ message: 'Organization name is required' }).optional(),
+        firstName: z.string().min(1, { message: 'First name is required' }),
+        lastName: z.string().min(1, { message: 'Last name is required' }),
+        email: z.string().min(1, { message: 'Email is required' }).email(),
+        password: z.string().min(1, { message: 'Password is required' }),
+        confirmPassword: z.string().min(1, { message: 'Please confirm password' }),
+        organizationName: z.string().min(1, { message: 'Organization name is required' }).optional(),
         termsAccepted: z.literal<boolean>(true, {
             errorMap: () => ({ message: 'Your consent is required' })
         })

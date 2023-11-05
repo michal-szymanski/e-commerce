@@ -12,7 +12,7 @@ import { SetActiveParams } from '@clerk/types';
 import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z.object({
-    name: z.string().nonempty({ message: 'Name is required' })
+    name: z.string().min(1, { message: 'Name is required' })
 });
 
 const CreateOrganizationForm = () => {
