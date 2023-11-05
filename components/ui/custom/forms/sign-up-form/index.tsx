@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, ElementRef, SetStateAction, useRef, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -54,6 +54,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
     const [isSuccess, setIsSuccess] = useState(false);
     const { signUp, isLoaded: isClerkLoaded } = useSignUp();
     const { toast } = useToast();
+    const tabsRef = useRef<ElementRef<'div'>>(null);
 
     const clerkErrorFieldMap = new Map<string, keyof z.infer<typeof formSchema>>([
         ['email_address', 'email'],
@@ -104,148 +105,149 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
         }
     };
 
-    const renderForm = (accountType: 'personal' | 'business') => (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Sign Up</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <FormField
-                            control={form.control}
-                            name="firstName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>First name</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="lastName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Last name</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Password</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} type="password" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="confirmPassword"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Confirm password</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} type="password" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        {accountType === 'business' && (
-                            <FormField
-                                control={form.control}
-                                name="organizationName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Organization name</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
-                        <FormField
-                            control={form.control}
-                            name="termsAccepted"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
-                                    <FormControl>
-                                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                                    </FormControl>
-                                    <div>
-                                        <div className="space-y-1 leading-none">
-                                            <FormLabel>
-                                                I accept the{' '}
-                                                <Link href="/terms-of-use" className="text-card-foreground underline">
-                                                    terms of use
-                                                </Link>{' '}
-                                                and{' '}
-                                                <Link href="/privacy-policy" className="text-card-foreground underline">
-                                                    privacy policy
-                                                </Link>
-                                            </FormLabel>
-                                        </div>
-                                        <FormMessage />
-                                    </div>
-                                </FormItem>
-                            )}
-                        />
-                    </CardContent>
-                    <CardFooter className="flex flex-col items-start gap-2">
-                        <CardDescription>
-                            Already have an account?
-                            <Button type="button" variant="link" asChild>
-                                <Link href="/sign-in">Sign in</Link>
-                            </Button>
-                        </CardDescription>
-                        <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onAnimationComplete={() => setTimeout(nextStep, 1000)} />
-                    </CardFooter>
-                </Card>
-            </form>
-        </Form>
-    );
-
     if (!isClerkLoaded) return null;
 
     return (
-        <Tabs defaultValue="personal">
+        <Tabs defaultValue="personal" ref={tabsRef}>
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="personal">Personal</TabsTrigger>
                 <TabsTrigger value="business">Business</TabsTrigger>
             </TabsList>
-            {(['personal', 'business'] as const).map((accountType) => (
-                <TabsContent key={accountType} value={accountType}>
-                    {renderForm(accountType)}
-                </TabsContent>
-            ))}
+            <div className="pt-2">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Sign Up</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <FormField
+                                    control={form.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>First name</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="lastName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Last name</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Email</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="password"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Password</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="password" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="confirmPassword"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Confirm password</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="password" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <TabsContent value="business" className="mt-0" tabIndex={-1}>
+                                    <FormField
+                                        control={form.control}
+                                        name="organizationName"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Organization name</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </TabsContent>
+                                <FormField
+                                    control={form.control}
+                                    name="termsAccepted"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                                            <FormControl>
+                                                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                            </FormControl>
+                                            <div>
+                                                <div className="space-y-1 leading-none">
+                                                    <FormLabel>
+                                                        I accept the{' '}
+                                                        <Link href="/terms-of-use" className="text-card-foreground underline">
+                                                            terms of use
+                                                        </Link>{' '}
+                                                        and{' '}
+                                                        <Link href="/privacy-policy" className="text-card-foreground underline">
+                                                            privacy policy
+                                                        </Link>
+                                                    </FormLabel>
+                                                </div>
+                                                <FormMessage />
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                            <CardFooter className="flex flex-col items-start gap-2">
+                                <CardDescription>
+                                    Already have an account?
+                                    <Button type="button" variant="link" asChild>
+                                        <Link href="/sign-in">Sign in</Link>
+                                    </Button>
+                                </CardDescription>
+                                <SubmitButton
+                                    isLoading={isLoading}
+                                    isSuccess={isSuccess}
+                                    onAnimationComplete={() => {
+                                        setTimeout(() => tabsRef.current?.scrollIntoView({ behavior: 'smooth' }), 500);
+                                        setTimeout(nextStep, 1000);
+                                    }}
+                                />
+                            </CardFooter>
+                        </Card>
+                    </form>
+                </Form>
+            </div>
         </Tabs>
     );
 };

@@ -102,7 +102,6 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<
 
     useEffect(() => {
         if (!error?.message) return;
-        console.log('trigger');
         setErrorMessage(error?.message);
     }, [error?.message]);
 
