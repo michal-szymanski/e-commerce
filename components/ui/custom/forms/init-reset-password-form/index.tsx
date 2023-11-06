@@ -4,12 +4,13 @@ import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/ui/custom/submit-button';
-import { useState } from 'react';
+import { useReducer } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isClerkAPIResponseError, isKnownError, useSignIn } from '@clerk/nextjs';
 import { useToast } from '@/components/ui/use-toast';
+import submitButtonReducer from '@/components/ui/custom/submit-button/reducer';
 
 const formSchema = z.object({
     email: z.string().min(1, { message: 'Email is required' }).email()
@@ -27,8 +28,7 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
         }
     });
 
-    const [isLoading, setIsLoading] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [state, dispatch] = useReducer(submitButtonReducer, { isLoading: false, isSuccess: false, isError: false });
     const { isLoaded: isClerkLoaded, signIn } = useSignIn();
     const { toast } = useToast();
 
@@ -39,7 +39,7 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
 
     const onSubmit = async ({ email }: z.infer<typeof formSchema>) => {
         if (!signIn) return;
-        setIsLoading(true);
+        dispatch({ type: 'loading' });
 
         try {
             await signIn.create({
@@ -47,8 +47,9 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
                 identifier: email
             });
 
-            setIsSuccess(true);
+            dispatch({ type: 'success' });
         } catch (error) {
+            dispatch({ type: 'error' });
             if (isKnownError(error) && isClerkAPIResponseError(error)) {
                 for (let e of error.errors) {
                     const field = clerkErrorFieldMap.get(e.meta?.paramName ?? '');
@@ -104,7 +105,7 @@ const InitResetPasswordForm = ({ nextStep }: Props) => {
                                 <Link href="/sign-in">Sign in</Link>
                             </Button>
                         </CardDescription>
-                        <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onAnimationComplete={() => setTimeout(nextStep, 1000)} />
+                        <SubmitButton state={state} onAnimationComplete={() => setTimeout(nextStep, 1000)} />
                     </CardFooter>
                 </Card>
             </form>

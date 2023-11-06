@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isClerkAPIResponseError, isKnownError, useOrganizationList } from '@clerk/nextjs';
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { useRouter } from 'next/router';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { SetActiveParams } from '@clerk/types';
 import { useToast } from '@/components/ui/use-toast';
+import submitButtonReducer from '@/components/ui/custom/submit-button/reducer';
 
 const formSchema = z.object({
     name: z.string().min(1, { message: 'Name is required' })
@@ -25,7 +26,7 @@ const CreateOrganizationForm = () => {
 
     const router = useRouter();
 
-    const [isLoading, setIsLoading] = useState(false);
+    const [state, dispatch] = useReducer(submitButtonReducer, { isLoading: false, isSuccess: false, isError: false });
     const [submitData, setSubmitData] = useState<SetActiveParams>();
     const { createOrganization, isLoaded: isClerkLoaded, setActive } = useOrganizationList();
     const { toast } = useToast();
@@ -34,15 +35,16 @@ const CreateOrganizationForm = () => {
 
     const onSubmit = async ({ name }: z.infer<typeof formSchema>) => {
         if (!createOrganization) return;
-        setIsLoading(true);
+        dispatch({ type: 'loading' });
 
         try {
             const organization = await createOrganization({
                 name
             });
-
+            dispatch({ type: 'success' });
             setSubmitData({ organization });
         } catch (error) {
+            dispatch({ type: 'error' });
             if (isKnownError(error) && isClerkAPIResponseError(error)) {
                 for (let e of error.errors) {
                     const field = clerkErrorFieldMap.get(e.meta?.paramName ?? '');
@@ -93,8 +95,7 @@ const CreateOrganizationForm = () => {
                     </CardContent>
                     <CardFooter className="flex flex-col items-start gap-2">
                         <SubmitButton
-                            isLoading={isLoading}
-                            isSuccess={!!submitData}
+                            state={state}
                             onAnimationComplete={() =>
                                 setTimeout(async () => {
                                     if (!submitData) return;

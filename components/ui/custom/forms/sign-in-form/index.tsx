@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { SetActiveParams } from '@clerk/types';
 import { isClerkAPIResponseError, isKnownError, useSignIn } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { useToast } from '@/components/ui/use-toast';
 import { saveCartToLocalStorage } from '@/services/local-storage-service';
+import submitButtonReducer from '@/components/ui/custom/submit-button/reducer';
 
 const formSchema = z.object({
     email: z.string().min(1, { message: 'Email is required' }).email(),
@@ -28,7 +29,7 @@ const SignInForm = () => {
         }
     });
 
-    const [isLoading, setIsLoading] = useState(false);
+    const [state, dispatch] = useReducer(submitButtonReducer, { isLoading: false, isSuccess: false, isError: false });
     const [submitData, setSubmitData] = useState<SetActiveParams>();
     const { signIn, setActive, isLoaded: isClerkLoaded } = useSignIn();
     const router = useRouter();
@@ -43,7 +44,7 @@ const SignInForm = () => {
 
     const onSubmit = async ({ email, password }: z.infer<typeof formSchema>) => {
         if (!signIn) return;
-        setIsLoading(true);
+        dispatch({ type: 'loading' });
 
         try {
             const { status, createdSessionId } = await signIn.create({
@@ -52,9 +53,11 @@ const SignInForm = () => {
             });
 
             if (status === 'complete' && createdSessionId) {
+                dispatch({ type: 'success' });
                 setSubmitData({ session: createdSessionId });
             }
         } catch (error) {
+            dispatch({ type: 'error' });
             if (isKnownError(error) && isClerkAPIResponseError(error)) {
                 for (let e of error.errors) {
                     const field = clerkErrorFieldMap.get(e.meta?.paramName ?? '');
@@ -130,8 +133,7 @@ const SignInForm = () => {
                             </Button>
                         </CardDescription>
                         <SubmitButton
-                            isLoading={isLoading}
-                            isSuccess={!!submitData}
+                            state={state}
                             onAnimationComplete={() =>
                                 setTimeout(async () => {
                                     if (!submitData) return;

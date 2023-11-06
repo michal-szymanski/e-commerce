@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,6 +15,7 @@ import { InformationCircleIcon } from '@heroicons/react/20/solid';
 import { getTotalPrice } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategories } from '@/hooks/queries';
+import submitButtonReducer from '@/components/ui/custom/submit-button/reducer';
 
 const stripeMaxUnitAmount = 99999999;
 
@@ -57,14 +58,13 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
         }
     });
 
-    const [isLoading, setIsLoading] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [state, dispatch] = useReducer(submitButtonReducer, { isLoading: false, isSuccess: false, isError: false });
     const createProduct = useCreateProduct();
     const updateProduct = useUpdateProduct();
     const { data: categories } = useCategories();
 
     const onSubmit = async ({ name, description, unitAmount, active, category }: z.infer<typeof formSchema>) => {
-        setIsLoading(true);
+        dispatch({ type: 'loading' });
 
         try {
             const newUnitAmount = Number(unitAmount) * 100;
@@ -96,8 +96,9 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                     categoryId: Number(category)
                 });
             }
-            setIsSuccess(true);
+            dispatch({ type: 'success' });
         } catch (error) {
+            dispatch({ type: 'error' });
             console.error(error);
         }
     };
@@ -219,10 +220,10 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                     )}
                 />
                 <div className="grid grid-cols-2 gap-5 py-5">
-                    <Button type="button" variant="secondary" onClick={close} disabled={isLoading || isSuccess}>
+                    <Button type="button" variant="secondary" onClick={close} disabled={state.isLoading || state.isSuccess}>
                         Cancel
                     </Button>
-                    <SubmitButton isLoading={isLoading} isSuccess={isSuccess} onAnimationComplete={() => setTimeout(close, 1000)} />
+                    <SubmitButton state={state} onAnimationComplete={() => setTimeout(close, 1000)} />
                 </div>
             </form>
         </Form>

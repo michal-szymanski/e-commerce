@@ -7,11 +7,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Dispatch, ElementRef, SetStateAction, useRef, useState } from 'react';
+import { Dispatch, ElementRef, SetStateAction, useReducer, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import submitButtonReducer from '@/components/ui/custom/submit-button/reducer';
 
 const formSchema = z
     .object({
@@ -50,8 +51,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
         shouldUnregister: true
     });
 
-    const [isLoading, setIsLoading] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [state, dispatch] = useReducer(submitButtonReducer, { isLoading: false, isSuccess: false, isError: false });
     const { signUp, isLoaded: isClerkLoaded } = useSignUp();
     const { toast } = useToast();
     const tabsRef = useRef<ElementRef<'div'>>(null);
@@ -66,7 +66,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
 
     const onSubmit = async ({ email, password, firstName, lastName, organizationName }: z.infer<typeof formSchema>) => {
         if (!signUp) return;
-        setIsLoading(true);
+        dispatch({ type: 'loading' });
 
         try {
             await signUp.create({
@@ -78,9 +78,10 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
 
             await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
 
-            setIsSuccess(true);
+            dispatch({ type: 'success' });
             setOrganizationName(organizationName);
         } catch (error) {
+            dispatch({ type: 'error' });
             if (isKnownError(error) && isClerkAPIResponseError(error)) {
                 for (let e of error.errors) {
                     const field = clerkErrorFieldMap.get(e.meta?.paramName ?? '');
@@ -236,8 +237,7 @@ const SignUpForm = ({ nextStep, setOrganizationName }: Props) => {
                                     </Button>
                                 </CardDescription>
                                 <SubmitButton
-                                    isLoading={isLoading}
-                                    isSuccess={isSuccess}
+                                    state={state}
                                     onAnimationComplete={() => {
                                         setTimeout(() => tabsRef.current?.scrollIntoView({ behavior: 'smooth' }), 500);
                                         setTimeout(nextStep, 1000);

@@ -3,13 +3,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isClerkAPIResponseError, isKnownError, useSignUp } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { SetActiveParams } from '@clerk/types';
 import { useToast } from '@/components/ui/use-toast';
+import submitButtonReducer from '@/components/ui/custom/submit-button/reducer';
 
 const formSchema = z.object({
     code: z.string().min(1, { message: 'Code is required' })
@@ -27,7 +28,7 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
         }
     });
 
-    const [isLoading, setIsLoading] = useState(false);
+    const [state, dispatch] = useReducer(submitButtonReducer, { isLoading: false, isSuccess: false, isError: false });
     const [submitData, setSubmitData] = useState<SetActiveParams>();
     const { signUp, setActive, isLoaded: isClerkLoaded } = useSignUp();
     const router = useRouter();
@@ -37,7 +38,7 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
 
     const onSubmit = async ({ code }: z.infer<typeof formSchema>) => {
         if (!signUp) return;
-        setIsLoading(true);
+        dispatch({ type: 'loading' });
 
         try {
             const { status, createdSessionId, createdUserId } = await signUp.attemptEmailAddressVerification({
@@ -62,10 +63,11 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
 
                     sessionData = { ...sessionData, organization: organizationId };
                 }
-
+                dispatch({ type: 'success' });
                 setSubmitData(sessionData);
             }
         } catch (error) {
+            dispatch({ type: 'error' });
             if (isKnownError(error) && isClerkAPIResponseError(error)) {
                 for (let e of error.errors) {
                     const field = clerkErrorFieldMap.get(e.meta?.paramName ?? '');
@@ -119,8 +121,7 @@ const CodeVerificationForm = ({ organizationName }: Props) => {
                     </CardContent>
                     <CardFooter>
                         <SubmitButton
-                            isLoading={isLoading}
-                            isSuccess={!!submitData}
+                            state={state}
                             onAnimationComplete={() =>
                                 setTimeout(async () => {
                                     if (!submitData) return;

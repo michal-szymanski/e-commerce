@@ -1,68 +1,45 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { CheckIcon } from '@heroicons/react/20/solid';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, Variants } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { SubmitButtonState } from '@/components/ui/custom/submit-button/reducer';
 
 type Props = {
-    isLoading: boolean;
-    isSuccess: boolean;
+    state: SubmitButtonState;
     onAnimationComplete: () => void;
 };
 
-const SubmitButton = ({ isLoading, isSuccess, onAnimationComplete }: Props) => {
-    const [isSpinner, setIsSpinner] = useState(false);
-    const [isSpinnerComplete, setIsSpinnerComplete] = useState(false);
+const variants: Variants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    spin: {
+        rotate: 360,
+        transition: {
+            duration: 0.5,
+            repeat: Infinity,
+            ease: 'linear'
+        }
+    }
+};
 
-    useEffect(() => {
-        if (!isLoading) return;
-        setIsSpinner(true);
-    }, [isLoading]);
-
-    useEffect(() => {
-        if (!isSpinner) return;
-        const id = setTimeout(() => {
-            setIsSpinnerComplete(true);
-        }, 2000);
-        return () => {
-            clearTimeout(id);
-        };
-    }, [isSpinner]);
-
+const SubmitButton = ({ state: { isLoading, isSuccess }, onAnimationComplete }: Props) => {
     const renderContent = () => {
-        if (isSuccess && isSpinnerComplete)
+        if (isSuccess)
             return (
-                <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onAnimationComplete={onAnimationComplete}>
+                <motion.div key="success" variants={variants} initial="hidden" animate="visible" onAnimationComplete={onAnimationComplete} className="absolute">
                     <CheckIcon className="h-5 w-5 text-white" />
                 </motion.div>
             );
-        if (isSpinner)
+        if (isLoading)
             return (
-                <motion.div
-                    key="spinner"
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: { opacity: 1 },
-                        spin: {
-                            rotate: 360,
-                            transition: {
-                                duration: 0.5,
-                                repeat: Infinity,
-                                ease: 'linear'
-                            }
-                        }
-                    }}
-                    initial="hidden"
-                    animate={['visible', 'spin']}
-                    exit="hidden"
-                >
+                <motion.div key="spinner" variants={variants} initial="hidden" animate={['visible', 'spin']} exit="hidden" className="absolute">
                     <Loader2 />
                 </motion.div>
             );
 
         return (
-            <motion.div key="submit" initial={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="submit" variants={variants} exit="hidden" className="absolute">
                 Submit
             </motion.div>
         );
@@ -71,12 +48,12 @@ const SubmitButton = ({ isLoading, isSuccess, onAnimationComplete }: Props) => {
     return (
         <Button
             type="submit"
-            className={cn('w-full disabled:opacity-100', {
-                'bg-green-500 hover:bg-green-500': isSuccess && isSpinnerComplete
+            className={cn('relative w-full disabled:opacity-100', {
+                'bg-green-500 hover:bg-green-500': isSuccess
             })}
-            disabled={isSpinner || isSuccess}
+            disabled={isLoading || isSuccess}
         >
-            <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
+            <AnimatePresence>{renderContent()}</AnimatePresence>
         </Button>
     );
 };
