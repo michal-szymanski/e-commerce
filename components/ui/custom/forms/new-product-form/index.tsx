@@ -213,7 +213,7 @@ const NewProductForm = ({ setPreviewData, close, initialData }: Props) => {
                         <FormItem>
                             <FormLabel>Description</FormLabel>
                             <FormControl>
-                                <Textarea placeholder="Describe your product" className="resize-none" {...field} />
+                                <Textarea className="resize-none" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
