@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { categoryNameEnum, categorySchema } from '@/types';
+import { categoryNameEnumSchema, categorySchema } from '@/types';
 import { ReactElement } from 'react';
 import { AppleIcon, BabyIcon, BedDoubleIcon, CarIcon, CatIcon, DumbbellIcon, HeartPulseIcon, MonitorIcon, MusicIcon, Shirt } from 'lucide-react';
 import { z } from 'zod';
@@ -10,7 +10,7 @@ type Props = {
     categories: z.infer<typeof categorySchema>[];
 };
 
-type CategoryName = keyof typeof categoryNameEnum.enum;
+type CategoryName = keyof typeof categoryNameEnumSchema.enum;
 
 const iconMap: Record<CategoryName, ReactElement> = {
     Food: <AppleIcon className="h-5 w-5" />,
