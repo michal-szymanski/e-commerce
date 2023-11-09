@@ -71,15 +71,20 @@ export const getServerSideProps: GetServerSideProps<{
     const parsedName = z.string().safeParse(context.query.name);
     const parsedLimit = z.coerce.number().min(0).max(100).safeParse(context.query.limit);
     const parsedPage = z.string().safeParse(context.query.page);
+    const parsedCategoryId = z.coerce.number().safeParse(context.query.categoryId);
 
     const name = parsedName.success ? parsedName.data : '';
     const limit = parsedLimit.success ? parsedLimit.data : 10;
     const page = parsedPage.success ? parsedPage.data : '';
+    const category = parsedCategoryId.success ? parsedCategoryId.data : null;
 
     const where: SQL[] = [eq(productsTable.active, true)];
 
     if (name) {
         where.push(ilike(productsTable.name, `%${name}%`));
+    }
+    if (category) {
+        where.push(eq(productsTable.categoryId, category));
     }
 
     const products = await db

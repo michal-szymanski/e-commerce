@@ -87,7 +87,9 @@ export const searchProductSchema = z.object({
     name: z.string()
 });
 
+export const categoryNameEnum = z.enum(['Food', 'Electronics', 'Sport', 'Automotive', 'Health', 'Clothes', 'Music', 'Furniture', 'For Kids', 'For Animals']);
+
 export const categorySchema = z.object({
     id: idSchema,
-    name: z.string()
+    name: categoryNameEnum
 });
