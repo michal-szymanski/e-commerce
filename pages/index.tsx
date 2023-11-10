@@ -12,7 +12,7 @@ const Page = ({ categories }: InferGetStaticPropsType<typeof getStaticProps>) =>
     return (
         <div className="container relative">
             <HeroImage />
-            <div className="top-1/2 pt-5 lg:left-44 xl:absolute xl:-translate-y-1/2 xl:pt-0">
+            <div className="top-1/2 pt-4 lg:left-44 xl:absolute xl:-translate-y-1/2 xl:pt-0">
                 <ProductCategories categories={categories} />
             </div>
         </div>
