@@ -34,7 +34,7 @@ const ProductCategories = ({ categories }: Props) => (
             <ul className="w-full">
                 {categories.map((c) => (
                     <li key={c.id}>
-                        <Button type="button" variant="ghost" className="w-full justify-start gap-2 text-muted-foreground" asChild>
+                        <Button type="button" variant="ghost" className="w-full justify-start gap-2 text-muted-foreground hover:text-indigo-500" asChild>
                             <Link href={`/products?categoryId=${c.id}`}>
                                 {iconMap[c.name]}
                                 {c.name}

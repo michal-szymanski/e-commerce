@@ -22,7 +22,6 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
-    console.log('query', req.query);
     const { organizationIds } = z
         .object({
             organizationIds: z.union([z.array(z.string()), z.string()]).transform((value) => (Array.isArray(value) ? [...new Set(value)] : [value]))
