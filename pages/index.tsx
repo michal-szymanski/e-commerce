@@ -24,7 +24,7 @@ Page.getLayout = (page: ReactNode) => {
 };
 
 export const getStaticProps: GetStaticProps<{ categories: z.infer<typeof categorySchema>[] }> = async () => {
-    const categories = z.array(categorySchema).parse(await db.select().from(categoriesTable));
+    const categories = z.array(categorySchema).parse(await db.select().from(categoriesTable).orderBy(categoriesTable.name));
 
     return {
         props: {
