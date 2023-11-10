@@ -16,7 +16,8 @@ import { getTotalPrice } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategories } from '@/hooks/queries';
 import submitButtonReducer from '@/components/ui/custom/submit-button/reducer';
-import { stripeMaxUnitAmount } from '@/lib/stripe';
+
+const stripeMaxUnitAmount = 99999999;
 
 const formSchema = z.object({
     name: z.string().min(1, { message: 'Name is required' }),
