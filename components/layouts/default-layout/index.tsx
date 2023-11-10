@@ -18,7 +18,7 @@ const inter = Inter({ subsets: ['latin'] });
 const DefaultLayout = ({ children }: Props) => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
-    const { data: cart } = useCart(!organization, !!isSignedIn);
+    const { data: cart } = useCart({ enabled: !organization, isSignedIn: !!isSignedIn });
 
     return (
         <>

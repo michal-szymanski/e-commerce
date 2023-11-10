@@ -10,7 +10,7 @@ import { useCreateCheckoutSession } from '@/hooks/mutations';
 const CartFooter = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
-    const { data: cart } = useCart(!organization, !!isSignedIn);
+    const { data: cart } = useCart({ enabled: !organization, isSignedIn: !!isSignedIn });
     const totalPrice = cart?.reduce((acc, curr) => acc + Number(getTotalPrice(curr.product.unitAmount, curr.quantity)), 0).toFixed(2);
     const router = useRouter();
     const isDialogOpen = useSelector((state: RootState) => state.ui.isDialogOpen);

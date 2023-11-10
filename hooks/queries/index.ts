@@ -16,9 +16,9 @@ export const useSearchProducts = ({ name, enabled }: { name: string; enabled: bo
         enabled
     });
 
-export const useCart = (enabled: boolean, isSignedIn: boolean) =>
+export const useCart = ({ enabled, isSignedIn }: { enabled: boolean; isSignedIn: boolean }) =>
     useQuery({
-        queryKey: ['order'],
+        queryKey: ['order', { isSignedIn }],
         queryFn: async () => {
             const response = isSignedIn
                 ? await (

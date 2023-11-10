@@ -7,7 +7,7 @@ import { z } from 'zod';
 export const useUpdateCart = (isSignedIn: boolean) => {
     const queryClient = useQueryClient();
     const mergeCart = (cart: CartItem[]) => {
-        const previousCart = queryClient.getQueryData(['order']) as CartItem[];
+        const previousCart = (queryClient.getQueryData(['order']) ?? []) as CartItem[];
 
         const newCart = [...previousCart.filter((pc) => !cart.some((c) => pc.product.id === c.product.id)), ...cart]
             .filter((c) => c.quantity)

@@ -32,7 +32,7 @@ const ProductTile = ({ product }: Props) => {
     const { isSignedIn } = useUser();
     const updateCart = useUpdateCart(!!isSignedIn);
     const { organization } = useOrganization();
-    const { data: cart } = useCart(!organization, !!isSignedIn);
+    const { data: cart } = useCart({ enabled: !organization, isSignedIn: !!isSignedIn });
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
 
