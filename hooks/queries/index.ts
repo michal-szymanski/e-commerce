@@ -71,7 +71,7 @@ export const useCategories = () =>
         }
     });
 
-export const useCartOrganizations = (cart?: CartItem[]) =>
+export const useCartOrganizations = ({ cart }: { cart?: CartItem[] }) =>
     useQuery({
         queryKey: ['cart-organizations'],
         queryFn: async () => {

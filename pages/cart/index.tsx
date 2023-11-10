@@ -16,7 +16,7 @@ const Page = () => {
     const { isSignedIn } = useUser();
     const { organization } = useOrganization();
     const { data: cart } = useCart({ enabled: !organization, isSignedIn: !!isSignedIn });
-    const { data: organizations } = useCartOrganizations(cart);
+    const { data: organizations } = useCartOrganizations({ cart });
 
     return (
         <>

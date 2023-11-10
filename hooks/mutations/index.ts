@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import { saveCartToLocalStorage } from '@/services/local-storage-service';
 import { z } from 'zod';
 
-export const useUpdateCart = (isSignedIn: boolean) => {
+export const useUpdateCart = ({ isSignedIn }: { isSignedIn: boolean }) => {
     const queryClient = useQueryClient();
     const mergeCart = (cart: CartItem[]) => {
         const previousCart = (queryClient.getQueryData(['order']) ?? []) as CartItem[];

@@ -16,7 +16,7 @@ import { useUser } from '@clerk/nextjs';
 
 const Page = ({ product }: InferGetStaticPropsType<typeof getStaticProps>) => {
     const { isSignedIn } = useUser();
-    const updateCart = useUpdateCart(!!isSignedIn);
+    const updateCart = useUpdateCart({ isSignedIn: !!isSignedIn });
 
     return (
         <>

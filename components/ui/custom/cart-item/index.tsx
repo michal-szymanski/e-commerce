@@ -16,7 +16,7 @@ type Props = {
 
 const CartItem = ({ cartItem: { product, quantity } }: Props) => {
     const { isSignedIn } = useUser();
-    const updateCart = useUpdateCart(!!isSignedIn);
+    const updateCart = useUpdateCart({ isSignedIn: !!isSignedIn });
 
     const handleMinus = () => {
         if (quantity === 1) return;
