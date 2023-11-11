@@ -4,8 +4,8 @@ import { ReactNode, useState } from 'react';
 
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
-import CodeVerificationForm from '@/components/ui/custom/forms/code-verification-form';
-import SignUpForm from '@/components/ui/custom/forms/sign-up-form';
+import CodeVerificationForm from '@/components/ui/custom/forms/auth/code-verification-form';
+import SignUpForm from '@/components/ui/custom/forms/auth/sign-up-form';
 import { AnimatePresence, motion } from 'framer-motion';
 import DefaultLayout from '@/components/layouts/default-layout';
 

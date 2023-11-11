@@ -1,4 +1,4 @@
-import CreateOrganizationForm from '@/components/ui/custom/forms/create-organization-form';
+import CreateOrganizationForm from '@/components/ui/custom/forms/auth/create-organization-form';
 import Head from 'next/head';
 import { env } from '@/env.mjs';
 import { GetServerSideProps } from 'next';

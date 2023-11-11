@@ -14,7 +14,8 @@
         "db:push": "drizzle-kit push:pg",
         "db:seed": "ts-node seed.ts",
         "stripe:login": "bash -c 'stripe login --interactive'",
-        "stripe:listen": "bash -c 'stripe listen --forward-to localhost:3000/api/webhook'"
+        "stripe:listen": "bash -c 'stripe listen --forward-to localhost:3000/api/webhook'",
+        "tsc": "tsc"
     },
     "dependencies": {
         "@clerk/nextjs": "^4.25.4",

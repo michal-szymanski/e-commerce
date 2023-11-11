@@ -4,8 +4,8 @@ import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import { ReactNode, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import InitResetPasswordForm from '@/components/ui/custom/forms/init-reset-password-form';
-import CompleteResetPasswordForm from '@/components/ui/custom/forms/complete-reset-password-form';
+import InitResetPasswordForm from '@/components/ui/custom/forms/auth/init-reset-password-form';
+import CompleteResetPasswordForm from '@/components/ui/custom/forms/auth/complete-reset-password-form';
 import DefaultLayout from '@/components/layouts/default-layout';
 
 const Page = () => {

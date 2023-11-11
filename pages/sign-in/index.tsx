@@ -2,7 +2,7 @@ import { env } from '@/env.mjs';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
-import SignInForm from '@/components/ui/custom/forms/sign-in-form';
+import SignInForm from '@/components/ui/custom/forms/auth/sign-in-form';
 import { ReactNode } from 'react';
 import DefaultLayout from '@/components/layouts/default-layout';
 

@@ -21,7 +21,7 @@ import { useOrganization, useUser } from '@clerk/nextjs';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 import stripe from '@/lib/stripe';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import NewProductForm from '@/components/ui/custom/forms/new-product-form';
+import NewProductForm from '@/components/ui/custom/forms/dashboard/new-product-form';
 import { ReactNode, useEffect, useState } from 'react';
 import ProductPage from '@/components/ui/custom/product-page';
 import { AnimatePresence, motion } from 'framer-motion';
