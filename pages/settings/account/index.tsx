@@ -3,6 +3,7 @@ import SettingsLayout from '@/components/layouts/settings-layout';
 import ProfileForm from '@/components/ui/custom/forms/settings/profile-form';
 import PasswordForm from '@/components/ui/custom/forms/settings/password-form';
 import { Separator } from '@/components/ui/separator';
+import DeleteAccountDialog from '@/components/ui/custom/delete-account-dialog';
 
 const Page = () => {
     return (
@@ -26,6 +27,16 @@ const Page = () => {
                     </div>
                 </header>
                 <PasswordForm />
+            </section>
+            <section>
+                <header className="pb-5">
+                    <h3 className="text-lg font-medium">Danger</h3>
+                    <p className="text-sm text-muted-foreground">Delete your account and all its associated data.</p>
+                    <div className="py-6">
+                        <Separator />
+                    </div>
+                </header>
+                <DeleteAccountDialog />
             </section>
         </div>
     );

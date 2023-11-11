@@ -8,7 +8,7 @@ import { SubmitButtonState } from '@/components/ui/custom/submit-button/reducer'
 type Props = {
     state: SubmitButtonState;
     onAnimationComplete: () => void;
-};
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const variants: Variants = {
     hidden: { opacity: 0 },
@@ -23,7 +23,7 @@ const variants: Variants = {
     }
 };
 
-const SubmitButton = ({ state: { isLoading, isSuccess }, onAnimationComplete }: Props) => {
+const SubmitButton = ({ state: { isLoading, isSuccess }, onAnimationComplete, className, ...buttonProps }: Props) => {
     const renderContent = () => {
         if (isSuccess)
             return (
@@ -48,10 +48,11 @@ const SubmitButton = ({ state: { isLoading, isSuccess }, onAnimationComplete }: 
     return (
         <Button
             type="submit"
-            className={cn('relative w-full disabled:opacity-100', {
+            className={cn('relative w-full disabled:opacity-100', className, {
                 'bg-green-500 hover:bg-green-500': isSuccess
             })}
             disabled={isLoading || isSuccess}
+            {...buttonProps}
         >
             <AnimatePresence>{renderContent()}</AnimatePresence>
         </Button>
