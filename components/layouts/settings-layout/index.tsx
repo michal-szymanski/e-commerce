@@ -31,7 +31,7 @@ const SettingsLayout = ({ children }: Props) => {
                     <Separator />
                 </div>
                 <div className="flex">
-                    <aside className="flex w-full max-w-min flex-col gap-1 pr-10">
+                    <aside className="sticky top-0 flex h-min w-full max-w-min flex-col gap-1 pr-10 md:static">
                         {items.map(({ text, href, icon }) => (
                             <Button
                                 key={text}

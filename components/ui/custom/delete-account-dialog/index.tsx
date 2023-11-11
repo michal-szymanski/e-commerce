@@ -96,9 +96,9 @@ const DeleteAccountDialog = () => {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
                         <AlertDialogHeader>
                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
                             <AlertDialogDescription>
-                                This action cannot be undone. This will <span className="font-bold">permanently</span> delete your account and remove your data
-                                from our servers.
+                                This will <span className="font-bold">permanently</span> delete your account and remove your data from our servers.
                             </AlertDialogDescription>
                             <AlertDialogDescription>To continue please provide your full name.</AlertDialogDescription>
                         </AlertDialogHeader>
@@ -120,7 +120,7 @@ const DeleteAccountDialog = () => {
                             <SubmitButton
                                 state={state}
                                 onAnimationComplete={() => setTimeout(async () => router.push('/'), 1000)}
-                                className="w-40 disabled:opacity-50"
+                                className="disabled:opacity-50 md:w-40"
                                 disabled={isDisabled}
                             />
                         </AlertDialogFooter>
