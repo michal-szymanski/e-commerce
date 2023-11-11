@@ -60,7 +60,7 @@ const UserDropdown = () => {
                         <span className="pl-2">Orders</span>
                     </DropdownMenuItem>
                 </PersonalAccount>
-                <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/user-profile')}>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/settings/account')}>
                     <Cog8ToothIcon className="h-5 w-5" />
                     <span className="pl-2">Settings</span>
                 </DropdownMenuItem>
