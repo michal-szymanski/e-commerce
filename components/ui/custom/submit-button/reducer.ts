@@ -6,7 +6,7 @@ export type SubmitButtonState = {
     isError: boolean;
 };
 
-type SubmitButtonAction = { type: 'loading' | 'success' | 'error' };
+type SubmitButtonAction = { type: 'loading' | 'success' | 'error' | 'reset' };
 
 const initialState: SubmitButtonState = {
     isLoading: false,
@@ -24,6 +24,9 @@ const submitButtonReducer: Reducer<SubmitButtonState, SubmitButtonAction> = (sta
         }
         case 'error': {
             return { isLoading: false, isSuccess: false, isError: true };
+        }
+        case 'reset': {
+            return { isLoading: false, isSuccess: false, isError: false };
         }
         default: {
             return state;
