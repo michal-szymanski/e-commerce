@@ -20,6 +20,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import SubmitButton from '@/components/ui/custom/submit-button';
 import { useRouter } from 'next/router';
+import { useDeleteCurrentUser } from '@/hooks/mutations';
 
 const formSchema = z.object({
     fullName: z.string().min(1, { message: 'Your full name is required' })
@@ -38,6 +39,7 @@ const DeleteAccountDialog = () => {
     const [isDisabled, setIsDisabled] = useState(true);
     const router = useRouter();
     const { toast } = useToast();
+    const deleteCurrentUser = useDeleteCurrentUser();
 
     const clerkErrorFieldMap = new Map<string, keyof z.infer<typeof formSchema>>([]);
 
@@ -54,8 +56,7 @@ const DeleteAccountDialog = () => {
         dispatch({ type: 'loading' });
 
         try {
-            await user.delete();
-            dispatch({ type: 'success' });
+            await deleteCurrentUser.mutateAsync(undefined, { onSuccess: () => dispatch({ type: 'success' }) });
         } catch (error) {
             dispatch({ type: 'error' });
             if (isKnownError(error) && isClerkAPIResponseError(error)) {

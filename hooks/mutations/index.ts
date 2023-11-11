@@ -144,3 +144,14 @@ export const useCreateCheckoutSession = () =>
             return z.object({ sessionUrl: z.string() }).parse(response);
         }
     });
+
+export const useDeleteCurrentUser = () =>
+    useMutation({
+        mutationFn: async () =>
+            await fetch(`/api/users`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+    });
