@@ -43,7 +43,6 @@ const PasswordForm = () => {
 
     const onSubmit = async ({ currentPassword, newPassword }: z.infer<typeof formSchema>) => {
         if (!user) return;
-        console.log({ currentPassword, newPassword });
         dispatch({ type: 'loading' });
 
         try {
