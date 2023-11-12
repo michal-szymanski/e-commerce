@@ -46,7 +46,7 @@ const SettingsLayout = ({ children }: Props) => {
                             </Button>
                         ))}
                     </aside>
-                    <div>{children}</div>
+                    <div className="w-full max-w-[400px]">{children}</div>
                 </div>
             </div>
         </DefaultLayout>

@@ -11,7 +11,7 @@ const Page = () => {
             <section>
                 <header>
                     <h3 className="text-lg font-medium">Profile</h3>
-                    <p className="text-sm text-muted-foreground">Set basic information about you.</p>
+                    <p className="text-sm text-muted-foreground">Set basic information about yourself.</p>
                     <div className="py-6">
                         <Separator />
                     </div>
