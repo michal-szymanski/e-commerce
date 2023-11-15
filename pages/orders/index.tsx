@@ -45,9 +45,9 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         },
         {
             id: 'status',
-            header: () => <div className="text-center">Status</div>,
+            header: () => <div className="text-left">Status</div>,
             cell: ({ row: { original: order } }) => (
-                <div className="text-center">
+                <div className="text-left">
                     <OrderStatusBadge status={order.status} />
                 </div>
             )
