@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { CartItem, cartItemSchema, categorySchema, searchProductSchema } from '@/types';
+import { CartItem, cartItemSchema, categorySchema, orderHistorySchema, searchProductSchema } from '@/types';
 import { z } from 'zod';
 import Stripe from 'stripe';
 import { getCartFromLocalStorage } from '@/services/local-storage-service';
@@ -95,4 +95,21 @@ export const useCartOrganizations = ({ cart }: { cart?: CartItem[] }) =>
                 .parse(response);
         },
         enabled: !!cart?.length
+    });
+
+export const useOrderHistories = ({ orderId }: { orderId: number }) =>
+    useQuery({
+        queryKey: ['order-histories', { orderId }],
+        queryFn: async () => {
+            const response = await (
+                await fetch(`/api/orders/${orderId}/history`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ).json();
+
+            return z.array(orderHistorySchema).parse(response);
+        }
     });

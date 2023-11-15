@@ -18,6 +18,8 @@ export const orderHistorySchema = z.object({
     date: z.string()
 });
 
+export type OrderHistory = z.infer<typeof orderHistorySchema>;
+
 export const stripePriceSchema = z.object({
     id: z.string(),
     object: z.string(),

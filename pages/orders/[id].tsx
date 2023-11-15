@@ -2,10 +2,8 @@ import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
 import { getAuth } from '@clerk/nextjs/server';
 import { env } from '@/env.mjs';
-import { orderHistoriesTable, ordersTable } from '@/schema';
-import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
-import { idSchema, orderStatusSchema } from '@/types';
-import dayjs from 'dayjs';
+import { ordersTable } from '@/schema';
+import { and, desc, eq, isNotNull, or } from 'drizzle-orm';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
@@ -13,7 +11,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import OrderStatusBadge from '@/components/ui/custom/order-status-badge';
 import { getProductPageUrl, getTotalPrice } from '@/lib/utils';
 import stripe from '@/lib/stripe';
-import { alias } from 'drizzle-orm/pg-core';
 import Head from 'next/head';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EllipsisHorizontalIcon } from '@heroicons/react/20/solid';
@@ -22,8 +19,36 @@ import Link from 'next/link';
 import db from '@/lib/drizzle';
 import { ReactNode } from 'react';
 import DefaultLayout from '@/components/layouts/default-layout';
+import BusinessAccount from '@/components/utils/business-account';
+import { useOrderHistories } from '@/hooks/queries';
+import { formatDate } from '@/lib/dayjs';
+import { useChangeOrderStatus } from '@/hooks/mutations';
 
-export default function Page({ order, lineItems }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Page({ orderId, lineItems }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+    const { data: orderHistories } = useOrderHistories({ orderId });
+    const firstHistory = orderHistories?.[0];
+    const lastHistory = orderHistories?.[orderHistories.length - 1];
+    const changeOrderStatus = useChangeOrderStatus();
+
+    const renderMoveToStatusButton = () => {
+        if (lastHistory?.status === 'New') {
+            return (
+                <Button type="button" onClick={() => changeOrderStatus.mutate({ orderId, status: 'In Progress' })}>
+                    Move to In Progress
+                </Button>
+            );
+        }
+        if (lastHistory?.status === 'In Progress') {
+            return (
+                <Button type="button" onClick={() => changeOrderStatus.mutate({ orderId, status: 'Completed' })}>
+                    Move to Completed
+                </Button>
+            );
+        }
+
+        return null;
+    };
+
     const columns: ColumnDef<Stripe.LineItem>[] = [
         {
             id: 'name',
@@ -83,8 +108,8 @@ export default function Page({ order, lineItems }: InferGetServerSidePropsType<t
         }
     ];
 
-    const formattedOrder = { ...order, date: dayjs(order.date as string).format('DD/MM/YYYY HH:mm') };
     const totalPrice = lineItems.reduce((acc, curr) => Number(acc + getTotalPrice(curr.amount_total, 1)), 0).toFixed(2);
+    const showMoveToStatusButton = lastHistory?.status === 'New' || lastHistory?.status === 'In Progress';
 
     return (
         <>
@@ -92,11 +117,11 @@ export default function Page({ order, lineItems }: InferGetServerSidePropsType<t
                 <title>{`Order | ${env.NEXT_PUBLIC_APP_NAME}`}</title>
             </Head>
             <div className="container mx-auto py-10">
-                <header className="mb-10 grid grid-cols-[300px_300px] gap-10">
+                <header className="mb-10 grid grid-flow-col grid-cols-4 gap-10">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Order {formattedOrder.id}</CardTitle>
-                            <CardDescription>{formattedOrder.date}</CardDescription>
+                            <CardTitle>Order {orderId}</CardTitle>
+                            {firstHistory && <CardDescription>{formatDate(firstHistory.date)}</CardDescription>}
                         </CardHeader>
                         <CardContent>
                             <div className="text-lg">
@@ -106,10 +131,36 @@ export default function Page({ order, lineItems }: InferGetServerSidePropsType<t
                                 </span>
                             </div>
                         </CardContent>
-                        <CardFooter>
-                            <OrderStatusBadge status={formattedOrder.status} />
-                        </CardFooter>
+                        <CardFooter>{lastHistory && <OrderStatusBadge status={lastHistory.status} />}</CardFooter>
                     </Card>
+                    <BusinessAccount>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Order History</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-3">
+                                {[...(orderHistories ?? [])]
+                                    .sort((a, b) => b.id - a.id)
+                                    .map((oh) => (
+                                        <div key={oh.id} className="flex items-center justify-between gap-3">
+                                            <OrderStatusBadge status={oh.status} />
+                                            <CardDescription>{formatDate(oh.date)}</CardDescription>
+                                        </div>
+                                    ))}
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-col">
+                            <CardHeader>
+                                <CardTitle>Change Status</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex grow flex-col justify-center gap-2">
+                                {showMoveToStatusButton && renderMoveToStatusButton()}
+                                <Button type="button" variant={showMoveToStatusButton ? 'secondary' : 'default'}>
+                                    Select status
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </BusinessAccount>
                 </header>
                 <DataTable columns={columns} data={lineItems} />
             </div>
@@ -122,10 +173,10 @@ Page.getLayout = (page: ReactNode) => {
 };
 
 export const getServerSideProps: GetServerSideProps<{
-    order: { id: number; date: string; status: z.infer<typeof orderStatusSchema> };
+    orderId: number;
     lineItems: Stripe.LineItem[];
 }> = async (context) => {
-    const { userId } = getAuth(context.req);
+    const { userId, orgId } = getAuth(context.req);
 
     if (!userId) {
         return {
@@ -138,38 +189,17 @@ export const getServerSideProps: GetServerSideProps<{
 
     const orderId = z.coerce.number().parse(context.query.id);
 
-    const firstHistory = alias(orderHistoriesTable, 'oh1');
-    const lastHistory = alias(orderHistoriesTable, 'oh2');
-
     const orders = await db
         .select({
             id: ordersTable.id,
-            date: firstHistory.date,
-            status: lastHistory.status,
             checkoutSessionId: ordersTable.checkoutSessionId,
             organizationId: ordersTable.organizationId
         })
         .from(ordersTable)
-        .leftJoin(firstHistory, eq(firstHistory.orderId, ordersTable.id))
-        .leftJoin(lastHistory, eq(lastHistory.orderId, ordersTable.id))
         .where(
             and(
-                eq(ordersTable.userId, userId),
+                or(eq(ordersTable.userId, userId), eq(ordersTable.organizationId, orgId ?? '')),
                 eq(ordersTable.id, orderId),
-                eq(
-                    firstHistory.date,
-                    db
-                        .select({ date: sql`min(${orderHistoriesTable.date})` })
-                        .from(orderHistoriesTable)
-                        .where(eq(orderHistoriesTable.orderId, ordersTable.id))
-                ),
-                eq(
-                    lastHistory.date,
-                    db
-                        .select({ date: sql`max(${orderHistoriesTable.date})` })
-                        .from(orderHistoriesTable)
-                        .where(eq(orderHistoriesTable.orderId, ordersTable.id))
-                ),
                 isNotNull(ordersTable.checkoutSessionId)
             )
         )
@@ -185,17 +215,9 @@ export const getServerSideProps: GetServerSideProps<{
         expand: ['line_items.data.price.product']
     });
 
-    const parsedOrder = z
-        .object({
-            id: idSchema,
-            date: z.string(),
-            status: orderStatusSchema
-        })
-        .parse({ ...orders[0], date: dayjs(orders[0].date as string).toISOString() });
-
     return {
         props: {
-            order: parsedOrder,
+            orderId,
             lineItems:
                 checkoutSession.line_items?.data.filter((li) => (li.price?.product as Stripe.Product).metadata?.organizationId === orders[0].organizationId) ??
                 []

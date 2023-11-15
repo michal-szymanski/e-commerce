@@ -21,6 +21,7 @@ import Stripe from 'stripe';
 import db from '@/lib/drizzle';
 import { ReactNode } from 'react';
 import DefaultLayout from '@/components/layouts/default-layout';
+import { formatDate } from '@/lib/dayjs';
 
 const orderWithTotalPriceSchema = z.object({
     id: idSchema,
@@ -86,7 +87,7 @@ export default function Page({ orders }: InferGetServerSidePropsType<typeof getS
         }
     ];
 
-    const data = orders.map((o) => ({ ...o, date: dayjs(o.date).format('DD/MM/YYYY HH:mm') }));
+    const data = orders.map((o) => ({ ...o, date: formatDate(o.date) }));
 
     return (
         <>

@@ -17,7 +17,7 @@ const Page = () => {
                         <h4 className="font-bold">Mandatory notifications</h4>
                         <p className="text-sm text-muted-foreground">Includes security and order processing emails.</p>
                     </div>
-                    <Switch checked={true} disabled />
+                    <Switch checked disabled />
                 </article>
             </header>
         </section>

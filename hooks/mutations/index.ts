@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CartItem } from '@/types';
+import { CartItem, orderHistorySchema, orderStatusSchema } from '@/types';
 import Stripe from 'stripe';
 import { saveCartToLocalStorage } from '@/services/local-storage-service';
 import { z } from 'zod';
@@ -155,3 +155,25 @@ export const useDeleteCurrentUser = () =>
                 }
             })
     });
+
+export const useChangeOrderStatus = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ orderId, status }: { orderId: number; status: z.infer<typeof orderStatusSchema> }) => {
+            const payload = JSON.stringify({ status });
+
+            const response = await (
+                await fetch(`/api/orders/${orderId}/history`, {
+                    method: 'POST',
+                    body: payload,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            ).json();
+
+            return orderHistorySchema.parse(response);
+        },
+        onSuccess: ({ orderId }) => queryClient.invalidateQueries(['order-histories', { orderId }])
+    });
+};
