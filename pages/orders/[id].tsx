@@ -2,7 +2,7 @@ import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 import { z } from 'zod';
 import { getAuth } from '@clerk/nextjs/server';
 import { env } from '@/env.mjs';
-import { ordersTable } from '@/schema';
+import { orderHistoriesTable, ordersTable } from '@/schema';
 import { and, desc, eq, isNotNull, or } from 'drizzle-orm';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table';
@@ -23,6 +23,7 @@ import BusinessAccount from '@/components/utils/business-account';
 import { useOrderHistories } from '@/hooks/queries';
 import { formatDate } from '@/lib/dayjs';
 import { useChangeOrderStatus } from '@/hooks/mutations';
+import { dehydrate, DehydratedState, QueryClient } from '@tanstack/react-query';
 
 export default function Page({ orderId, lineItems }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const { data: orderHistories } = useOrderHistories({ orderId });
@@ -153,7 +154,7 @@ export default function Page({ orderId, lineItems }: InferGetServerSidePropsType
                             <CardHeader>
                                 <CardTitle>Change Status</CardTitle>
                             </CardHeader>
-                            <CardContent className="flex grow flex-col justify-center gap-2">
+                            <CardContent className="flex grow flex-col justify-end gap-2">
                                 {showMoveToStatusButton && renderMoveToStatusButton()}
                                 <Button type="button" variant={showMoveToStatusButton ? 'secondary' : 'default'}>
                                     Select status
@@ -175,6 +176,7 @@ Page.getLayout = (page: ReactNode) => {
 export const getServerSideProps: GetServerSideProps<{
     orderId: number;
     lineItems: Stripe.LineItem[];
+    dehydratedState: DehydratedState;
 }> = async (context) => {
     const { userId, orgId } = getAuth(context.req);
 
@@ -215,12 +217,20 @@ export const getServerSideProps: GetServerSideProps<{
         expand: ['line_items.data.price.product']
     });
 
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(['order-histories', { orderId }], async () => {
+        const data = await db.select().from(orderHistoriesTable).where(eq(orderHistoriesTable.orderId, orderId));
+        console.log({ data });
+        return data;
+    });
+
     return {
         props: {
             orderId,
             lineItems:
                 checkoutSession.line_items?.data.filter((li) => (li.price?.product as Stripe.Product).metadata?.organizationId === orders[0].organizationId) ??
-                []
+                [],
+            dehydratedState: dehydrate(queryClient)
         }
     };
 };
