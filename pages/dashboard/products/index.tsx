@@ -200,7 +200,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     await queryClient.prefetchQuery(['organization-products'], async () => {
         const { data: products } = await stripe.products.search({ query: `metadata["organizationId"]:"${orgId}"`, limit: 100, expand: ['data.default_price'] });
-        return products.sort((a, b) => b.created - a.created);
+        return [...products].sort((a, b) => b.created - a.created);
     });
 
     await queryClient.prefetchQuery(['categories'], async () => {

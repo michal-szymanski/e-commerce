@@ -49,7 +49,7 @@ export const useOrganizationProducts = ({ enabled }: { enabled: boolean }) =>
                 })
             ).json();
 
-            return (response as Stripe.Product[]).sort((a, b) => b.created - a.created);
+            return ([...response] as Stripe.Product[]).sort((a, b) => b.created - a.created);
         },
         enabled
     });
