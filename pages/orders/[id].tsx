@@ -218,11 +218,10 @@ export const getServerSideProps: GetServerSideProps<{
     });
 
     const queryClient = new QueryClient();
-    await queryClient.prefetchQuery(['order-histories', { orderId }], async () => {
-        const data = await db.select().from(orderHistoriesTable).where(eq(orderHistoriesTable.orderId, orderId));
-        console.log({ data });
-        return data;
-    });
+    await queryClient.prefetchQuery(
+        ['order-histories', { orderId }],
+        async () => await db.select().from(orderHistoriesTable).where(eq(orderHistoriesTable.orderId, orderId))
+    );
 
     return {
         props: {
