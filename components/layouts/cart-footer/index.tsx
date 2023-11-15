@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { cn, getTotalPrice } from '@/lib/utils';
+import { getTotalPrice } from '@/lib/utils';
 import { useCart } from '@/hooks/queries';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { useCreateCheckoutSession } from '@/hooks/mutations';
+import { cn } from '@/lib/tailwind';
 
 const CartFooter = () => {
     const { isSignedIn } = useUser();

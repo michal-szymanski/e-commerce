@@ -2,7 +2,7 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuL
 import Link from 'next/link';
 import CartCounter from '@/components/ui/custom/cart-icon';
 import { SignedIn, SignedOut } from '@clerk/nextjs';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/tailwind';
 import SearchBar from '@/components/ui/custom/search-bar';
 import { useRouter } from 'next/router';
 import { z } from 'zod';

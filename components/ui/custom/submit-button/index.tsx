@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/tailwind';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { AnimatePresence, motion, Variants } from 'framer-motion';
 import { Loader2 } from 'lucide-react';

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ComputerDesktopIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/tailwind';
 
 dayjs.extend(relativeTime);
 
@@ -58,7 +58,7 @@ const Page = () => {
                                     {s.latestActivity.isMobile ? <DevicePhoneMobileIcon className="h-5 w-5" /> : <ComputerDesktopIcon className="h-5 w-5" />}
                                     <span>{s.latestActivity.deviceType}</span>
                                 </div>
-                                {session?.id === s.id && <Badge variant="secondary">This device</Badge>}
+                                {session?.id === s.id && <Badge variant="default">This device</Badge>}
                             </h3>
                         </header>
                         <section>

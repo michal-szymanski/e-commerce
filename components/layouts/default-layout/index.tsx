@@ -5,7 +5,7 @@ import { env } from '@/env.mjs';
 import Head from 'next/head';
 import { useCart } from '@/hooks/queries';
 import { useOrganization, useUser } from '@clerk/nextjs';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/tailwind';
 import { Inter } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 

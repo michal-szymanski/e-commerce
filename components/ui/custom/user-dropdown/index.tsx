@@ -10,7 +10,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useClerk, useOrganization, useUser } from '@clerk/nextjs';
 import { ArrowRightOnRectangleIcon, Cog8ToothIcon, HomeIcon, PlusSmallIcon, TruckIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/tailwind';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { ChartBarIcon } from '@heroicons/react/24/solid';
 import { useQueryClient } from '@tanstack/react-query';
